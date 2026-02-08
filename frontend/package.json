@@ -57,7 +57,7 @@
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@sveltejs/adapter-static": "^3.0.10",
-    "@tanstack/svelte-query": "^6.0.14",
+    "@tanstack/svelte-query": "^6.0.17",
     "@tanstack/svelte-virtual": "^3.13.18"
   },
   "browserslist": {
