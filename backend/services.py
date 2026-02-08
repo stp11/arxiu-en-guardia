@@ -64,7 +64,23 @@ class EpisodesService:
                 if data.get("data_publicacio")
                 else None
             ),
+            image_url=self._extract_image_url(data),
         )
+
+    @staticmethod
+    def _extract_image_url(data: dict) -> str | None:
+        """Extract the 670x378 image URL from API data.
+
+        Prefers episode-specific images (WCR_AUDIO) over program-level ones.
+        """
+        images = data.get("imatges", {}).get("imatge", [])
+        candidates = [img for img in images if img.get("mida") == "670x378"]
+
+        for img in candidates:
+            if img.get("tipologia") == "WCR_AUDIO":
+                return img.get("text")
+
+        return candidates[0].get("text") if candidates else None
 
     def _parse_date(self, date_str: str) -> datetime:
         """Parse API date format: '09/09/2001 00:01:00'"""
