@@ -57,6 +57,7 @@ class EpisodeBase(SQLModel):
     slug: str | None
     description: str | None
     published_at: datetime | None
+    image_url: str | None
 
 
 class EpisodeWithCategories(EpisodeBase):
@@ -69,6 +70,7 @@ class Episode(SQLModel, table=True):
     slug: str | None = None
     description: str | None = Field(default=None, sa_column=Column(TEXT))
     published_at: datetime | None = Field(default=None, index=True)
+    image_url: str | None = None
 
     categories: list[Category] = Relationship(
         back_populates="episodes",

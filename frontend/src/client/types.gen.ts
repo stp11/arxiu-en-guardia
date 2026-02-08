@@ -72,6 +72,10 @@ export type EpisodeWithCategories = {
      */
     published_at: string | null;
     /**
+     * Image Url
+     */
+    image_url: string | null;
+    /**
      * Categories
      */
     categories?: Array<CategoryBase>;
@@ -88,9 +92,9 @@ export type HttpValidationError = {
 };
 
 /**
- * Page[Category]
+ * PageCustomized[Category]
  */
-export type PageCategory = {
+export type PageCustomizedCategory = {
     /**
      * Items
      */
@@ -98,19 +102,19 @@ export type PageCategory = {
     /**
      * Total
      */
-    total?: number | null;
+    total: number;
     /**
      * Page
      */
-    page: number | null;
+    page: number;
     /**
      * Size
      */
-    size: number | null;
+    size: number;
     /**
      * Pages
      */
-    pages?: number | null;
+    pages: number;
 };
 
 /**
@@ -124,19 +128,19 @@ export type PageEpisodeWithCategories = {
     /**
      * Total
      */
-    total?: number | null;
+    total: number;
     /**
      * Page
      */
-    page: number | null;
+    page: number;
     /**
      * Size
      */
-    size: number | null;
+    size: number;
     /**
      * Pages
      */
-    pages?: number | null;
+    pages: number;
 };
 
 /**
@@ -177,14 +181,10 @@ export type GetEpisodesApiEpisodesGetData = {
         categories?: string;
         /**
          * Page
-         *
-         * Page number
          */
         page?: number;
         /**
          * Size
-         *
-         * Page size
          */
         size?: number;
     };
@@ -251,14 +251,10 @@ export type GetCategoriesApiCategoriesGetData = {
         type?: CategoryType;
         /**
          * Page
-         *
-         * Page number
          */
         page?: number;
         /**
          * Size
-         *
-         * Page size
          */
         size?: number;
     };
@@ -278,7 +274,21 @@ export type GetCategoriesApiCategoriesGetResponses = {
     /**
      * Successful Response
      */
-    200: PageCategory;
+    200: PageCustomizedCategory;
 };
 
 export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGetResponses[keyof GetCategoriesApiCategoriesGetResponses];
+
+export type HealthCheckHealthGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health';
+};
+
+export type HealthCheckHealthGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};

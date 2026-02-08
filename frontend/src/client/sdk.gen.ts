@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses } from './types.gen';
+import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -44,6 +44,18 @@ export const getEpisodeApiEpisodesIdGet = <ThrowOnError extends boolean = false>
 export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({
         url: '/api/categories',
+        ...options
+    });
+};
+
+/**
+ * Health Check
+ *
+ * Health check endpoint for Railway and Cloudflare.
+ */
+export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckHealthGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({
+        url: '/health',
         ...options
     });
 };
