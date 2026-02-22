@@ -3,7 +3,7 @@
 # Code quality
 # ------------------------------------------------------------------------------
 pre-commit==4.5.1  # https://github.com/pre-commit/pre-commit
-black==25.12.0  # https://github.com/psf/black
+black==26.1.0  # https://github.com/psf/black
 flake8==7.3.0  # https://github.com/PyCQA/flake8
 isort==7.0.0
 
