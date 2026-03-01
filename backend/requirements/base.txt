@@ -1,14 +1,14 @@
-fastapi[standard]==0.129.0
+fastapi[standard]==0.135.0
 fastapi-pagination==0.15.10
 pydantic==2.12.5
 uvicorn==0.41.0
-sqlmodel==0.0.34
+sqlmodel==0.0.37
 pymysql==1.1.2
 psycopg2==2.9.11
 cryptography==46.0.5
 alembic==1.18.4
 requests==2.32.5
-openai==2.21.0
+openai==2.24.0
 python-slugify==8.0.4
 sqladmin==0.23.0
 itsdangerous==2.2.0
