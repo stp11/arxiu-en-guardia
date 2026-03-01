@@ -58,7 +58,7 @@
     "@hey-api/client-fetch": "^0.13.1",
     "@sveltejs/adapter-static": "^3.0.10",
     "@tanstack/svelte-query": "^6.0.18",
-    "@tanstack/svelte-virtual": "^3.13.18"
+    "@tanstack/svelte-virtual": "^3.13.19"
   },
   "browserslist": {
     "production": [
