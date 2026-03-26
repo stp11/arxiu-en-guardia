@@ -7,7 +7,7 @@ pymysql==1.1.2
 psycopg2==2.9.11
 cryptography==46.0.5
 alembic==1.18.4
-requests==2.32.5
+requests==2.33.0
 openai==2.21.0
 python-slugify==8.0.4
 sqladmin==0.23.0
