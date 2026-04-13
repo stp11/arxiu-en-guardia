@@ -9,7 +9,7 @@ celery_app = Celery(
     "en-guardia",
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=["tasks.episode_tasks"],
+    include=["tasks.episode_tasks", "tasks.backup_tasks"],
 )
 
 celery_app.conf.update(
@@ -37,5 +37,13 @@ celery_app.conf.beat_schedule = {
             "batch_size": 1,
             "max_total": 1,
         },
+    },
+    "backup-database-weekly": {
+        "task": "tasks.backup_tasks.backup_database",
+        "schedule": crontab(
+            day_of_week=0,
+            hour=20,
+            minute=0,
+        ),
     },
 }
