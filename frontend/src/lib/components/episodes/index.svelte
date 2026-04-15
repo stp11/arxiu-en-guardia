@@ -48,7 +48,7 @@
     location: [],
     time_period: [],
   });
-  let sorting = $state<SortingState>([]);
+  let sorting = $state<SortingState>([{ id: "published_at", desc: true }]);
   let rowSelection = $state<RowSelectionState>({});
   const order = $derived.by(() => {
     const column = sorting.find((v) => v.id === "published_at");
