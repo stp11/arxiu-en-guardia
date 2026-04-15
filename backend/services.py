@@ -5,9 +5,20 @@ from openai import OpenAI
 from sqlalchemy import Select
 
 from logger import logger
-from models import CategoryType, Episode
-from prompts import classification_prompt
+from models import Category, CategoryType, Episode
+from prompts import (  # noqa: E501
+    CLASSIFICATION_KEYS,
+    CLASSIFICATION_SCHEMA,
+    classification_prompt,
+)
 from repositories import ICategoriesRepository, IEpisodesRepository
+
+CATEGORY_TYPE_TO_KEY: dict[CategoryType, str] = {
+    CategoryType.TOPIC: "temàtica",
+    CategoryType.TIME_PERIOD: "època",
+    CategoryType.CHARACTER: "personatges",
+    CategoryType.LOCATION: "localització",
+}
 
 
 class EpisodesService:
@@ -101,10 +112,8 @@ class ClassificationService:
     def classify_episode(self, episode: Episode) -> dict | None:
         """Classify a single episode using OpenAI."""
         existing_categories = self.categories_repository.get_all_categories()
-        existing_categories_list = [
-            category.name for category in existing_categories
-        ]
-        prompt = classification_prompt(episode, existing_categories_list)
+        grouped = self._group_categories_by_key(existing_categories)
+        prompt = classification_prompt(episode, grouped)
 
         logger.info(f"Prompt: {prompt}")
 
@@ -112,6 +121,10 @@ class ClassificationService:
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
+            response_format={
+                "type": "json_schema",
+                "json_schema": CLASSIFICATION_SCHEMA,
+            },
         )
 
         logger.info(f"Classification response: {response}")
@@ -124,6 +137,20 @@ class ClassificationService:
                 f"Failed to fetch classification from LLM for episode {episode.id}: {e}"  # noqa: E501
             )
             return None
+
+    @staticmethod
+    def _group_categories_by_key(
+        categories: list[Category],
+    ) -> dict[str, list[str]]:
+        grouped: dict[str, list[str]] = {
+            key: [] for key in CLASSIFICATION_KEYS
+        }
+        for category in categories:
+            key = CATEGORY_TYPE_TO_KEY.get(category.type)
+            if key is None:
+                continue
+            grouped[key].append(category.name)
+        return grouped
 
     def save_categories_to_episode(
         self, episode: Episode, classification: dict | None
