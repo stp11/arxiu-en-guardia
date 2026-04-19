@@ -50,7 +50,7 @@
       <nav class="mb-8 sm:mb-10">
         <a href="/" class="group inline-flex items-center gap-1.5 text-sm text-primary-orange">
           <ArrowLeft class="transition-transform group-hover:-translate-x-0.5 size-4" />
-          Tornar a l'arxiu
+          Tornar al llistat
         </a>
       </nav>
 
