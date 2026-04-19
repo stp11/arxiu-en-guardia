@@ -7,8 +7,8 @@
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
         "@sveltejs/adapter-static": "^3.0.10",
-        "@tanstack/svelte-query": "^6.1.0",
-        "@tanstack/svelte-virtual": "^3.13.21",
+        "@tanstack/svelte-query": "^6.1.18",
+        "@tanstack/svelte-virtual": "^3.13.24",
       },
       "devDependencies": {
         "@eslint/compat": "^1.4.0",
@@ -273,15 +273,15 @@
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.1.17", "", { "dependencies": { "@tailwindcss/node": "4.1.17", "@tailwindcss/oxide": "4.1.17", "tailwindcss": "4.1.17" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7" } }, "sha512-4+9w8ZHOiGnpcGI6z1TVVfWaX/koK7fKeSYF3qlYg2xpBtbteP2ddBxiarL+HVgfSJGeK5RIxRQmKm4rTJJAwA=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.90.20", "", {}, "sha512-OMD2HLpNouXEfZJWcKeVKUgQ5n+n3A2JFmBaScpNDUqSrQSjiveC7dKMe53uJUg1nDG16ttFPz2xfilz6i2uVg=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.99.2", "", {}, "sha512-1HunU0bXVsR1ZJMZbcOPE6VtaBJxsW809RE9xPe4Gz7MlB0GWwQvuTPhMoEmQ/hIzFKJ/DWAuttIe7BOaWx0tA=="],
 
-    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.0", "", { "dependencies": { "@tanstack/query-core": "5.90.20" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-iKeMaBalk5NeRvp1Y2LgtG3j9HCeLcTEpfsyM+jL1wASnW/EYdCqyyotMKkOY4SNsnBpPDM5zrmstMn6tOzKFQ=="],
+    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.18", "", { "dependencies": { "@tanstack/query-core": "5.99.2" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-D26iBbSDJ1h3M/XrF+dTFsnDAr4fSGEj/BZxMtm47D4eYgPgW/5Q8f0gNlfwVTn8fjbOFAPT6Yyaf//4z+F4VQ=="],
 
-    "@tanstack/svelte-virtual": ["@tanstack/svelte-virtual@3.13.21", "", { "dependencies": { "@tanstack/virtual-core": "3.13.21" }, "peerDependencies": { "svelte": "^3.48.0 || ^4.0.0 || ^5.0.0" } }, "sha512-qCRc2xcWuJEWs/fVq9SKaiy1LfCExAaLgU9FNMP3XsibuT8o55C5UWQmAFGxkE9hfQ8I0JfRA8yIUQ64WZ1m8A=="],
+    "@tanstack/svelte-virtual": ["@tanstack/svelte-virtual@3.13.24", "", { "dependencies": { "@tanstack/virtual-core": "3.14.0" }, "peerDependencies": { "svelte": "^3.48.0 || ^4.0.0 || ^5.0.0" } }, "sha512-Up3LOD5Cj+oJ3GuKfM1Li06jzzZMIZnRPmu3aik9rJQgk7jq7LgPo4yumfUw4+I4edjYfyPKSZnXGwZ9Vjlebw=="],
 
     "@tanstack/table-core": ["@tanstack/table-core@8.21.3", "", {}, "sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg=="],
 
-    "@tanstack/virtual-core": ["@tanstack/virtual-core@3.13.21", "", {}, "sha512-ww+fmLHyCbPSf7JNbWZP3g7wl6SdNo3ah5Aiw+0e9FDErkVHLKprYUrwTm7dF646FtEkN/KkAKPYezxpmvOjxw=="],
+    "@tanstack/virtual-core": ["@tanstack/virtual-core@3.14.0", "", {}, "sha512-JLANqGy/D6k4Ujmh8Tr25lGimuOXNiaVyXaCAZS0W+1390sADdGnyUdSWNIfd49gebtIxGMij4IktRVzrdr12Q=="],
 
     "@trivago/prettier-plugin-sort-imports": ["@trivago/prettier-plugin-sort-imports@5.2.2", "", { "dependencies": { "@babel/generator": "^7.26.5", "@babel/parser": "^7.26.7", "@babel/traverse": "^7.26.7", "@babel/types": "^7.26.7", "javascript-natural-sort": "^0.7.1", "lodash": "^4.17.21" }, "peerDependencies": { "@vue/compiler-sfc": "3.x", "prettier": "2.x - 3.x", "prettier-plugin-svelte": "3.x", "svelte": "4.x || 5.x" }, "optionalPeers": ["@vue/compiler-sfc", "prettier-plugin-svelte", "svelte"] }, "sha512-fYDQA9e6yTNmA13TLVSA+WMQRc5Bn/c0EUBditUHNfMMxN7M82c38b1kEggVE3pLpZ0FwkwJkUEKMiOi52JXFA=="],
 
