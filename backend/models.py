@@ -118,6 +118,44 @@ class Users(SQLModel, table=True):
 
 
 # Admin view
+class EpisodeWithoutCategoriesFilter:
+    """Custom filter to show episodes without categories"""
+
+    def __init__(
+        self,
+        column: Any = None,
+        title: str | None = None,
+        parameter_name: str | None = None,
+    ):
+        self.column = column
+        self.title = title or "Episodis"
+        self.parameter_name = parameter_name or "has_categories"
+
+    async def lookups(
+        self, request: Request, model: Any, run_query: Callable[[Select], Any]
+    ) -> list[tuple[str, str]]:
+        """Return filter options"""
+        return [
+            ("", "Tots"),
+            ("no", "Sense categories"),
+            ("yes", "Amb categories"),
+        ]
+
+    async def get_filtered_query(
+        self, query: Select, value: Any, model: Any
+    ) -> Select:
+        """Apply the filter to the query"""
+        if value == "":
+            return query
+        elif value == "no":
+            return query.outerjoin(EpisodeCategory).where(
+                EpisodeCategory.episode_id.is_(None)
+            )
+        elif value == "yes":
+            return query.join(EpisodeCategory).distinct()
+        return query
+
+
 class EpisodeAdmin(ModelView, model=Episode):
     name_plural = "Episodis"
     can_create = False
@@ -143,6 +181,7 @@ class EpisodeAdmin(ModelView, model=Episode):
     column_searchable_list = [Episode.title]
     column_sortable_list = [Episode.published_at]
     column_default_sort = [(Episode.published_at, True)]
+    column_filters = [EpisodeWithoutCategoriesFilter()]
     column_details_list = [
         Episode.title,
         Episode.description,
