@@ -40,3 +40,9 @@ export const getCheckboxStyles = (category: CategoryType | null) => {
       return "data-[state=checked]:bg-primary-brown data-[state=checked]:border-primary-brown";
   }
 };
+
+export const hasDescription = (description: string | null | undefined) => {
+  if (!description) return false;
+  const trimmedDescription = description.trim();
+  return trimmedDescription !== "" && trimmedDescription.toLocaleLowerCase() !== "en guàrdia";
+};

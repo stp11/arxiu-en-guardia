@@ -6,7 +6,7 @@ import type { ColumnDef } from "@tanstack/table-core";
 
 import type { EpisodeWithCategories } from "client";
 
-import { capitalize, getCategoryStyles } from "lib/utils";
+import { capitalize, getCategoryStyles, hasDescription } from "lib/utils";
 
 export const columns: ColumnDef<EpisodeWithCategories>[] = [
   {
@@ -29,11 +29,9 @@ export const columns: ColumnDef<EpisodeWithCategories>[] = [
     size: 768,
     enableSorting: false,
     cell: ({ row }) => {
-      const descriptionRow = row.original.description;
-      const description =
-        descriptionRow?.toLocaleLowerCase() === "en guàrdia" || descriptionRow?.trim() === ""
-          ? "Sense descripció"
-          : descriptionRow;
+      const description = hasDescription(row.original.description)
+        ? row.original.description
+        : "Sense descripció";
       const descriptionCellSnippet = createRawSnippet(() => ({
         render: () => `<div class="line-clamp-3">${description}</div>`,
       }));
