@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ArrowLeft } from "@lucide/svelte";
 
-  import { capitalize, getCategoryStyles } from "lib/utils";
+  import { capitalize, getCategoryStyles, hasDescription } from "lib/utils";
 
   const { data } = $props();
 
@@ -99,13 +99,15 @@
         </div>
       </div>
 
-      {#if episode.description}
-        <section class="pb-4">
-          <p class="text-lg leading-[1.75] text-gray-700">
+      <section class="pb-4">
+        <p class="text-lg leading-[1.75] text-gray-700">
+          {#if hasDescription(episode.description)}
             {episode.description}
-          </p>
-        </section>
-      {/if}
+          {:else}
+            Sense descripció
+          {/if}
+        </p>
+      </section>
     </article>
 
     <!-- TODO remove hidden once implemented -->
