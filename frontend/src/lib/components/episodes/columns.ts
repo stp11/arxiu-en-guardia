@@ -29,10 +29,15 @@ export const columns: ColumnDef<EpisodeWithCategories>[] = [
     size: 768,
     enableSorting: false,
     cell: ({ row }) => {
+      const descriptionRow = row.original.description;
+      const description =
+        descriptionRow?.toLocaleLowerCase() === "en guàrdia" || descriptionRow?.trim() === ""
+          ? "Sense descripció"
+          : descriptionRow;
       const descriptionCellSnippet = createRawSnippet(() => ({
-        render: () => `<div class="line-clamp-3">${row.original.description ?? ""}</div>`,
+        render: () => `<div class="line-clamp-3">${description}</div>`,
       }));
-      return renderSnippet(descriptionCellSnippet, row.original.description);
+      return renderSnippet(descriptionCellSnippet, description);
     },
     meta: {
       icon: TextAlignJustifyIcon,

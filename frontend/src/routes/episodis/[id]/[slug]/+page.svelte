@@ -102,7 +102,11 @@
       {#if episode.description}
         <section class="pb-4">
           <p class="text-lg leading-[1.75] text-gray-700">
-            {episode.description}
+            {#if episode.description.toLocaleLowerCase() === "en guàrdia" || episode.description.trim() === ""}
+              Sense descripció
+            {:else}
+              {episode.description}
+            {/if}
           </p>
         </section>
       {/if}
