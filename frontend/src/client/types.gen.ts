@@ -21,6 +21,10 @@ export type Category = {
      */
     name: string;
     type: CategoryType | null;
+    /**
+     * Count
+     */
+    count?: number;
 };
 
 /**

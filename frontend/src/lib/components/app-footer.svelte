@@ -1,33 +1,29 @@
 <script lang="ts">
   import Github from "lib/components/github.svelte";
-  import { Button } from "lib/components/ui/button";
 </script>
 
-<footer class="px-6 text-sm text-center flex w-full justify-center 2xl:mx-auto">
-  <div class="border-t py-4 w-full flex justify-center items-center gap-2 xl:max-w-screen-xl">
-    <div class="text-muted-foreground ml-auto">
-      <small>© {new Date().getFullYear()} Arxiu En Guàrdia</small>
-      &dash;
-      <small>
-        <a
-          href="https://github.com/stp11/en-guardia/blob/main/LICENCE.txt"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="underline hover:text-foreground transition-colors"
-        >
-          Llicència MIT
-        </a>
-      </small>
-    </div>
-    <Button
-      variant="ghost"
-      size="icon"
+<footer
+  class="mx-auto mt-20 flex w-full max-w-screen-xl flex-col items-start justify-between gap-3 border-t border-rule px-6 pt-6 pb-6 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 sm:flex-row sm:items-center md:px-10"
+>
+  <div>© {new Date().getFullYear()} · Arxiu fet per oients del programa</div>
+  <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+    <span>Programa original de Catalunya Ràdio</span>
+    <a
+      href="https://github.com/stp11/en-guardia/blob/main/LICENCE.txt"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="hover:text-vermillion-deep"
+    >
+      Llicència MIT
+    </a>
+    <a
       href="https://github.com/stp11/en-guardia"
       target="_blank"
       rel="noopener noreferrer"
-      class="ml-auto"
+      aria-label="GitHub"
+      class="text-ink-3 hover:text-vermillion-deep"
     >
       <Github />
-    </Button>
+    </a>
   </div>
 </footer>
