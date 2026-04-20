@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { LoaderCircleIcon, Search } from "@lucide/svelte";
+  import { LoaderCircleIcon, Search, SlidersHorizontal } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import {
@@ -15,6 +15,7 @@
   } from "client";
 
   import AppHero from "lib/components/app-hero.svelte";
+  import * as Sheet from "lib/components/ui/sheet";
   import { CATEGORY_TYPE_COLORS, CATEGORY_TYPE_LABELS, cn, hasDescription } from "lib/utils";
 
   import Facet from "./facet.svelte";
@@ -50,6 +51,7 @@
   });
   let order = $state<"asc" | "desc">("desc");
   let searchInput: HTMLInputElement | null = $state(null);
+  let filtersOpen = $state(false);
 
   let isInitialized = false;
   onMount(() => {
@@ -240,6 +242,7 @@
     allCategoryItems[type].find((i) => i.id === id);
 
   const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
+  const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
@@ -286,79 +289,116 @@
 <div class="mx-auto w-full max-w-screen-xl px-6 pt-8 pb-12 md:px-10 md:pt-14">
   <AppHero />
 
-  <div class="mt-9 grid grid-cols-1 gap-12 lg:grid-cols-[260px_1fr]">
-    <!-- Sidebar -->
-    <aside
-      class="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
-    >
-      <Facet
-        label="Temes"
-        placeholder="Cerca un tema…"
-        type="topic"
-        items={topicItems}
-        selected={categories.topic}
-        onToggle={(id) => toggleCategory("topic", id)}
-      />
-      <Facet
-        label="Llocs"
-        placeholder="Cerca un lloc…"
-        type="location"
-        items={locationItems}
-        selected={categories.location}
-        onToggle={(id) => toggleCategory("location", id)}
-      />
-      <Facet
-        label="Personatges"
-        placeholder="Cerca un personatge…"
-        type="character"
-        items={characterItems}
-        selected={categories.character}
-        onToggle={(id) => toggleCategory("character", id)}
-      />
-      <Facet
-        label="Èpoques"
-        type="time_period"
-        items={timePeriodItems}
-        selected={categories.time_period}
-        onToggle={(id) => toggleCategory("time_period", id)}
-        showSearch={false}
-      />
+  {#snippet facetPanel()}
+    <Facet
+      label="Temes"
+      placeholder="Cerca un tema…"
+      type="topic"
+      items={topicItems}
+      selected={categories.topic}
+      onToggle={(id) => toggleCategory("topic", id)}
+    />
+    <Facet
+      label="Llocs"
+      placeholder="Cerca un lloc…"
+      type="location"
+      items={locationItems}
+      selected={categories.location}
+      onToggle={(id) => toggleCategory("location", id)}
+    />
+    <Facet
+      label="Personatges"
+      placeholder="Cerca un personatge…"
+      type="character"
+      items={characterItems}
+      selected={categories.character}
+      onToggle={(id) => toggleCategory("character", id)}
+    />
+    <Facet
+      label="Èpoques"
+      type="time_period"
+      items={timePeriodItems}
+      selected={categories.time_period}
+      onToggle={(id) => toggleCategory("time_period", id)}
+      showSearch={false}
+    />
 
-      <button
-        type="button"
-        onclick={clearAll}
-        disabled={!hasFilters}
-        class={cn(
-          "mt-2 w-full cursor-pointer border-none bg-ink py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-paper transition-colors",
-          "hover:bg-vermillion-deep",
-          "disabled:cursor-not-allowed disabled:bg-ink-3 disabled:opacity-40 disabled:hover:bg-ink-3"
-        )}
-      >
-        Esborra els filtres
-      </button>
+    <button
+      type="button"
+      onclick={clearAll}
+      disabled={!hasFilters}
+      class={cn(
+        "mt-2 w-full cursor-pointer border-none bg-ink py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-paper transition-colors",
+        "hover:bg-vermillion-deep",
+        "disabled:cursor-not-allowed disabled:bg-ink-3 disabled:opacity-40 disabled:hover:bg-ink-3"
+      )}
+    >
+      Esborra els filtres
+    </button>
+  {/snippet}
+
+  <!-- Mobile drawer (shadcn Sheet) -->
+  <Sheet.Root bind:open={filtersOpen}>
+    <Sheet.Content side="right" class="overflow-y-auto bg-paper px-5 pt-5 pb-10 text-ink lg:hidden">
+      <Sheet.Header class="gap-0 p-0">
+        <Sheet.Title class="font-serif text-xl font-semibold text-ink">Filtres</Sheet.Title>
+        <Sheet.Description class="sr-only">
+          Filtra els episodis per tema, lloc, personatge o època.
+        </Sheet.Description>
+      </Sheet.Header>
+      <div class="mt-4">
+        {@render facetPanel()}
+      </div>
+    </Sheet.Content>
+  </Sheet.Root>
+
+  <div class="mt-9 grid grid-cols-1 gap-12 lg:grid-cols-[260px_1fr]">
+    <!-- Desktop sidebar -->
+    <aside
+      aria-label="Filtres"
+      class="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
+    >
+      {@render facetPanel()}
     </aside>
 
     <!-- Main column -->
     <main class="min-w-0">
-      <!-- Search bar -->
-      <div
-        class="flex items-center border border-rule bg-paper-2 px-3.5 transition-colors focus-within:border-ink focus-within:bg-paper"
-      >
-        <Search class="size-4 flex-none text-ink-3" />
-        <input
-          bind:this={searchInput}
-          type="search"
-          value={searchQuery}
-          oninput={(e) => handleSearchInput(e.currentTarget.value)}
-          placeholder="Cerca un episodi"
-          autocomplete="off"
-          class="flex-1 border-0 bg-transparent px-3 py-3.5 font-serif text-[19px] text-ink outline-none placeholder:italic placeholder:text-ink-3"
-        />
-        <span
-          class="hidden rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 sm:inline"
+      <!-- Search bar (+ mobile filter button) -->
+      <div class="flex items-stretch gap-2">
+        <div
+          class="flex flex-1 items-center border border-rule bg-paper-2 px-3.5 transition-colors focus-within:border-ink focus-within:bg-paper"
         >
-          /
-        </span>
+          <Search class="size-4 flex-none text-ink-3" />
+          <input
+            bind:this={searchInput}
+            type="search"
+            value={searchQuery}
+            oninput={(e) => handleSearchInput(e.currentTarget.value)}
+            placeholder="Cerca un episodi"
+            autocomplete="off"
+            class="flex-1 border-0 bg-transparent px-3 py-3.5 font-serif text-[19px] text-ink outline-none placeholder:italic placeholder:text-ink-3"
+          />
+          <span
+            class="hidden rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 sm:inline"
+          >
+            /
+          </span>
+        </div>
+        <button
+          type="button"
+          onclick={() => (filtersOpen = true)}
+          aria-label="Obre els filtres"
+          class="relative flex flex-none cursor-pointer items-center justify-center border border-rule bg-paper-2 px-4 text-ink-2 transition-colors hover:border-ink hover:text-ink lg:hidden"
+        >
+          <SlidersHorizontal class="size-4" />
+          {#if activeFilterCount > 0}
+            <span
+              class="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-vermillion-deep px-1 font-mono text-[9px] font-semibold leading-none tracking-normal text-paper"
+            >
+              {activeFilterCount}
+            </span>
+          {/if}
+        </button>
       </div>
 
       <!-- Active filter chips -->
