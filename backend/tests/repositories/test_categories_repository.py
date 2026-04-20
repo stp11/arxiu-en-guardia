@@ -52,7 +52,9 @@ class TestCategoriesRepository:
 
         results = db_session.exec(query).all()
         assert len(results) == 1
-        assert results[0].name == "Antiga Grecia"
+        category, count = results[0]
+        assert category.name == "Antiga Grecia"
+        assert count == 1
 
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)

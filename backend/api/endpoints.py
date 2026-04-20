@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from database import get_session
 from dependencies import get_categories_service, get_episodes_service
-from models import Category, CategoryType, EpisodeWithCategories
+from models import CategoryType, CategoryWithCount, EpisodeWithCategories
 from services import CategoriesService, EpisodesService
 
 router = APIRouter()
@@ -53,11 +53,29 @@ CustomPage = CustomizedPage[
 
 
 @router.get(
-    "/categories", tags=["categories"], response_model=CustomPage[Category]
+    "/categories",
+    tags=["categories"],
+    response_model=CustomPage[CategoryWithCount],
 )
 def get_categories(
     service: CategoriesService = Depends(get_categories_service),
     session: Session = Depends(get_session),
     type: CategoryType = Query("", description="Category type"),
 ):
-    return paginate(session, service.get_categories_query(type=type))
+    def transform(rows):
+        return [
+            CategoryWithCount(
+                id=cat.id,
+                slug=cat.slug,
+                name=cat.name,
+                type=cat.type,
+                count=count,
+            )
+            for cat, count in rows
+        ]
+
+    return paginate(
+        session,
+        service.get_categories_query(type=type),
+        transformer=transform,
+    )

@@ -33,6 +33,10 @@ class CategoryBase(SQLModel):
     type: CategoryType | None
 
 
+class CategoryWithCount(CategoryBase):
+    count: int
+
+
 class Category(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     slug: str = Field(unique=True, index=True)

@@ -1,21 +1,20 @@
-<!-- Hero -->
-<section class="mb-4 lg:mb-8 text-center mx-auto max-w-xl">
-  <div class="flex flex-col gap-4 items-center">
-    <span
-      class="text-xs bg-gradient-to-r from-primary-orange to-primary-yellow text-white py-0.5 font-medium px-2 rounded-md"
-    >
-      Arxiu no oficial del programa
-    </span>
+<header
+  class="border-b-[3px] border-double border-rule pt-6 pb-7 text-left md:pt-10 md:pb-8 md:text-center"
+>
+  <span
+    class="inline-block rounded-sm border border-rule bg-paper-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3"
+  >
+    Arxiu no oficial
+  </span>
 
-    <h1
-      class="mt-2 text-pretty font-spline-sans text-2xl leading-[1.15] tracking-tight md:text-4xl lg:text-5xl"
-    >
-      Arxiu de l'En Guàrdia!
-    </h1>
-
-    <p class="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
-      Cerca, filtra i descobreix les batalles, les aventures, les heroïcitats de la història de
-      Catalunya i del món.
-    </p>
-  </div>
-</section>
+  <h1
+    class="mt-3 font-serif font-medium tracking-[-0.005em] text-[clamp(2rem,5vw,3.25rem)] leading-[1.05]"
+  >
+    Arxiu
+    <em class="font-medium italic text-vermillion-deep">En Guàrdia</em>
+  </h1>
+  <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3 md:text-[11px]">
+    Cerca, filtra i descobreix les batalles, les aventures,<br />
+    les heroïcitats de la història de Catalunya i del món.
+  </p>
+</header>
