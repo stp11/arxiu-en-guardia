@@ -342,7 +342,7 @@
     <main class="min-w-0">
       <!-- Search bar -->
       <div
-        class="flex items-center border border-rule bg-white/40 px-3.5 transition-colors focus-within:border-ink focus-within:bg-white/60"
+        class="flex items-center border border-rule bg-paper-2 px-3.5 transition-colors focus-within:border-ink focus-within:bg-paper"
       >
         <Search class="size-4 flex-none text-ink-3" />
         <input
@@ -520,7 +520,7 @@
                         title={CATEGORY_TYPE_LABELS[c.type as CategoryType] ?? ""}
                         onclick={() => toggleCategory(c.type as CategoryType, c.id)}
                         class={cn(
-                          "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-white/40 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
+                          "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
                           {
                             "border-vermillion-deep/30 text-vermillion-deep": c.type === "topic",
                             "border-teal/30 text-teal": c.type === "location",
@@ -559,7 +559,7 @@
                   type="button"
                   onclick={() => (page = Math.max(1, page - 1))}
                   disabled={page === 1}
-                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-white/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   ← Anterior
                 </button>
@@ -571,7 +571,7 @@
                       type="button"
                       onclick={() => (page = p)}
                       class={cn(
-                        "min-w-9 cursor-pointer rounded-sm border border-rule bg-white/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink",
+                        "min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink",
                         p === page && "border-ink bg-ink text-paper hover:bg-ink hover:text-paper"
                       )}>{p}</button
                     >
@@ -581,7 +581,7 @@
                   type="button"
                   onclick={() => (page = Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-white/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   Següent →
                 </button>
@@ -595,7 +595,7 @@
                   pageSize = Number(e.currentTarget.value);
                   page = 1;
                 }}
-                class="cursor-pointer rounded-sm border border-rule bg-white/40 px-2 py-1.5 font-mono text-[11px] uppercase tracking-[0.06em] text-ink focus:border-vermillion focus:outline-none"
+                class="cursor-pointer rounded-sm border border-rule bg-paper-2 px-2 py-1.5 font-mono text-[11px] uppercase tracking-[0.06em] text-ink focus:border-vermillion focus:outline-none"
               >
                 {#each [10, 20, 30, 50] as opt (opt)}
                   <option value={opt}>{opt}</option>

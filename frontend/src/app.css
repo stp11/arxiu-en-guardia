@@ -53,6 +53,54 @@
   --sidebar-ring: var(--vermillion);
 }
 
+.dark {
+  /* Editorial paper palette — dark "evening reading lamp" version */
+  --paper: #15110d;
+  --paper-2: #1e1913;
+  --paper-edge: #2a2219;
+  --ink: #ede2cc;
+  --ink-2: #c9bba0;
+  --ink-3: #8e7f66;
+  --rule: #3a2f22;
+  --vermillion: #f26b43;
+  --vermillion-deep: #e8542d;
+  --amber: #f5a55e;
+  --teal: #63a79f;
+  --plum: #b88fa0;
+  --moss: #a7b583;
+  --character: #d19250;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: #221b14;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-edge);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--paper-edge);
+  --accent-foreground: var(--ink);
+  --destructive: var(--vermillion);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--vermillion);
+
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--vermillion);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--paper-2);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--rule);
+  --sidebar-ring: var(--vermillion);
+
+  color-scheme: dark;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 1px);
   --radius-md: var(--radius);

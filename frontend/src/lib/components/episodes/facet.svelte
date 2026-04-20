@@ -85,7 +85,7 @@
         bind:value={query}
         {placeholder}
         class={cn(
-          "mb-2 w-full rounded-sm border border-rule bg-white/40 px-2 py-1.5 text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
+          "mb-2 w-full rounded-sm border border-rule bg-paper-2 px-2 py-1.5 text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
           clearClass
         )}
       />
