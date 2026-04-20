@@ -350,7 +350,7 @@
           type="search"
           value={searchQuery}
           oninput={(e) => handleSearchInput(e.currentTarget.value)}
-          placeholder="Cerqueu per títol, descripció o personatge…"
+          placeholder="Cerca un episodi"
           autocomplete="off"
           class="flex-1 border-0 bg-transparent px-3 py-3.5 font-serif text-[19px] text-ink outline-none placeholder:italic placeholder:text-ink-3"
         />
