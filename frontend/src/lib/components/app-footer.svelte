@@ -7,7 +7,6 @@
 >
   <div>© {new Date().getFullYear()} · Arxiu fet per oients del programa</div>
   <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-    <span>Programa original de Catalunya Ràdio</span>
     <a
       href="https://github.com/stp11/en-guardia/blob/main/LICENCE.txt"
       target="_blank"
