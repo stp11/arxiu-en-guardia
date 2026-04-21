@@ -56,8 +56,7 @@
 
       <p class="mt-4 font-serif text-lg leading-relaxed">
         Encara hi ha categories que no són del tot acurades i que anirem millorant amb el temps. Si
-        hi detectes errors o tens propostes, escriu-nos al mail que trobaràs a la secció de
-        contacte.
+        hi detectes errors o tens propostes, no dubtis a contactar-nos.
       </p>
     </section>
 
