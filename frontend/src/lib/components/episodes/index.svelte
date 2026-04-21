@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { LoaderCircleIcon, Search, SlidersHorizontal } from "@lucide/svelte";
+  import { LoaderCircleIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import {
@@ -77,6 +77,18 @@
       order = urlOrder;
     }
 
+    const nextCategories = { ...categories };
+    for (const t of ALL_TYPES) {
+      const raw = params.get(t);
+      if (!raw) continue;
+      const ids = raw
+        .split(",")
+        .map((s) => Number.parseInt(s, 10))
+        .filter((n) => !Number.isNaN(n) && n > 0);
+      if (ids.length > 0) nextCategories[t] = ids;
+    }
+    categories = nextCategories;
+
     isInitialized = true;
   });
 
@@ -99,6 +111,11 @@
       if (pageSize !== defaultPageSize) params.set("pageSize", String(pageSize));
       else params.delete("pageSize");
 
+      for (const t of ALL_TYPES) {
+        if (categories[t].length > 0) params.set(t, categories[t].join(","));
+        else params.delete(t);
+      }
+
       const qs = params.toString();
       goto(qs ? `?${qs}` : pageStore.url.pathname, {
         replaceState: true,
@@ -113,6 +130,7 @@
     pageSize; // eslint-disable-line @typescript-eslint/no-unused-expressions
     searchQuery; // eslint-disable-line @typescript-eslint/no-unused-expressions
     order; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    categoriesString; // eslint-disable-line @typescript-eslint/no-unused-expressions
     if (isInitialized) updateUrl();
   });
 
@@ -371,10 +389,12 @@
           <Search class="size-4 flex-none text-ink-3" />
           <input
             bind:this={searchInput}
+            id="search-episodes"
             type="search"
             value={searchQuery}
             oninput={(e) => handleSearchInput(e.currentTarget.value)}
             placeholder="Cerca un episodi"
+            aria-label="Cerca un episodi"
             autocomplete="off"
             class="flex-1 border-0 bg-transparent px-3 py-3.5 font-serif text-[19px] text-ink outline-none placeholder:italic placeholder:text-ink-3"
           />
@@ -418,8 +438,9 @@
                   page = 1;
                 }}
                 class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-                >×</button
               >
+                <XIcon class="size-3" />
+              </button>
             </span>
           {/if}
           {#each ALL_TYPES as type (type)}
@@ -437,12 +458,22 @@
                     aria-label={`Treu ${item.name}`}
                     onclick={() => removeCategory(type, id)}
                     class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-                    >×</button
                   >
+                    <XIcon class="size-3" />
+                  </button>
                 </span>
               {/if}
             {/each}
           {/each}
+          {#if activeFilterCount > 0}
+            <button
+              type="button"
+              onclick={clearAll}
+              class="cursor-pointer border-0 bg-transparent px-1.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3 underline underline-offset-2 hover:text-vermillion-deep"
+            >
+              Esborra els filtres
+            </button>
+          {/if}
         </div>
       {/if}
 

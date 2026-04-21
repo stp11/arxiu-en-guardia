@@ -47,14 +47,14 @@
         al llarg dels anys.
       </p>
 
-      <p class="mt-6 font-serif text-lg leading-relaxed text-ink-2">
+      <p class="mt-6 font-serif text-lg leading-relaxed">
         No es tracta d'un arxiu oficial del programa: és una iniciativa feta per oients per
         facilitar la descoberta i la navegació de més d'un miler d'episodis. La classificació per
         temes, personatges, èpoques i llocs s'ha fet combinant intel·ligència artificial amb una
         feina manual de supervisió i esmena.
       </p>
 
-      <p class="mt-4 font-serif text-lg leading-relaxed text-ink-2">
+      <p class="mt-4 font-serif text-lg leading-relaxed">
         Encara hi ha categories que no són del tot acurades i que anirem millorant amb el temps. Si
         hi detectes errors o tens propostes, escriu-nos al mail que trobaràs a la secció de
         contacte.
