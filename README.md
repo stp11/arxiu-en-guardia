@@ -14,69 +14,37 @@ ni per la Corporació Catalana de Mitjans Audiovisuals (CCMA).
 
 ---
 
-## Backend
+## Desenvolupament
 
-Per iniciar els serveis:
+Requisits: [Docker](https://www.docker.com/) i [Bun](https://bun.sh/).
 
-```bash
-docker-compose up --build -d
-```
-
-Per popular la base de dades amb dades obtingudes dels endpoints públics:
+Copia els fitxers d'entorn i emplena'ls amb els teus valors:
 
 ```bash
-python -m commands.ingest_data
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-Per classificar els episodis afegeix la teva OPENAI_API_KEY i executa:
+Aixeca el backend (FastAPI + Postgres) i el frontend (SvelteKit):
 
 ```bash
-python -m command.classify_episodes --batch_size={batch_size} --max_total={max_total}
+docker compose up -d
+cd frontend && bun install && bun run dev
 ```
 
-## Base de dades
+El frontend queda disponible a `http://localhost:5173` i l'API a
+`http://localhost:8000`. Les migracions s'apliquen automàticament a
+l'arrencada del backend.
 
-Si fas canvis en els models, crea una migració:
+Per poblar la base de dades, classificar episodis amb IA o afegir
+migracions, mira els scripts a `backend/commands/` i les tasques a
+`backend/tasks/`. La classificació requereix `OPENAI_API_KEY`.
 
-```
-alembic revision --autogenerate -m "Nom de la migració"
-```
-
-Aplica-la amb:
-
-```
-alembic upgrade head
-```
-
-## Frontend
-
-Aplicació desenvolupada amb **SvelteKit** configurada com a SPA (Single Page Application).
-
-### Scripts
-
-Instal·lar dependències:
+Les tasques en segon pla (Celery + Redis) estan darrere d'un perfil de
+Docker Compose i no s'aixequen per defecte. Si les necessites:
 
 ```bash
-cd frontend
-bun install
-```
-
-Iniciar el servidor de desenvolupament:
-
-```bash
-bun run dev
-```
-
-Generar el client de l'API (després de canvis al backend):
-
-```bash
-bun run generate-client
-```
-
-Compilar per producció:
-
-```bash
-bun run build
+docker compose --profile celery up -d
 ```
 
 ---
