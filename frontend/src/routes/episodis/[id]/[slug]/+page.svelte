@@ -87,19 +87,6 @@
             ></iframe>
           </div>
         </div>
-        <div
-          class="mt-2.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3"
-        >
-          <span>Font · 3Cat</span>
-          <a
-            href={`https://www.3cat.cat/3cat/${episode.slug}}/audio/${episode.id}/`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-vermillion-deep hover:text-ink"
-          >
-            Ves a la pàgina oficial ↗
-          </a>
-        </div>
       </div>
 
       <!-- Body grid: description + sidebar -->
@@ -185,6 +172,24 @@
               </div>
             </section>
           {/if}
+
+          <section>
+            <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+              <h2
+                class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+              >
+                Font
+              </h2>
+              <a
+                href={`https://www.3cat.cat/3cat/${episode.slug}}/audio/${episode.id}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-vermillion-deep hover:text-ink"
+              >
+                Ves a la pàgina oficial ↗
+              </a>
+            </div>
+          </section>
         </aside>
       </div>
     </article>
