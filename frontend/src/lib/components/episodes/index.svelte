@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { LoaderCircleIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
+  import { Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import {
@@ -315,6 +315,7 @@
       items={topicItems}
       selected={categories.topic}
       onToggle={(id) => toggleCategory("topic", id)}
+      loading={topicsQuery.isLoading}
     />
     <Facet
       label="Llocs"
@@ -323,6 +324,7 @@
       items={locationItems}
       selected={categories.location}
       onToggle={(id) => toggleCategory("location", id)}
+      loading={locationsQuery.isLoading}
     />
     <Facet
       label="Personatges"
@@ -331,6 +333,7 @@
       items={characterItems}
       selected={categories.character}
       onToggle={(id) => toggleCategory("character", id)}
+      loading={charactersQuery.isLoading}
     />
     <Facet
       label="Èpoques"
@@ -339,6 +342,7 @@
       selected={categories.time_period}
       onToggle={(id) => toggleCategory("time_period", id)}
       showSearch={false}
+      loading={timePeriodsQuery.isLoading}
     />
 
     <button
@@ -509,9 +513,59 @@
 
       <!-- Table -->
       {#if queryData.isLoading}
-        <div class="flex justify-center py-20">
-          <LoaderCircleIcon class="size-6 animate-spin text-ink-3" />
-        </div>
+        <table class="w-full border-collapse font-body">
+          <thead>
+            <tr>
+              <th
+                class="border-b border-rule px-3 py-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
+                style="width: 110px"
+              >
+                Emissió
+              </th>
+              <th
+                class="border-b border-rule px-3 py-3 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
+              >
+                Títol &amp; sinopsi
+              </th>
+              <th
+                class="hidden border-b border-rule px-3 py-3 pr-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3 lg:table-cell"
+                style="width: 38%"
+              >
+                Categories
+              </th>
+            </tr>
+          </thead>
+          <tbody aria-busy="true" aria-label="Carregant episodis">
+            {#each Array.from({ length: pageSize }) as _, i (i)}
+              <tr class="animate-pulse border-b border-rule">
+                <td class="px-3 pt-4.5 pb-4 pl-0 align-top" style="width: 110px">
+                  <span class="block h-5 w-8 rounded-sm bg-paper-edge"></span>
+                  <span class="mt-2 block h-2.5 w-14 rounded-sm bg-paper-edge/70"></span>
+                </td>
+                <td class="px-3 py-4 align-top">
+                  <span
+                    class="mb-2 block h-5 rounded-sm bg-paper-edge"
+                    style:width="{45 + ((i * 7) % 40)}%"
+                  ></span>
+                  <span class="mb-1.5 block h-3 w-[92%] rounded-sm bg-paper-edge/70"></span>
+                  <span
+                    class="block h-3 rounded-sm bg-paper-edge/70"
+                    style:width="{60 + ((i * 11) % 25)}%"
+                  ></span>
+                </td>
+                <td class="hidden px-3 py-4 pr-0 align-top lg:table-cell" style="width: 38%">
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="h-5 w-20 rounded-sm bg-paper-edge/80"></span>
+                    <span class="h-5 w-28 rounded-sm bg-paper-edge/80"></span>
+                    {#if i % 3 !== 0}
+                      <span class="h-5 w-16 rounded-sm bg-paper-edge/80"></span>
+                    {/if}
+                  </div>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       {:else if items.length === 0}
         <div class="px-5 py-20 text-center text-ink-3">
           <h2 class="mb-2 font-serif text-3xl font-medium italic text-ink-2">

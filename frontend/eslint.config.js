@@ -31,6 +31,10 @@ export default defineConfig(
       "no-undef": "off",
       // In SvelteKit 2, regular anchor tags with href work fine for internal navigation
       "svelte/no-navigation-without-resolve": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   {

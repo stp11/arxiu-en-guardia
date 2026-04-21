@@ -16,6 +16,7 @@
     cap?: number;
     placeholder?: string;
     showSearch?: boolean;
+    loading?: boolean;
   };
 
   let {
@@ -27,6 +28,7 @@
     cap = 8,
     showSearch = true,
     placeholder,
+    loading = false,
   }: FacetProps = $props();
 
   let collapsed = $state(false);
@@ -95,7 +97,28 @@
       />
     {/if}
 
-    {#if visible.length === 0}
+    {#if loading && items.length === 0}
+      <ul
+        class="m-0 flex list-none flex-col gap-1 p-0"
+        aria-busy="true"
+        aria-label={`Carregant ${label.toLowerCase()}`}
+      >
+        {#each Array.from({ length: cap }) as _, i (i)}
+          <li class="animate-pulse">
+            <div class="flex items-center justify-between px-1.5 py-1">
+              <span class="flex items-center gap-2">
+                <span class="size-2 flex-none rounded-full bg-paper-edge/80"></span>
+                <span
+                  class="block h-3.5 rounded-sm bg-paper-edge"
+                  style="width: {6 + ((i * 1.3) % 5)}rem"
+                ></span>
+              </span>
+              <span class="block h-2.5 w-3 rounded-sm bg-paper-edge/70"></span>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {:else if visible.length === 0}
       <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
     {:else}
       <ul class="m-0 flex list-none flex-col gap-1 p-0">
