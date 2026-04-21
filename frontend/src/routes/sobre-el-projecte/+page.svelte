@@ -104,8 +104,7 @@
           rel="noopener noreferrer"
           class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
           >Buy Me a Coffee</a
-        >. Els ingressos es destinen íntegrament a cobrir els costos d'infraestructura que mantenen
-        l'arxiu en funcionament.
+        >.
       </p>
     </section>
   </article>
