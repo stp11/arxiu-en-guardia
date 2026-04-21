@@ -4,6 +4,46 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/CormorantGaramond.ttf") format("truetype-variations");
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/CormorantGaramond-Italic.ttf") format("truetype-variations");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/Lora.ttf") format("truetype-variations");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Lora-Italic.ttf") format("truetype-variations");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/JetBrainsMono.ttf") format("truetype-variations");
+}
+
 :root {
   --radius: 0.125rem;
 
@@ -13,7 +53,7 @@
   --paper-edge: #d9cdb5;
   --ink: #1f1a14;
   --ink-2: #4a3f30;
-  --ink-3: #7a6b54;
+  --ink-3: #6e5f48;
   --rule: #c8b994;
   --vermillion: #e8542d;
   --vermillion-deep: #c93f1b;

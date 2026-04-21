@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { ChevronDown } from "@lucide/svelte";
+
   import type { CategoryType } from "client";
 
   import { CATEGORY_TYPE_COLORS, cn } from "lib/utils";
@@ -74,16 +76,18 @@
     <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>
     <span
       class={cn("font-mono text-[11px] text-ink-3 transition-transform", collapsed && "-rotate-90")}
-      aria-hidden="true">▾</span
+      aria-hidden="true"><ChevronDown class="size-3" /></span
     >
   </button>
 
   {#if !collapsed}
     {#if showSearch}
       <input
+        id={`facet-search-${type}`}
         type="search"
         bind:value={query}
         {placeholder}
+        aria-label={placeholder ?? `Cerca ${label.toLowerCase()}`}
         class={cn(
           "mb-2 w-full rounded-sm border border-rule bg-paper-2 px-2 py-1.5 text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
           clearClass
@@ -91,36 +95,39 @@
       />
     {/if}
 
-    <div class="flex flex-col gap-1">
-      {#if visible.length === 0}
-        <div class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</div>
-      {:else}
+    {#if visible.length === 0}
+      <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
+    {:else}
+      <ul class="m-0 flex list-none flex-col gap-1 p-0">
         {#each visible as item (item.id)}
           {@const active = selectedSet.has(item.id)}
-          <button
-            type="button"
-            onclick={() => onToggle(item.id)}
-            class={cn(
-              "group flex cursor-pointer items-center justify-between rounded-sm px-1.5 py-1 text-[14px] text-ink-2 transition-colors",
-              "hover:bg-black/5 hover:text-ink",
-              active && "bg-vermillion/10 text-ink"
-            )}
-          >
-            <span class="flex items-center gap-2 text-left">
-              <span
-                class="size-2 flex-none rounded-full"
-                style:background={swatch}
-                style:box-shadow={active ? `0 0 0 2px var(--paper), 0 0 0 3px ${swatch}` : "none"}
-              ></span>
-              <span class="line-clamp-1">{item.name}</span>
-            </span>
-            <span class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
-              >{item.count}</span
+          <li>
+            <button
+              type="button"
+              aria-pressed={active}
+              onclick={() => onToggle(item.id)}
+              class={cn(
+                "group flex w-full cursor-pointer items-center justify-between rounded-sm px-1.5 py-1 text-[14px] text-ink-2 transition-colors",
+                "hover:bg-black/5 hover:text-ink",
+                active && "bg-vermillion/10 text-ink"
+              )}
             >
-          </button>
+              <span class="flex items-center gap-2 text-left">
+                <span
+                  class="size-2 flex-none rounded-full"
+                  style:background={swatch}
+                  style:box-shadow={active ? `0 0 0 2px var(--paper), 0 0 0 3px ${swatch}` : "none"}
+                ></span>
+                <span class="line-clamp-1">{item.name}</span>
+              </span>
+              <span class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
+                >{item.count}</span
+              >
+            </button>
+          </li>
         {/each}
-      {/if}
-    </div>
+      </ul>
+    {/if}
 
     {#if moreLabel && !query.trim()}
       <button

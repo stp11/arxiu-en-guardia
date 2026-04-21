@@ -13,8 +13,8 @@
     Arxiu
     <em class="font-medium italic text-vermillion-deep">En Guàrdia</em>
   </h1>
-  <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3 md:text-[11px]">
+  <h2 class="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3 md:text-[11px]">
     Cerca, filtra i descobreix les batalles, les aventures,<br />
     les heroïcitats de la història de Catalunya i del món.
-  </p>
+  </h2>
 </header>
