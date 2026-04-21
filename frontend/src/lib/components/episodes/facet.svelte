@@ -36,7 +36,6 @@
   let query = $state("");
 
   const swatch = $derived(CATEGORY_TYPE_COLORS[type]);
-  const clearClass = $derived(`search-clear-${type.replace(/_/g, "-")}`);
   const selectedSet = $derived(new Set(selected));
   const itemsById = $derived(new Map(items.map((i) => [i.id, i])));
 
@@ -92,7 +91,7 @@
         aria-label={placeholder ?? `Cerca ${label.toLowerCase()}`}
         class={cn(
           "mb-2 w-full rounded-sm border border-rule bg-paper-2 px-2 py-1.5 text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
-          clearClass
+          "facet-search-clear"
         )}
       />
     {/if}
@@ -165,27 +164,8 @@
 </div>
 
 <style>
-  :global(input[type="search"].search-clear-topic::-webkit-search-cancel-button) {
+  input[type="search"].facet-search-clear::-webkit-search-cancel-button {
     width: 0.75rem;
     height: 0.75rem;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23c93f1b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%206%206%2018%22%2F%3E%3Cpath%20d%3D%22m6%206%2012%2012%22%2F%3E%3C%2Fsvg%3E");
-  }
-
-  :global(input[type="search"].search-clear-location::-webkit-search-cancel-button) {
-    width: 0.75rem;
-    height: 0.75rem;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%232e5e58%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%206%206%2018%22%2F%3E%3Cpath%20d%3D%22m6%206%2012%2012%22%2F%3E%3C%2Fsvg%3E");
-  }
-
-  :global(input[type="search"].search-clear-character::-webkit-search-cancel-button) {
-    width: 0.75rem;
-    height: 0.75rem;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23a25c12%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%206%206%2018%22%2F%3E%3Cpath%20d%3D%22m6%206%2012%2012%22%2F%3E%3C%2Fsvg%3E");
-  }
-
-  :global(input[type="search"].search-clear-time-period::-webkit-search-cancel-button) {
-    width: 0.75rem;
-    height: 0.75rem;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235b3a4a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%206%206%2018%22%2F%3E%3Cpath%20d%3D%22m6%206%2012%2012%22%2F%3E%3C%2Fsvg%3E");
   }
 </style>
