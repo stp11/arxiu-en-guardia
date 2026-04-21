@@ -3,6 +3,7 @@
 
   import type { CategoryType } from "client";
 
+  import AppLogo from "lib/components/app-logo.svelte";
   import { CATEGORY_TYPE_LABELS_SINGULAR, cn, hasDescription } from "lib/utils";
 
   const { data } = $props();
@@ -42,16 +43,7 @@
     <div
       class="flex items-center justify-between gap-4 border-b-[3px] border-double border-rule pt-5 pb-4"
     >
-      <a
-        href="/"
-        class="inline-block font-serif leading-[0.95] tracking-[-0.005em] text-ink"
-        aria-label="Arxiu En Guàrdia"
-      >
-        <span class="block text-[15px] font-medium md:text-base">Arxiu</span>
-        <span class="block text-xl font-medium italic text-vermillion-deep md:text-2xl">
-          En&nbsp;Guàrdia
-        </span>
-      </a>
+      <AppLogo />
       <a
         href="/"
         class="inline-flex items-center gap-2 rounded-sm border border-ink bg-ink px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-paper transition-colors hover:border-vermillion-deep hover:bg-vermillion-deep"
@@ -94,19 +86,6 @@
               class="absolute inset-0 size-full border-0"
             ></iframe>
           </div>
-        </div>
-        <div
-          class="mt-2.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3"
-        >
-          <span>Font · 3Cat</span>
-          <a
-            href={`https://www.3cat.cat/3cat/${episode.slug}}/audio/${episode.id}/`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-vermillion-deep hover:text-ink"
-          >
-            Ves a la pàgina oficial ↗
-          </a>
         </div>
       </div>
 
@@ -193,6 +172,24 @@
               </div>
             </section>
           {/if}
+
+          <section>
+            <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+              <h2
+                class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+              >
+                Font
+              </h2>
+              <a
+                href={`https://www.3cat.cat/3cat/${episode.slug}}/audio/${episode.id}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-vermillion-deep hover:text-ink"
+              >
+                Ves a la pàgina oficial ↗
+              </a>
+            </div>
+          </section>
         </aside>
       </div>
     </article>
