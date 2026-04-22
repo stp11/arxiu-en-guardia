@@ -221,8 +221,8 @@
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getNextPageParam = (lastPage: any) => {
-    const data = lastPage.data;
-    if (data.page && data.pages && data.page < data.pages) return data.page + 1;
+    const data = lastPage?.data;
+    if (data?.page && data?.pages && data.page < data.pages) return data.page + 1;
     return undefined;
   };
 
