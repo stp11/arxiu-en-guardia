@@ -69,3 +69,40 @@ export const hasDescription = (description: string | null | undefined) => {
   const trimmedDescription = description.trim();
   return trimmedDescription !== "" && trimmedDescription.toLocaleLowerCase() !== "en guàrdia";
 };
+
+export type HighlightChunk = { text: string; match: boolean };
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const highlightMatches = (text: string, query: string): HighlightChunk[] => {
+  if (!text) return [];
+  const q = query.trim();
+  if (q.length < 2) return [{ text, match: false }];
+
+  const re = new RegExp(escapeRegExp(q), "gi");
+  const chunks: HighlightChunk[] = [];
+  let lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > lastIndex) chunks.push({ text: text.slice(lastIndex, m.index), match: false });
+    chunks.push({ text: m[0], match: true });
+    lastIndex = m.index + m[0].length;
+    if (m[0].length === 0) re.lastIndex++;
+  }
+  if (lastIndex < text.length) chunks.push({ text: text.slice(lastIndex), match: false });
+  return chunks;
+};
+
+export const extractSnippet = (text: string, query: string, before = 40, after = 200): string => {
+  if (!text) return "";
+  const q = query.trim();
+  if (q.length < 2) return text;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return text;
+  const start = Math.max(0, idx - before);
+  const end = Math.min(text.length, idx + q.length + after);
+  let snippet = text.slice(start, end);
+  if (start > 0) snippet = "..." + snippet;
+  if (end < text.length) snippet = snippet + "...";
+  return snippet;
+};

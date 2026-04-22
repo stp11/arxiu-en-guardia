@@ -12,16 +12,19 @@ class TestEpisodesRepository:
             Episode(
                 id=1,
                 title="Episodi sobre Grecia",
+                description="L'antiga Atenes i la democràcia.",
                 published_at=datetime(2025, 1, 1),
             ),
             Episode(
                 id=2,
                 title="Episodi sobre la Guerra Civil",
+                description="Els fronts de Catalunya durant el conflicte.",
                 published_at=datetime(2025, 1, 2),
             ),
             Episode(
                 id=3,
                 title="Episodi sobre la Guerra del Vietnam",
+                description="Saigon i l'ofensiva del Tet.",
                 published_at=datetime(2025, 1, 3),
             ),
         ]
@@ -37,6 +40,17 @@ class TestEpisodesRepository:
         assert len(results) == 2
         assert results[0].title == "Episodi sobre la Guerra Civil"
         assert results[1].title == "Episodi sobre la Guerra del Vietnam"
+
+    def test_repository_search_matches_description(self, db_session: Session):
+        db_session.add_all(self.episodes)
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        query = repo.get_episodes_query(search="Saigon", order="asc")
+        results = db_session.exec(query).all()
+
+        assert len(results) == 1
+        assert results[0].title == "Episodi sobre la Guerra del Vietnam"
 
     def test_repository_ordering(self, db_session: Session):
         db_session.add_all(self.episodes)
@@ -82,7 +96,9 @@ class TestEpisodesRepository:
 
         repo = EpisodesRepository(session=db_session)
         query = repo.get_episodes_query(
-            search=None, order="asc", categories=[1, 2]
+            search=None,
+            order="asc",
+            categories=["guerra-civil", "guerra-del-vietnam"],
         )
         results = db_session.exec(query).all()
 

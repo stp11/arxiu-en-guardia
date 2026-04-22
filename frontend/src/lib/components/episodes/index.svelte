@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
+  import { Loader2, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import {
@@ -16,13 +16,21 @@
 
   import AppHero from "lib/components/app-hero.svelte";
   import * as Sheet from "lib/components/ui/sheet";
-  import { CATEGORY_TYPE_COLORS, CATEGORY_TYPE_LABELS, cn, hasDescription } from "lib/utils";
+  import {
+    CATEGORY_TYPE_COLORS,
+    CATEGORY_TYPE_LABELS,
+    cn,
+    extractSnippet,
+    hasDescription,
+    highlightMatches,
+  } from "lib/utils";
 
   import Facet from "./facet.svelte";
 
   const initialPage = 1;
   const defaultPageSize = 20;
   const maxPageSize = 50;
+  const minSearchChars = 3;
 
   const ALL_TYPES: CategoryType[] = ["topic", "location", "character", "time_period"];
   const MONTHS_CA = [
@@ -40,10 +48,11 @@
     "des",
   ];
 
+  let searchText = $state("");
   let searchQuery = $state("");
   let page = $state(initialPage);
   let pageSize = $state(defaultPageSize);
-  let categories = $state<Record<CategoryType, number[]>>({
+  let categories = $state<Record<CategoryType, string[]>>({
     topic: [],
     character: [],
     location: [],
@@ -70,7 +79,10 @@
     }
 
     const urlSearch = params.get("search");
-    if (urlSearch) searchQuery = urlSearch;
+    if (urlSearch && urlSearch.trim().length >= minSearchChars) {
+      searchText = urlSearch;
+      searchQuery = urlSearch.trim();
+    }
 
     const urlOrder = params.get("order");
     if (urlOrder === "asc" || urlOrder === "desc") {
@@ -81,11 +93,11 @@
     for (const t of ALL_TYPES) {
       const raw = params.get(t);
       if (!raw) continue;
-      const ids = raw
+      const slugs = raw
         .split(",")
-        .map((s) => Number.parseInt(s, 10))
-        .filter((n) => !Number.isNaN(n) && n > 0);
-      if (ids.length > 0) nextCategories[t] = ids;
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      if (slugs.length > 0) nextCategories[t] = slugs;
     }
     categories = nextCategories;
 
@@ -136,30 +148,36 @@
 
   let searchTimer: ReturnType<typeof setTimeout> | null = null;
   const handleSearchInput = (value: string) => {
+    searchText = value;
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      searchQuery = value;
-      page = 1;
+      const trimmed = value.trim();
+      const next = trimmed.length >= minSearchChars ? trimmed : "";
+      if (next !== searchQuery) {
+        searchQuery = next;
+        page = 1;
+      }
     }, 300);
   };
 
-  const toggleCategory = (type: CategoryType, id: number) => {
+  const toggleCategory = (type: CategoryType, slug: string) => {
     const current = categories[type];
-    const exists = current.includes(id);
+    const exists = current.includes(slug);
     categories = {
       ...categories,
-      [type]: exists ? current.filter((c) => c !== id) : [...current, id],
+      [type]: exists ? current.filter((c) => c !== slug) : [...current, slug],
     };
     page = 1;
   };
 
-  const removeCategory = (type: CategoryType, id: number) => {
-    categories = { ...categories, [type]: categories[type].filter((c) => c !== id) };
+  const removeCategory = (type: CategoryType, slug: string) => {
+    categories = { ...categories, [type]: categories[type].filter((c) => c !== slug) };
     page = 1;
   };
 
   const clearAll = () => {
     categories = { topic: [], character: [], location: [], time_period: [] };
+    searchText = "";
     searchQuery = "";
     if (searchInput) searchInput.value = "";
     page = 1;
@@ -186,6 +204,20 @@
   const items = $derived(queryData.data?.data?.items ?? []);
   const total = $derived(queryData.data?.data?.total ?? 0);
   const totalPages = $derived(queryData.data?.data?.pages ?? 0);
+
+  const processedItems = $derived(
+    items.map((ep) => {
+      const desc = ep.description ?? "";
+      const descShown = hasDescription(desc);
+      const snippet = descShown ? extractSnippet(desc, searchQuery) : "";
+      return {
+        ep,
+        titleChunks: highlightMatches(ep.title, searchQuery),
+        descChunks: descShown ? highlightMatches(snippet, searchQuery) : [],
+        descShown,
+      };
+    })
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getNextPageParam = (lastPage: any) => {
@@ -232,8 +264,8 @@
 
   const mapItems = (cats: Category[]) =>
     cats
-      .filter((c) => c.id != null)
-      .map((c) => ({ id: c.id as number, name: c.name, count: c.count ?? 0 }))
+      .filter((c) => !!c.slug)
+      .map((c) => ({ slug: c.slug, name: c.name, count: c.count ?? 0 }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "ca"));
 
   const topicItems = $derived(
@@ -256,8 +288,8 @@
     time_period: timePeriodItems,
   });
 
-  const findItem = (type: CategoryType, id: number) =>
-    allCategoryItems[type].find((i) => i.id === id);
+  const findItem = (type: CategoryType, slug: string) =>
+    allCategoryItems[type].find((i) => i.slug === slug);
 
   const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
   const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
@@ -272,16 +304,16 @@
   };
 
   const pageNumbers = $derived.by(() => {
-    const out: (number | "…")[] = [];
+    const out: (number | "...")[] = [];
     const last = totalPages;
     const p = page;
     if (last <= 7) {
       for (let i = 1; i <= last; i++) out.push(i);
     } else {
       out.push(1);
-      if (p > 3) out.push("…");
+      if (p > 3) out.push("...");
       for (let i = Math.max(2, p - 1); i <= Math.min(last - 1, p + 1); i++) out.push(i);
-      if (p < last - 2) out.push("…");
+      if (p < last - 2) out.push("...");
       out.push(last);
     }
     return out;
@@ -310,29 +342,29 @@
   {#snippet facetPanel()}
     <Facet
       label="Temes"
-      placeholder="Cerca un tema…"
+      placeholder="Cerca un tema..."
       type="topic"
       items={topicItems}
       selected={categories.topic}
-      onToggle={(id) => toggleCategory("topic", id)}
+      onToggle={(slug) => toggleCategory("topic", slug)}
       loading={topicsQuery.isLoading}
     />
     <Facet
       label="Llocs"
-      placeholder="Cerca un lloc…"
+      placeholder="Cerca un lloc..."
       type="location"
       items={locationItems}
       selected={categories.location}
-      onToggle={(id) => toggleCategory("location", id)}
+      onToggle={(slug) => toggleCategory("location", slug)}
       loading={locationsQuery.isLoading}
     />
     <Facet
       label="Personatges"
-      placeholder="Cerca un personatge…"
+      placeholder="Cerca un personatge..."
       type="character"
       items={characterItems}
       selected={categories.character}
-      onToggle={(id) => toggleCategory("character", id)}
+      onToggle={(slug) => toggleCategory("character", slug)}
       loading={charactersQuery.isLoading}
     />
     <Facet
@@ -340,7 +372,7 @@
       type="time_period"
       items={timePeriodItems}
       selected={categories.time_period}
-      onToggle={(id) => toggleCategory("time_period", id)}
+      onToggle={(slug) => toggleCategory("time_period", slug)}
       showSearch={false}
       loading={timePeriodsQuery.isLoading}
     />
@@ -378,7 +410,7 @@
     <!-- Desktop sidebar -->
     <aside
       aria-label="Filtres"
-      class="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
+      class="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2 lg:pl-1"
     >
       {@render facetPanel()}
     </aside>
@@ -390,15 +422,19 @@
         <div
           class="flex flex-1 items-center border border-rule bg-paper-2 px-3.5 transition-colors focus-within:border-ink focus-within:bg-paper"
         >
-          <Search class="size-4 flex-none text-ink-3" />
+          {#if queryData.isFetching && !queryData.isLoading}
+            <Loader2 class="size-4 flex-none animate-spin text-ink-3" aria-label="Cercant" />
+          {:else}
+            <Search class="size-4 flex-none text-ink-3" />
+          {/if}
           <input
             bind:this={searchInput}
             id="search-episodes"
             type="search"
-            value={searchQuery}
+            value={searchText}
             oninput={(e) => handleSearchInput(e.currentTarget.value)}
-            placeholder="Cerca un episodi"
-            aria-label="Cerca un episodi"
+            placeholder="Cerca per títol i descripció"
+            aria-label="Cerca per títol i descripció"
             autocomplete="off"
             class="flex-1 border-0 bg-transparent px-3 py-3.5 font-serif text-[19px] text-ink outline-none placeholder:italic placeholder:text-ink-3"
           />
@@ -425,6 +461,15 @@
         </button>
       </div>
 
+      {#if searchText.trim().length > 0 && searchText.trim().length < minSearchChars}
+        <p
+          class="mt-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3"
+          aria-live="polite"
+        >
+          Cal un mínim de {minSearchChars} lletres
+        </p>
+      {/if}
+
       <!-- Active filter chips -->
       {#if hasFilters}
         <div class="mt-3 flex flex-wrap gap-1.5">
@@ -437,6 +482,7 @@
                 type="button"
                 aria-label="Esborra cerca"
                 onclick={() => {
+                  searchText = "";
                   searchQuery = "";
                   if (searchInput) searchInput.value = "";
                   page = 1;
@@ -448,8 +494,8 @@
             </span>
           {/if}
           {#each ALL_TYPES as type (type)}
-            {#each categories[type] as id (`${type}-${id}`)}
-              {@const item = findItem(type, id)}
+            {#each categories[type] as slug (`${type}-${slug}`)}
+              {@const item = findItem(type, slug)}
               {#if item}
                 <span
                   class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
@@ -460,7 +506,7 @@
                   <button
                     type="button"
                     aria-label={`Treu ${item.name}`}
-                    onclick={() => removeCategory(type, id)}
+                    onclick={() => removeCategory(type, slug)}
                     class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
                   >
                     <XIcon class="size-3" />
@@ -503,7 +549,7 @@
                 page = 1;
               }}
               class={cn(
-                "cursor-pointer border-0 bg-transparent p-0 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3 hover:text-ink",
+                "cursor-pointer border-0 bg-transparent p-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3 hover:text-ink",
                 order === opt.id && "border-b border-vermillion pb-0.5 text-ink"
               )}>{opt.label}</button
             >
@@ -604,11 +650,11 @@
             </tr>
           </thead>
           <tbody>
-            {#each items as ep (ep.id)}
+            {#each processedItems as p (p.ep.id)}
+              {@const ep = p.ep}
               {@const d = ep.published_at ? fmtDate(ep.published_at) : null}
               <tr
-                class="group cursor-pointer border-b border-rule transition-colors hover:bg-vermillion/5"
-                onclick={() => goto(`/episodis/${ep.id}/${ep.slug}`)}
+                class="group relative border-b border-rule transition-colors hover:bg-vermillion/5"
               >
                 <td
                   class="px-3 pt-4.5 pb-4 pl-0 align-top font-mono text-[11px] whitespace-nowrap text-ink-2"
@@ -624,26 +670,33 @@
                   {/if}
                 </td>
                 <td class="px-3 py-4 align-top">
-                  <span
-                    class="mb-1.5 block font-serif text-[21px] leading-tight font-semibold text-ink transition-colors group-hover:text-vermillion-deep"
+                  <a
+                    href={`/episodis/${ep.id}/${ep.slug}`}
+                    class="row-link mb-1.5 block font-serif text-[21px] leading-tight font-semibold text-ink no-underline transition-colors group-hover:text-vermillion-deep before:absolute before:inset-0 before:content-['']"
                   >
-                    {ep.title}
-                  </span>
-                  <span class="line-clamp-2 text-[13.5px] leading-snug text-ink-2">
-                    {hasDescription(ep.description) ? ep.description : ""}
-                  </span>
+                    {#each p.titleChunks as c, i (i)}
+                      {#if c.match}
+                        <mark class="bg-vermillion/20 px-0.5 text-ink">{c.text}</mark>
+                      {:else}{c.text}{/if}
+                    {/each}
+                  </a>
+                  {#if p.descShown}
+                    <span class="line-clamp-2 text-[13.5px] leading-snug text-ink-2">
+                      {#each p.descChunks as c, i (i)}
+                        {#if c.match}
+                          <mark class="bg-vermillion/20 px-0.5 text-ink">{c.text}</mark>
+                        {:else}{c.text}{/if}
+                      {/each}
+                    </span>
+                  {/if}
                 </td>
-                <td
-                  class="hidden px-3 py-4 pr-0 align-top lg:table-cell"
-                  style="width: 38%"
-                  onclick={(e) => e.stopPropagation()}
-                >
-                  <div class="flex flex-wrap gap-1.5">
+                <td class="hidden px-3 py-4 pr-0 align-top lg:table-cell" style="width: 38%">
+                  <div class="relative z-10 flex flex-wrap gap-1.5">
                     {#each ep.categories ?? [] as c (c.id)}
                       <button
                         type="button"
                         title={CATEGORY_TYPE_LABELS[c.type as CategoryType] ?? ""}
-                        onclick={() => toggleCategory(c.type as CategoryType, c.id)}
+                        onclick={() => toggleCategory(c.type as CategoryType, c.slug)}
                         class={cn(
                           "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
                           {
@@ -689,8 +742,8 @@
                   ← Anterior
                 </button>
                 {#each pageNumbers as p, i (i)}
-                  {#if p === "…"}
-                    <span class="px-1.5 text-ink-3">…</span>
+                  {#if p === "..."}
+                    <span class="px-1.5 text-ink-3">...</span>
                   {:else}
                     <button
                       type="button"
@@ -733,3 +786,12 @@
     </main>
   </div>
 </div>
+
+<style>
+  .row-link:focus-visible {
+    outline: none;
+  }
+  .row-link:focus-visible::before {
+    outline: 1px solid var(--color-vermillion);
+  }
+</style>

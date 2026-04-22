@@ -5,14 +5,14 @@
 
   import { CATEGORY_TYPE_COLORS, cn } from "lib/utils";
 
-  type FacetItem = { id: number; name: string; count: number };
+  type FacetItem = { slug: string; name: string; count: number };
 
   type FacetProps = {
     label: string;
     type: CategoryType;
     items: FacetItem[];
-    selected: number[];
-    onToggle: (id: number) => void;
+    selected: string[];
+    onToggle: (slug: string) => void;
     cap?: number;
     placeholder?: string;
     showSearch?: boolean;
@@ -37,7 +37,7 @@
 
   const swatch = $derived(CATEGORY_TYPE_COLORS[type]);
   const selectedSet = $derived(new Set(selected));
-  const itemsById = $derived(new Map(items.map((i) => [i.id, i])));
+  const itemsBySlug = $derived(new Map(items.map((i) => [i.slug, i])));
 
   const filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
@@ -49,11 +49,11 @@
     const showAll = !!query.trim() || expanded;
     if (showAll) return filtered;
     const head = filtered.slice(0, cap);
-    const headIds = new Set(head.map((i) => i.id));
+    const headSlugs = new Set(head.map((i) => i.slug));
     const tail: typeof items = [];
-    for (const id of selected) {
-      const item = itemsById.get(id);
-      if (item && !headIds.has(id)) tail.push(item);
+    for (const slug of selected) {
+      const item = itemsBySlug.get(slug);
+      if (item && !headSlugs.has(slug)) tail.push(item);
     }
     return tail.length ? [...head, ...tail] : head;
   });
@@ -68,11 +68,11 @@
   );
 </script>
 
-<div class="mb-6">
+<div class="mb-6 mt-1">
   <button
     type="button"
     onclick={() => (collapsed = !collapsed)}
-    class="mb-2 flex w-full cursor-pointer items-baseline justify-between border-b border-rule pb-1.5 text-left select-none"
+    class="mb-2 flex w-full cursor-pointer items-baseline justify-between border-b border-rule py-1.5 text-left select-none"
   >
     <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>
     <span
@@ -121,13 +121,13 @@
       <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
     {:else}
       <ul class="m-0 flex list-none flex-col gap-1 p-0">
-        {#each visible as item (item.id)}
-          {@const active = selectedSet.has(item.id)}
+        {#each visible as item (item.slug)}
+          {@const active = selectedSet.has(item.slug)}
           <li>
             <button
               type="button"
               aria-pressed={active}
-              onclick={() => onToggle(item.id)}
+              onclick={() => onToggle(item.slug)}
               class={cn(
                 "group flex w-full cursor-pointer items-center justify-between rounded-sm px-1.5 py-1 text-[14px] text-ink-2 transition-colors",
                 "hover:bg-black/5 hover:text-ink",

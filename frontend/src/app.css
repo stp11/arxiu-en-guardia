@@ -194,7 +194,13 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  *:focus {
+    outline: none;
+  }
+  *:focus-visible {
+    outline: 1px solid var(--color-vermillion);
   }
   body {
     @apply bg-background text-foreground font-body min-h-dvh;

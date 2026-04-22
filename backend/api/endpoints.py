@@ -22,7 +22,7 @@ def get_episodes(
     search: str = "",
     order: str = "desc",
     categories: str = Query(
-        "", description="Comma-separated list of category IDs"
+        "", description="Comma-separated list of category slugs"
     ),
 ):
     query = service.get_episodes_query(
