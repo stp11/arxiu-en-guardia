@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy import Select, func
+from sqlalchemy import Select, func, or_
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -82,7 +82,9 @@ class IEpisodesRepository(ABC):
         pass
 
     @abstractmethod
-    def get_episodes_query(self, search: str | None, order: str) -> Select:
+    def get_episodes_query(
+        self, search: str | None, order: str, categories: list[str] = []
+    ) -> Select:
         pass
 
     @abstractmethod
@@ -101,13 +103,18 @@ class EpisodesRepository(IEpisodesRepository):
         self.db_session = session
 
     def get_episodes_query(
-        self, search: str | None, order: str, categories: list[int] = []
+        self, search: str | None, order: str, categories: list[str] = []
     ) -> Select:
         query = select(Episode).options(selectinload(Episode.categories))
 
         if search and search.strip():
             search_term = f"%{search.strip()}%"
-            query = query.where(Episode.title.ilike(search_term))
+            query = query.where(
+                or_(
+                    Episode.title.ilike(search_term),
+                    Episode.description.ilike(search_term),
+                )
+            )
 
         if order == "desc":
             query = query.order_by(Episode.published_at.desc())
@@ -115,8 +122,10 @@ class EpisodesRepository(IEpisodesRepository):
             query = query.order_by(Episode.published_at.asc())
 
         if len(categories) > 0:
-            query = query.join(EpisodeCategory).where(
-                EpisodeCategory.category_id.in_(categories)
+            query = (
+                query.join(EpisodeCategory)
+                .join(Category)
+                .where(Category.slug.in_(categories))
             )
 
         return query

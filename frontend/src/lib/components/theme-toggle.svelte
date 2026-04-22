@@ -17,10 +17,9 @@
 </script>
 
 <button
-  type="button"
   onclick={toggle}
   aria-label={isDark ? "Activa el tema clar" : "Activa el tema fosc"}
-  class="cursor-pointer rounded-sm border border-rule bg-paper-2 p-1.5 text-ink-2 transition-colors hover:border-ink hover:text-ink"
+  class="text-ink-2 p-1"
 >
   {#if isDark}
     <SunIcon class="size-4" />

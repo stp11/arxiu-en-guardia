@@ -22,8 +22,10 @@ class TestEpisodesService:
         )
 
     def test_episodes_service_calls_repository_with_categories(self):
-        result = self.service._parse_categories(categories_str="1,2,3")
-        assert result == [1, 2, 3]
+        result = self.service._parse_categories(
+            categories_str="guerra-civil, roma-antiga ,edat-mitjana"
+        )
+        assert result == ["guerra-civil", "roma-antiga", "edat-mitjana"]
 
     def test_episodes_service_get_episode_by_id(self):
         self.service.get_episode_by_id(id=1)

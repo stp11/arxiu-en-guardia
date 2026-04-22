@@ -1,5 +1,5 @@
 <header
-  class="border-b-[3px] border-double border-rule pt-6 pb-7 text-left md:pt-10 md:pb-8 md:text-center"
+  class="border-b-[3px] border-double border-rule pt-4 pb-7 text-left md:pt-8 md:pb-8 md:text-center"
 >
   <span
     class="inline-block rounded-sm border border-rule bg-paper-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3"

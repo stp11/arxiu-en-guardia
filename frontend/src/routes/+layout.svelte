@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import Footer from "$lib/components/app-footer.svelte";
-  import ThemeToggle from "$lib/components/theme-toggle.svelte";
+  import Nav from "$lib/components/app-nav.svelte";
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
   import "src/routes/layout.css";
 
@@ -21,9 +21,7 @@
 
 <QueryClientProvider client={queryClient}>
   <div class="relative z-[2] flex min-h-dvh flex-col">
-    <div class="fixed top-3 right-3 z-10">
-      <ThemeToggle />
-    </div>
+    <Nav />
     <main class="flex-1">
       {@render children()}
     </main>

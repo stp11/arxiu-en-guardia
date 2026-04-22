@@ -40,28 +40,16 @@ class EpisodesService:
     def get_episode_by_id(self, id: int) -> Episode:
         return self.episodes_repository.get_episode_by_id(id)
 
-    def _parse_categories(self, categories_str: str) -> list[int]:
+    def _parse_categories(self, categories_str: str) -> list[str]:
         """
-        Parse comma-separated category IDs string into a list of integers.
+        Parse comma-separated category slugs string into a list.
         """
-        category_list = []
-
         if not categories_str or not categories_str.strip():
-            return category_list
+            return []
 
-        try:
-            category_list = [
-                int(cat.strip())
-                for cat in categories_str.split(",")
-                if cat.strip()
-            ]
-        except ValueError as e:
-            logger.warning(
-                f"Failed to parse categories '{categories_str}': {e}"
-            )
-            category_list = []
-
-        return category_list
+        return [
+            cat.strip() for cat in categories_str.split(",") if cat.strip()
+        ]
 
     def create_episode_from_api_data(self, data: dict) -> Episode:
         """Maps API data dictionary to an Episode object."""
