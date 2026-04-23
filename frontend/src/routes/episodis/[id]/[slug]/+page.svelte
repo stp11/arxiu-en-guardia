@@ -165,7 +165,7 @@
               <h2
                 class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
               >
-                Catalogat
+                Emissió
               </h2>
               <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
                 {fmtLong(episode.published_at)}

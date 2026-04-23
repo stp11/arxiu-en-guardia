@@ -19,7 +19,7 @@
 <button
   onclick={toggle}
   aria-label={isDark ? "Activa el tema clar" : "Activa el tema fosc"}
-  class="text-ink-2 p-1"
+  class="text-ink-2 p-1 hover:text-vermillion-deep"
 >
   {#if isDark}
     <SunIcon class="size-4" />
