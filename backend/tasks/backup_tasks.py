@@ -17,12 +17,7 @@ from .main import celery_app
 
 
 def _get_database_url() -> str:
-    user = os.environ["PGUSER"]
-    password = os.environ["PGPASSWORD"]
-    host = os.environ["PGHOST"]
-    port = os.environ.get("PGPORT", "5432")
-    db = os.environ["PGDATABASE"]
-    return f"postgresql://{user}:{password}@{host}:{port}/{db}"
+    return os.environ["DATABASE_URL"]
 
 
 def _get_s3_client():
