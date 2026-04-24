@@ -3,13 +3,7 @@ import os
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import Session, create_engine
 
-PGUSER = os.environ.get("PGUSER")
-PGPASSWORD = os.environ.get("PGPASSWORD")
-PGHOST = os.environ.get("PGHOST")
-PGPORT = os.environ.get("PGPORT", "5432")
-PGDATABASE = os.environ.get("PGDATABASE")
-
-DATABASE_URL = f"postgresql+psycopg2://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}"  # noqa: E501
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 is_debug = os.environ.get("BUILD_ENVIRONMENT") == "local"
 

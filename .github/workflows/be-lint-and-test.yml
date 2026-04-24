@@ -47,4 +47,5 @@ jobs:
       - name: Run tests with Pytest
         env:
           ALLOWED_ORIGINS: "*"
+          DATABASE_URL: "sqlite:///:memory:"
         run: python -m pytest
