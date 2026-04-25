@@ -19,7 +19,7 @@ const config = {
       fallback: "index.html",
     }),
     prerender: {
-      entries: [],
+      entries: ["/sitemap.xml"],
       handleHttpError: "ignore",
       handleMissingId: "ignore",
       handleUnseenRoutes: "ignore",

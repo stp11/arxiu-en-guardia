@@ -6,6 +6,7 @@
   import { page as pageStore } from "$app/state";
   import { Loader2, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
+  import { SITE_URL } from "src/lib/constants";
 
   import {
     type Category,
@@ -322,6 +323,17 @@
   const start = $derived((page - 1) * pageSize);
   const shown = $derived(items.length);
 
+  const isFilteredView = $derived(hasFilters || pageSize !== defaultPageSize);
+  const canonicalUrl = $derived(
+    page === initialPage ? `${SITE_URL}/` : `${SITE_URL}/?page=${page}`
+  );
+  const prevUrl = $derived(
+    page > 1 ? (page - 1 === 1 ? `${SITE_URL}/` : `${SITE_URL}/?page=${page - 1}`) : null
+  );
+  const nextUrl = $derived(
+    totalPages > 0 && page < totalPages ? `${SITE_URL}/?page=${page + 1}` : null
+  );
+
   const onKeydown = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
     const tag = target?.tagName;
@@ -335,6 +347,19 @@
 </script>
 
 <svelte:window onkeydown={onKeydown} />
+
+<svelte:head>
+  <link rel="canonical" href={canonicalUrl} />
+  {#if isFilteredView}
+    <meta name="robots" content="noindex,follow" />
+  {/if}
+  {#if prevUrl}
+    <link rel="prev" href={prevUrl} />
+  {/if}
+  {#if nextUrl}
+    <link rel="next" href={nextUrl} />
+  {/if}
+</svelte:head>
 
 <div class="mx-auto w-full max-w-screen-xl px-6 pt-8 pb-12 md:px-10 md:pt-14">
   <AppHero />

@@ -64,7 +64,7 @@ export const getCheckboxStyles = (category: CategoryType | null) => {
   }
 };
 
-export const hasDescription = (description: string | null | undefined) => {
+export const hasDescription = (description: string | null) => {
   if (!description) return false;
   const trimmedDescription = description.trim();
   return trimmedDescription !== "" && trimmedDescription.toLocaleLowerCase() !== "en guàrdia";

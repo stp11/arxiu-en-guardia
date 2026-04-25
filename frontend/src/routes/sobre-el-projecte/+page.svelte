@@ -1,11 +1,25 @@
 <script lang="ts">
   import { ArrowLeft } from "@lucide/svelte";
+  import { SITE_NAME, SITE_URL } from "src/lib/constants";
 
   import AppLogo from "lib/components/app-logo.svelte";
+
+  const title = `Sobre l'arxiu · ${SITE_NAME}`;
+  const description =
+    "Iniciativa feta per oients per organitzar i fer accessibles els més de mil episodis d'En Guàrdia, el programa d'història de Catalunya Ràdio.";
+  const url = `${SITE_URL}/sobre-el-projecte`;
 </script>
 
 <svelte:head>
-  <title>Sobre l'arxiu · Arxiu En Guàrdia</title>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={url} />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={url} />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
 </svelte:head>
 
 <div class="mx-auto w-full max-w-[1100px] px-6 pt-8 pb-12 md:px-10 md:pt-14">
