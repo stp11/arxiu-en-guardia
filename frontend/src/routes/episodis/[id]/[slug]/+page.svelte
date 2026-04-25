@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ArrowLeft } from "@lucide/svelte";
+  import { SITE_NAME, SITE_URL } from "src/lib/constants.js";
 
   import type { CategoryType } from "client";
 
@@ -7,6 +8,43 @@
   import { CATEGORY_TYPE_LABELS_SINGULAR, cn, hasDescription } from "lib/utils";
 
   const { data } = $props();
+
+  const canonicalUrl = $derived(
+    data.episode?.slug ? `${SITE_URL}/episodis/${data.episode.id}/${data.episode.slug}` : SITE_URL
+  );
+
+  const metaTitle = $derived(data.episode ? `${data.episode.title} · ${SITE_NAME}` : SITE_NAME);
+
+  const metaDescription = $derived(
+    data.episode && hasDescription(data.episode.description)
+      ? data.episode.description
+      : `Episodi del programa En Guàrdia de 3Cat${data.episode ? `: ${data.episode.title}` : ""}.`
+  );
+
+  const jsonLd = $derived.by(() => {
+    if (!data.episode) return null;
+    const ep = data.episode;
+    const obj: Record<string, unknown> = {
+      "@context": "https://schema.org",
+      "@type": "PodcastEpisode",
+      name: ep.title,
+      url: canonicalUrl,
+      inLanguage: "ca",
+      partOfSeries: {
+        "@type": "PodcastSeries",
+        name: "En Guàrdia",
+        url: "https://www.3cat.cat/3cat/en-guardia/",
+      },
+    };
+    if (hasDescription(ep.description)) obj.description = ep.description;
+    if (ep.published_at) obj.datePublished = ep.published_at;
+    if (ep.id)
+      obj.associatedMedia = {
+        "@type": "MediaObject",
+        contentUrl: `https://www.3cat.cat/3cat/audio/${ep.id}/embed/`,
+      };
+    return JSON.stringify(obj).replace(/</g, "\\u003c");
+  });
 
   const fmtLong = (iso: string) => {
     const d = new Date(iso);
@@ -34,6 +72,25 @@
 
   const orderedTypes: CategoryType[] = ["time_period", "location", "character", "topic"];
 </script>
+
+<svelte:head>
+  <title>{metaTitle}</title>
+  <meta name="description" content={metaDescription} />
+  <link rel="canonical" href={canonicalUrl} />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content={metaTitle} />
+  <meta property="og:description" content={metaDescription} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta name="twitter:title" content={metaTitle} />
+  <meta name="twitter:description" content={metaDescription} />
+  {#if data.episode?.published_at}
+    <meta property="article:published_time" content={data.episode.published_at} />
+  {/if}
+  {#if jsonLd}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+    {@html '<script type="application/ld+json">' + jsonLd + "</" + "script>"}
+  {/if}
+</svelte:head>
 
 {#if data.episode}
   {@const episode = data.episode}
@@ -181,7 +238,7 @@
                 Font
               </h2>
               <a
-                href={`https://www.3cat.cat/3cat/${episode.slug}}/audio/${episode.id}/`}
+                href={`https://www.3cat.cat/3cat/${episode.slug}/audio/${episode.id}/`}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-vermillion-deep hover:text-ink"
