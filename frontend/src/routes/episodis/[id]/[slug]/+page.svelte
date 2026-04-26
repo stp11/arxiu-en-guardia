@@ -123,7 +123,7 @@
         {/if}
 
         <h1
-          class="max-w-[18ch] font-serif text-[clamp(2.25rem,5.5vw,4.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
+          class="max-w-[25ch] font-serif text-[clamp(2.25rem,5.5vw,4.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
         >
           {episode.title}
         </h1>
