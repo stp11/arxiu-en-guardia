@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Callable
 
 from fastapi import Request
+from pgvector.sqlalchemy import Vector
 from slugify import slugify
 from sqladmin import ModelView
 from sqlalchemy import Select
@@ -75,6 +76,9 @@ class Episode(SQLModel, table=True):
     description: str | None = Field(default=None, sa_column=Column(TEXT))
     published_at: datetime | None = Field(default=None, index=True)
     image_url: str | None = None
+    embedding: list[float] | None = Field(
+        default=None, sa_column=Column(Vector(1536))
+    )
 
     categories: list[Category] = Relationship(
         back_populates="episodes",

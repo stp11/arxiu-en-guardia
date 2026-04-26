@@ -40,7 +40,13 @@ class EpisodesService:
     def get_episode_by_id(self, id: int) -> Episode:
         return self.episodes_repository.get_episode_by_id(id)
 
-    def _parse_categories(self, categories_str: str) -> list[str]:
+    def get_similar_episodes(self, id: int, limit: int) -> list[Episode]:
+        episode = self.episodes_repository.get_episode_by_id(id)
+        if episode is None or episode.embedding is None:
+            return []
+        return self.episodes_repository.get_similar_episodes(episode, limit)
+
+    def _parse_categories(self, categories_str: str) -> list[int]:
         """
         Parse comma-separated category slugs string into a list.
         """

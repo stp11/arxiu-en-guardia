@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+from models import Episode
 from repositories import IEpisodesRepository
 from services import EpisodesService
 
@@ -86,3 +87,32 @@ class TestEpisodesService:
             }
         }
         assert self.service._extract_image_url(data) is None
+
+    def test_get_similar_episodes_calls_repository(self):
+        episode = Episode(id=1, title="Test", embedding=[0.1] * 1536)
+        similar = [Episode(id=2, title="Similar")]
+        self.mock_repo.get_episode_by_id.return_value = episode
+        self.mock_repo.get_similar_episodes.return_value = similar
+
+        result = self.service.get_similar_episodes(id=1, limit=3)
+
+        self.mock_repo.get_episode_by_id.assert_called_once_with(1)
+        self.mock_repo.get_similar_episodes.assert_called_once_with(episode, 3)
+        assert result == similar
+
+    def test_get_similar_episodes_returns_empty_when_not_found(self):
+        self.mock_repo.get_episode_by_id.return_value = None
+
+        result = self.service.get_similar_episodes(id=999, limit=3)
+
+        assert result == []
+        self.mock_repo.get_similar_episodes.assert_not_called()
+
+    def test_get_similar_episodes_returns_empty_when_no_embedding(self):
+        episode = Episode(id=1, title="Test", embedding=None)
+        self.mock_repo.get_episode_by_id.return_value = episode
+
+        result = self.service.get_similar_episodes(id=1, limit=3)
+
+        assert result == []
+        self.mock_repo.get_similar_episodes.assert_not_called()

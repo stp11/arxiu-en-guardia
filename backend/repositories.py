@@ -97,6 +97,12 @@ class IEpisodesRepository(ABC):
     ) -> None:
         pass
 
+    @abstractmethod
+    def get_similar_episodes(
+        self, episode: Episode, limit: int
+    ) -> list[Episode]:
+        pass
+
 
 class EpisodesRepository(IEpisodesRepository):
     def __init__(self, session: Session):
@@ -155,3 +161,15 @@ class EpisodesRepository(IEpisodesRepository):
                 episode_id=episode_id, category_id=category_id
             )
             self.db_session.add(link)
+
+    def get_similar_episodes(
+        self, episode: Episode, limit: int
+    ) -> list[Episode]:
+        return self.db_session.exec(
+            select(Episode)
+            .where(Episode.embedding.isnot(None))
+            .where(Episode.id != episode.id)
+            .options(selectinload(Episode.categories))
+            .order_by(Episode.embedding.cosine_distance(episode.embedding))
+            .limit(limit)
+        ).all()
