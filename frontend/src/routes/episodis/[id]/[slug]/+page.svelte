@@ -249,6 +249,45 @@
           </section>
         </aside>
       </div>
+
+      {#if data.similarEpisodes && data.similarEpisodes.length > 0}
+        <section class="mt-20">
+          <h2
+            class="mb-[18px] border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+          >
+            També et poden interessar
+          </h2>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {#each data.similarEpisodes as similar (similar.id)}
+              <a
+                href="/episodis/{similar.id}/{similar.slug}"
+                class="group flex flex-col border-t-2 border-ink pt-[18px] transition-colors hover:border-vermillion"
+              >
+                <h3
+                  class="mb-2.5 flex-1 font-serif text-[22px] font-medium leading-[1.2] text-ink transition-colors group-hover:text-vermillion-deep"
+                >
+                  {similar.title}
+                </h3>
+                {#if similar.image_url}
+                  <img
+                    src={similar.image_url}
+                    alt={`Imatge de ${similar.title}`}
+                    class="mb-3 h-auto w-full rounded-sm border border-rule object-contain shadow-sm transition-shadow hidden md:block group-hover:shadow-md"
+                  />
+                {/if}
+                {#if similar.published_at}
+                  <time
+                    datetime={similar.published_at}
+                    class="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3"
+                  >
+                    {fmtLong(similar.published_at)}
+                  </time>
+                {/if}
+              </a>
+            {/each}
+          </div>
+        </section>
+      {/if}
     </article>
   </div>
 {/if}

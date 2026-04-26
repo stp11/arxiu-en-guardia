@@ -44,6 +44,19 @@ def get_episode(
     return episode
 
 
+@router.get(
+    "/episodes/{id}/similar",
+    tags=["episodis"],
+    response_model=list[EpisodeWithCategories],
+)
+def get_similar_episodes(
+    id: int = Path(..., description="Episode ID"),
+    limit: int = Query(3, ge=1, le=20, description="Number of results"),
+    service: EpisodesService = Depends(get_episodes_service),
+):
+    return service.get_similar_episodes(id, limit)
+
+
 CustomPage = CustomizedPage[
     Page,
     UseParamsFields(

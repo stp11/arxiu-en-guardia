@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
+import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -34,6 +34,16 @@ export const getEpisodesApiEpisodesGet = <ThrowOnError extends boolean = false>(
 export const getEpisodeApiEpisodesIdGet = <ThrowOnError extends boolean = false>(options: Options<GetEpisodeApiEpisodesIdGetData, ThrowOnError>) => {
     return (options.client ?? client).get<GetEpisodeApiEpisodesIdGetResponses, GetEpisodeApiEpisodesIdGetErrors, ThrowOnError>({
         url: '/api/episodes/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get Similar Episodes
+ */
+export const getSimilarEpisodesApiEpisodesIdSimilarGet = <ThrowOnError extends boolean = false>(options: Options<GetSimilarEpisodesApiEpisodesIdSimilarGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, ThrowOnError>({
+        url: '/api/episodes/{id}/similar',
         ...options
     });
 };
