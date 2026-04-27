@@ -7,7 +7,7 @@
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
         "@sveltejs/adapter-static": "^3.0.10",
-        "@tanstack/svelte-query": "^6.1.18",
+        "@tanstack/svelte-query": "^6.1.24",
       },
       "devDependencies": {
         "@eslint/compat": "^1.4.0",
@@ -270,9 +270,9 @@
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.1.17", "", { "dependencies": { "@tailwindcss/node": "4.1.17", "@tailwindcss/oxide": "4.1.17", "tailwindcss": "4.1.17" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7" } }, "sha512-4+9w8ZHOiGnpcGI6z1TVVfWaX/koK7fKeSYF3qlYg2xpBtbteP2ddBxiarL+HVgfSJGeK5RIxRQmKm4rTJJAwA=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.99.2", "", {}, "sha512-1HunU0bXVsR1ZJMZbcOPE6VtaBJxsW809RE9xPe4Gz7MlB0GWwQvuTPhMoEmQ/hIzFKJ/DWAuttIe7BOaWx0tA=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.100.5", "", {}, "sha512-t20KrhKkf0HXzqQkPbJ5erhFesup68BAbwFgYmTrS7bxMF7O5MdmL8jUkik4thsG7Hg00fblz30h6yF1d5TxGg=="],
 
-    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.18", "", { "dependencies": { "@tanstack/query-core": "5.99.2" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-D26iBbSDJ1h3M/XrF+dTFsnDAr4fSGEj/BZxMtm47D4eYgPgW/5Q8f0gNlfwVTn8fjbOFAPT6Yyaf//4z+F4VQ=="],
+    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.24", "", { "dependencies": { "@tanstack/query-core": "5.100.5" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-cgGKIK4FF4TkySvOMF1HoRKeFBbwhGKR3gFwzY3wGs+HsndM47A5v38FrYI/tPXD6cKKOLbFZ8lVi+YIuLeVxg=="],
 
     "@trivago/prettier-plugin-sort-imports": ["@trivago/prettier-plugin-sort-imports@5.2.2", "", { "dependencies": { "@babel/generator": "^7.26.5", "@babel/parser": "^7.26.7", "@babel/traverse": "^7.26.7", "@babel/types": "^7.26.7", "javascript-natural-sort": "^0.7.1", "lodash": "^4.17.21" }, "peerDependencies": { "@vue/compiler-sfc": "3.x", "prettier": "2.x - 3.x", "prettier-plugin-svelte": "3.x", "svelte": "4.x || 5.x" }, "optionalPeers": ["@vue/compiler-sfc", "prettier-plugin-svelte", "svelte"] }, "sha512-fYDQA9e6yTNmA13TLVSA+WMQRc5Bn/c0EUBditUHNfMMxN7M82c38b1kEggVE3pLpZ0FwkwJkUEKMiOi52JXFA=="],
 
