@@ -174,7 +174,7 @@
         {/if}
 
         <!-- Sidebar: categories grouped by type -->
-        <aside class="flex flex-col gap-9 self-start md:sticky md:top-6">
+        <aside class="flex flex-col gap-9 self-start md:top-6">
           {#if episode.categories && episode.categories.length > 0}
             <section>
               <h2
