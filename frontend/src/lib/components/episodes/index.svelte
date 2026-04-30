@@ -19,7 +19,6 @@
   import * as Sheet from "lib/components/ui/sheet";
   import {
     CATEGORY_TYPE_COLORS,
-    CATEGORY_TYPE_LABELS,
     cn,
     extractSnippet,
     hasDescription,
@@ -720,7 +719,6 @@
                     {#each ep.categories ?? [] as c (c.id)}
                       <button
                         type="button"
-                        title={CATEGORY_TYPE_LABELS[c.type as CategoryType] ?? ""}
                         onclick={() => toggleCategory(c.type as CategoryType, c.slug)}
                         class={cn(
                           "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",

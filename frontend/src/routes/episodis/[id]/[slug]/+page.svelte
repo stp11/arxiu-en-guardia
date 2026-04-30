@@ -5,7 +5,7 @@
   import type { CategoryType } from "client";
 
   import AppLogo from "lib/components/app-logo.svelte";
-  import { CATEGORY_TYPE_LABELS_SINGULAR, cn, hasDescription } from "lib/utils";
+  import { CATEGORY_TYPE_LABELS, cn, hasDescription } from "lib/utils";
 
   const { data } = $props();
 
@@ -190,7 +190,7 @@
                     <span
                       class="mb-2 block font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3"
                     >
-                      {CATEGORY_TYPE_LABELS_SINGULAR[type]}
+                      {CATEGORY_TYPE_LABELS[type]}
                     </span>
                     <div class="flex flex-wrap gap-1.5">
                       {#each group as c (c.id)}

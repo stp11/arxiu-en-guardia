@@ -16,13 +16,6 @@ export const capitalize = (str: string) => {
 };
 
 export const CATEGORY_TYPE_LABELS: Record<CategoryType, string> = {
-  topic: "Temes",
-  location: "Llocs",
-  character: "Personatges",
-  time_period: "Èpoques",
-};
-
-export const CATEGORY_TYPE_LABELS_SINGULAR: Record<CategoryType, string> = {
   topic: "Tema",
   location: "Lloc",
   character: "Personatge",
