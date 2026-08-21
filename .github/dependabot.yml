@@ -26,6 +26,12 @@ updates:
     schedule:
       interval: "weekly"
 
+    ignore:
+      # redis-py is capped below 6.5 by kombu[redis] (celery's broker layer).
+      # Unrelated to the Redis server version we run.
+      - dependency-name: "redis"
+        versions: [">=6.5"]
+
     open-pull-requests-limit: 10
     allow:
         - dependency-type: 'production'
