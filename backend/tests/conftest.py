@@ -1,31 +1,52 @@
+import os
 from pathlib import Path
+from urllib.parse import urlsplit
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.engine import make_url
+from sqlalchemy import create_engine, text
 from sqlmodel import Session
 
 from alembic import command
 from alembic.config import Config
-from database import DATABASE_URL, engine, get_session
-from main import app
 
-# Tests commit and roll back freely, so never point them at real data.
-if not (make_url(DATABASE_URL).database or "").endswith("_test"):
-    pytest.exit(
-        "DATABASE_URL must point to a dedicated Postgres database whose "
-        "name ends in '_test'",
-        returncode=1,
-    )
+
+def with_database(url: str, name: str) -> str:
+    # Swap only the path so credentials and query params stay byte-for-byte.
+    return urlsplit(url)._replace(path=f"/{name}").geturl()
+
+
+# Each run creates, migrates and drops its own database on the DATABASE_URL
+# server; the configured database is never connected to. This has to happen
+# before the app imports `database`, which builds its engine from the env var.
+SERVER_URL = os.environ["DATABASE_URL"]
+TEST_DB_NAME = f"en_guardia_test_{uuid4().hex[:12]}"
+os.environ["DATABASE_URL"] = with_database(SERVER_URL, TEST_DB_NAME)
+
+from database import engine, get_session  # noqa: E402
+from main import app  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
-def migrate_test_db():
-    config = Config()
-    config.set_main_option(
-        "script_location", str(Path(__file__).parent.parent / "alembic")
+def disposable_db():
+    admin = create_engine(
+        with_database(SERVER_URL, "postgres"), isolation_level="AUTOCOMMIT"
     )
-    command.upgrade(config, "head")
+    with admin.connect() as conn:
+        conn.execute(text(f'CREATE DATABASE "{TEST_DB_NAME}"'))
+    try:
+        config = Config()
+        config.set_main_option(
+            "script_location", str(Path(__file__).parent.parent / "alembic")
+        )
+        command.upgrade(config, "head")
+        yield
+    finally:
+        engine.dispose()
+        with admin.connect() as conn:
+            conn.execute(text(f'DROP DATABASE "{TEST_DB_NAME}" WITH (FORCE)'))
+        admin.dispose()
 
 
 @pytest.fixture
