@@ -5,6 +5,7 @@ from typing import Any, Callable
 
 from fastapi import Request
 from pgvector.sqlalchemy import Vector
+from pydantic import NaiveDatetime
 from slugify import slugify
 from sqladmin import ModelView
 from sqlalchemy import Select
@@ -74,7 +75,7 @@ class Episode(SQLModel, table=True):
     title: str = Field(index=True)
     slug: str | None = None
     description: str | None = Field(default=None, sa_column=Column(TEXT))
-    published_at: datetime | None = Field(default=None, index=True)
+    published_at: NaiveDatetime | None = Field(default=None, index=True)
     image_url: str | None = None
     embedding: list[float] | None = Field(
         default=None, sa_column=Column(Vector(1536))
@@ -108,7 +109,7 @@ class Users(SQLModel, table=True):
     password_hash: str
     is_active: bool = Field(default=True)
     is_admin: bool = Field(default=False)
-    created_at: datetime | None = Field(
+    created_at: NaiveDatetime | None = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
 
