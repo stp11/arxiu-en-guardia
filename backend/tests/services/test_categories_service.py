@@ -49,6 +49,9 @@ class TestClassificationService:
         assert result["localització"] == ["Mallorca"]
 
         self.mock_openai_client.chat.completions.create.assert_called_once()
+        create = self.mock_openai_client.chat.completions.create
+        assert create.call_args.kwargs["model"] == "gpt-6-luna"
+        assert create.call_args.kwargs["reasoning_effort"] == "none"
 
     def test_classify_episode_json_decode_error_returns_none(self):
         episode = Episode(

@@ -112,8 +112,10 @@ class ClassificationService:
         logger.info(f"Prompt: {prompt}")
 
         response = self.openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-6-luna",
             messages=[{"role": "user", "content": prompt}],
+            # Luna defaults to "medium", which rejects temperature
+            reasoning_effort="none",
             temperature=0,
             response_format={
                 "type": "json_schema",
