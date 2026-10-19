@@ -8,19 +8,16 @@ class TestCategoriesRepository:
     def setup_method(self):
         self.categories = [
             Category(
-                id=1,
                 name="Antiga Grecia",
                 slug="antiga-grecia",
                 type=CategoryType.LOCATION,
             ),
             Category(
-                id=2,
                 name="Guerra Civil",
                 slug="guerra-civil",
                 type=CategoryType.TOPIC,
             ),
             Category(
-                id=3,
                 name="Guerra del Francès",
                 slug="guerra-del-frances",
                 type=CategoryType.TOPIC,
@@ -38,12 +35,14 @@ class TestCategoriesRepository:
 
     def test_get_categories_query(self, db_session: Session):
         episode = Episode(id=1, title="Test Episode")
-        episode_category = EpisodeCategory(
-            episode_id=episode.id, category_id=self.categories[0].id
-        )
         db_session.add_all(self.categories)
         db_session.add(episode)
-        db_session.add(episode_category)
+        db_session.flush()
+        db_session.add(
+            EpisodeCategory(
+                episode_id=episode.id, category_id=self.categories[0].id
+            )
+        )
         db_session.commit()
         repo = CategoriesRepository(session=db_session)
 

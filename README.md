@@ -47,6 +47,13 @@ Docker Compose i no s'aixequen per defecte. Si les necessites:
 docker compose --profile celery up -d
 ```
 
+Per executar els tests del backend (fan servir una base de dades
+temporal pròpia; la de desenvolupament no es toca):
+
+```bash
+docker compose exec backend python -m pytest
+```
+
 ---
 
 # Avís legal

@@ -90,8 +90,9 @@ class TestEpisodesRepository:
             ),
         ]
         db_session.add_all(self.episodes)
-        db_session.add_all(episode_categories)
         db_session.add_all(categories)
+        db_session.flush()
+        db_session.add_all(episode_categories)
         db_session.commit()
 
         repo = EpisodesRepository(session=db_session)
@@ -123,3 +124,25 @@ class TestEpisodesRepository:
 
         episode = repo.get_episode_by_id(4)
         assert episode is None
+
+    def test_repository_get_similar_episodes(self, db_session: Session):
+        def embedding(x: float, y: float) -> list[float]:
+            return [x, y] + [0.0] * 1534
+
+        source = Episode(id=1, title="Font", embedding=embedding(1.0, 0.0))
+        db_session.add_all(
+            [
+                source,
+                Episode(id=2, title="Llunyà", embedding=embedding(0.1, 0.9)),
+                Episode(id=3, title="Proper", embedding=embedding(0.9, 0.1)),
+                Episode(id=4, title="Sense embedding"),
+            ]
+        )
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        results = repo.get_similar_episodes(source, limit=5)
+        assert [e.id for e in results] == [3, 2]
+
+        results = repo.get_similar_episodes(source, limit=1)
+        assert [e.id for e in results] == [3]
