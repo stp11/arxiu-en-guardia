@@ -1,30 +1,40 @@
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine
+from sqlalchemy.engine import make_url
+from sqlmodel import Session
 
-from database import get_session
+from alembic import command
+from alembic.config import Config
+from database import DATABASE_URL, engine, get_session
 from main import app
 
-test_engine = create_engine(
-    "sqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+# Tests commit and roll back freely, so never point them at real data.
+if not (make_url(DATABASE_URL).database or "").endswith("_test"):
+    pytest.exit(
+        "DATABASE_URL must point to a dedicated Postgres database whose "
+        "name ends in '_test'",
+        returncode=1,
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_db():
-    SQLModel.metadata.create_all(test_engine)
-    yield
-    SQLModel.metadata.drop_all(test_engine)
+def migrate_test_db():
+    config = Config()
+    config.set_main_option(
+        "script_location", str(Path(__file__).parent.parent / "alembic")
+    )
+    command.upgrade(config, "head")
 
 
 @pytest.fixture
 def db_session():
-    connection = test_engine.connect()
+    connection = engine.connect()
     transaction = connection.begin()
-    session = Session(bind=connection)
+    session = Session(
+        bind=connection, join_transaction_mode="create_savepoint"
+    )
     try:
         yield session
     finally:

@@ -47,6 +47,19 @@ Docker Compose i no s'aixequen per defecte. Si les necessites:
 docker compose --profile celery up -d
 ```
 
+Els tests del backend s'executen contra Postgres, en una base de dades
+dedicada el nom de la qual ha d'acabar en `_test`. Crea-la un cop i
+executa els tests dins del contenidor del backend (substitueix `user` i
+`password` pels valors del teu `backend/.env`):
+
+```bash
+docker compose exec postgres createdb -U user en_guardia_test
+docker compose exec -e DATABASE_URL=postgresql://user:password@postgres:5432/en_guardia_test backend python -m pytest
+```
+
+Les migracions s'apliquen automàticament abans dels tests, i cada test
+s'executa dins d'una transacció que es desfà en acabar.
+
 ---
 
 # Avís legal
