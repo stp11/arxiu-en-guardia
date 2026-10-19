@@ -47,17 +47,12 @@ Docker Compose i no s'aixequen per defecte. Si les necessites:
 docker compose --profile celery up -d
 ```
 
-Els tests del backend s'executen contra Postgres:
+Per executar els tests del backend (fan servir una base de dades
+temporal pròpia; la de desenvolupament no es toca):
 
 ```bash
 docker compose exec backend python -m pytest
 ```
-
-Cada execució crea la seva pròpia base de dades temporal
-(`en_guardia_test_<aleatori>`) al mateix servidor, hi aplica les
-migracions i l'esborra en acabar, així que la base de dades de
-desenvolupament no es toca mai. Si una execució s'interromp de cop, pot
-quedar alguna `en_guardia_test_*` que es pot esborrar sense problema.
 
 ---
 

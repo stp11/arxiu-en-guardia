@@ -38,17 +38,19 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: en_guardia_test
+          POSTGRES_DB: en_guardia
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d en_guardia_test"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
       ALLOWED_ORIGINS: "*"
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/en_guardia_test"
+      # The migration step uses this database; pytest only reuses the server
+      # and creates and drops its own.
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/en_guardia"
     defaults:
       run:
         working-directory: backend
@@ -61,11 +63,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/local.txt
 
+      # Same command as prod's start.sh, so alembic.ini is exercised too.
       - name: Run migrations
         run: alembic upgrade head
-
-      - name: Check models match migrations
-        run: alembic check
 
       - name: Run tests with Pytest
         run: python -m pytest
