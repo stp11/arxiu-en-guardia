@@ -5,29 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * Category
- */
-export type Category = {
-    /**
-     * Id
-     */
-    id?: number | null;
-    /**
-     * Slug
-     */
-    slug: string;
-    /**
-     * Name
-     */
-    name: string;
-    type: CategoryType | null;
-    /**
-     * Count
-     */
-    count?: number;
-};
-
-/**
  * CategoryBase
  */
 export type CategoryBase = {
@@ -50,6 +27,67 @@ export type CategoryBase = {
  * CategoryType
  */
 export type CategoryType = 'topic' | 'location' | 'character' | 'time_period';
+
+/**
+ * CategoryWithCount
+ */
+export type CategoryWithCount = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Name
+     */
+    name: string;
+    type: CategoryType | null;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * EpisodeDetail
+ */
+export type EpisodeDetail = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Slug
+     */
+    slug: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    /**
+     * Image Url
+     */
+    image_url: string | null;
+    /**
+     * Categories
+     */
+    categories?: Array<CategoryBase>;
+    /**
+     * Wikipedia Articles
+     */
+    wikipedia_articles?: Array<WikipediaArticleBase>;
+};
 
 /**
  * EpisodeWithCategories
@@ -96,13 +134,13 @@ export type HttpValidationError = {
 };
 
 /**
- * PageCustomized[Category]
+ * PageCustomized[CategoryWithCount]
  */
-export type PageCustomizedCategory = {
+export type PageCustomizedCategoryWithCount = {
     /**
      * Items
      */
-    items: Array<Category>;
+    items: Array<CategoryWithCount>;
     /**
      * Total
      */
@@ -163,6 +201,30 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * WikipediaArticleBase
+ */
+export type WikipediaArticleBase = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Url
+     */
+    url: string;
 };
 
 export type GetEpisodesApiEpisodesGetData = {
@@ -180,15 +242,19 @@ export type GetEpisodesApiEpisodesGetData = {
         /**
          * Categories
          *
-         * Comma-separated list of category IDs
+         * Comma-separated list of category slugs
          */
         categories?: string;
         /**
          * Page
+         *
+         * Page number
          */
         page?: number;
         /**
          * Size
+         *
+         * Page size
          */
         size?: number;
     };
@@ -240,7 +306,7 @@ export type GetEpisodeApiEpisodesIdGetResponses = {
     /**
      * Successful Response
      */
-    200: EpisodeWithCategories;
+    200: EpisodeDetail;
 };
 
 export type GetEpisodeApiEpisodesIdGetResponse = GetEpisodeApiEpisodesIdGetResponses[keyof GetEpisodeApiEpisodesIdGetResponses];
@@ -277,6 +343,8 @@ export type GetSimilarEpisodesApiEpisodesIdSimilarGetError = GetSimilarEpisodesA
 
 export type GetSimilarEpisodesApiEpisodesIdSimilarGetResponses = {
     /**
+     * Response Get Similar Episodes Api Episodes  Id  Similar Get
+     *
      * Successful Response
      */
     200: Array<EpisodeWithCategories>;
@@ -294,6 +362,8 @@ export type GetCategoriesApiCategoriesGetData = {
         type?: CategoryType;
         /**
          * Page
+         *
+         * Page number
          */
         page?: number;
         /**
@@ -317,7 +387,7 @@ export type GetCategoriesApiCategoriesGetResponses = {
     /**
      * Successful Response
      */
-    200: PageCustomizedCategory;
+    200: PageCustomizedCategoryWithCount;
 };
 
 export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGetResponses[keyof GetCategoriesApiCategoriesGetResponses];

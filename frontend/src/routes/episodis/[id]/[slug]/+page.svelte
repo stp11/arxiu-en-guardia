@@ -247,6 +247,37 @@
               </a>
             </div>
           </section>
+
+          {#if episode.wikipedia_articles && episode.wikipedia_articles.length > 0}
+            <section>
+              <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+                <h2
+                  class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+                >
+                  Altres recursos
+                </h2>
+                <span
+                  class="mb-2 block font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3"
+                >
+                  Viquipèdia
+                </span>
+                <ul class="flex flex-col gap-2">
+                  {#each episode.wikipedia_articles as article (article.url)}
+                    <li>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-vermillion-deep hover:text-ink"
+                      >
+                        {article.title} ↗
+                      </a>
+                    </li>
+                  {/each}
+                </ul>
+              </div>
+            </section>
+          {/if}
         </aside>
       </div>
 
