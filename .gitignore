@@ -35,6 +35,11 @@ __pycache__
 *.pyd
 .Python
 
+# Database dumps: prod backups restored locally include the users table
+*.sql
+*.sql.gz
+*.dump
+
 # Celery
 celerybeat-schedule
 celerybeat-schedule.db
