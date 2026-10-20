@@ -4,7 +4,14 @@ from sqlalchemy import Select, func, or_
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
-from models import Category, CategoryType, Episode, EpisodeCategory
+from models import (
+    Category,
+    CategoryType,
+    Episode,
+    EpisodeCategory,
+    EpisodeWikipediaArticle,
+    WikipediaArticle,
+)
 
 
 class ICategoriesRepository(ABC):
@@ -98,6 +105,12 @@ class IEpisodesRepository(ABC):
         pass
 
     @abstractmethod
+    def link_episode_to_article(
+        self, episode_id: int, article_id: int
+    ) -> None:
+        pass
+
+    @abstractmethod
     def get_similar_episodes(
         self, episode: Episode, limit: int
     ) -> list[Episode]:
@@ -140,7 +153,10 @@ class EpisodesRepository(IEpisodesRepository):
         return self.db_session.exec(
             select(Episode)
             .where(Episode.id == id)
-            .options(selectinload(Episode.categories))
+            .options(
+                selectinload(Episode.categories),
+                selectinload(Episode.wikipedia_articles),
+            )
         ).first()
 
     def save_episode(self, episode: Episode) -> Episode:
@@ -162,6 +178,22 @@ class EpisodesRepository(IEpisodesRepository):
             )
             self.db_session.add(link)
 
+    def link_episode_to_article(
+        self, episode_id: int, article_id: int
+    ) -> None:
+        existing = self.db_session.exec(
+            select(EpisodeWikipediaArticle).where(
+                EpisodeWikipediaArticle.episode_id == episode_id,
+                EpisodeWikipediaArticle.article_id == article_id,
+            )
+        ).first()
+
+        if not existing:
+            link = EpisodeWikipediaArticle(
+                episode_id=episode_id, article_id=article_id
+            )
+            self.db_session.add(link)
+
     def get_similar_episodes(
         self, episode: Episode, limit: int
     ) -> list[Episode]:
@@ -173,3 +205,26 @@ class EpisodesRepository(IEpisodesRepository):
             .order_by(Episode.embedding.cosine_distance(episode.embedding))
             .limit(limit)
         ).all()
+
+
+class IWikipediaArticlesRepository(ABC):
+    @abstractmethod
+    def get_or_create_article(self, title: str, url: str) -> WikipediaArticle:
+        pass
+
+
+class WikipediaArticlesRepository(IWikipediaArticlesRepository):
+    def __init__(self, session: Session):
+        self.db_session = session
+
+    def get_or_create_article(self, title: str, url: str) -> WikipediaArticle:
+        article = self.db_session.exec(
+            select(WikipediaArticle).where(WikipediaArticle.title == title)
+        ).first()
+
+        if not article:
+            article = WikipediaArticle(title=title, url=url)
+            self.db_session.add(article)
+            self.db_session.flush()
+
+        return article

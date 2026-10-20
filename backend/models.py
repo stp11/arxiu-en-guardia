@@ -9,7 +9,17 @@ from pydantic import NaiveDatetime
 from slugify import slugify
 from sqladmin import ModelView
 from sqlalchemy import Select
-from sqlmodel import TEXT, Column, DateTime, Field, Relationship, SQLModel
+from sqlmodel import (
+    TEXT,
+    Column,
+    DateTime,
+    Field,
+    Relationship,
+    SQLModel,
+    select,
+)
+
+from wikipedia import WikipediaClient
 
 
 class EpisodeCategory(SQLModel, table=True):
@@ -18,6 +28,15 @@ class EpisodeCategory(SQLModel, table=True):
     )
     category_id: int | None = Field(
         default=None, foreign_key="category.id", primary_key=True
+    )
+
+
+class EpisodeWikipediaArticle(SQLModel, table=True):
+    episode_id: int | None = Field(
+        default=None, foreign_key="episode.id", primary_key=True
+    )
+    article_id: int | None = Field(
+        default=None, foreign_key="wikipediaarticle.id", primary_key=True
     )
 
 
@@ -57,6 +76,20 @@ class Category(SQLModel, table=True):
         return slugify(name)
 
 
+class WikipediaArticle(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(unique=True, index=True)
+    url: str
+
+    episodes: list["Episode"] = Relationship(
+        back_populates="wikipedia_articles",
+        link_model=EpisodeWikipediaArticle,
+    )
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class EpisodeBase(SQLModel):
     id: int
     title: str
@@ -70,6 +103,15 @@ class EpisodeWithCategories(EpisodeBase):
     categories: list[CategoryBase] = []
 
 
+class WikipediaArticleBase(SQLModel):
+    title: str
+    url: str
+
+
+class EpisodeDetail(EpisodeWithCategories):
+    wikipedia_articles: list[WikipediaArticleBase] = []
+
+
 class Episode(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     title: str = Field(index=True)
@@ -80,6 +122,9 @@ class Episode(SQLModel, table=True):
     embedding: list[float] | None = Field(
         default=None, sa_column=Column(Vector(1536))
     )
+    # When the Wikipedia linking job last looked at the episode, so it
+    # doesn't run again, nor undo the admin's edits, every week.
+    wikipedia_checked_at: NaiveDatetime | None = None
 
     categories: list[Category] = Relationship(
         back_populates="episodes",
@@ -88,6 +133,11 @@ class Episode(SQLModel, table=True):
             "order_by": "Category.type, Category.name",
             "lazy": "selectin",
         },
+    )
+    wikipedia_articles: list[WikipediaArticle] = Relationship(
+        back_populates="episodes",
+        link_model=EpisodeWikipediaArticle,
+        sa_relationship_kwargs={"order_by": "WikipediaArticle.title"},
     )
 
     def __str__(self) -> str:
@@ -195,19 +245,28 @@ class EpisodeAdmin(ModelView, model=Episode):
         Episode.title,
         Episode.description,
         Episode.categories,
+        Episode.wikipedia_articles,
+        Episode.wikipedia_checked_at,
     ]
 
+    # Emptying wikipedia_checked_at, with no articles left, has the next
+    # Wikipedia linking run look at the episode again.
     form_columns = [
         Episode.title,
         Episode.description,
         Episode.categories,
+        Episode.wikipedia_articles,
+        Episode.wikipedia_checked_at,
     ]
 
     # Multi-select as tags
     form_ajax_refs = {
         "categories": {
             "fields": ("name",),
-        }
+        },
+        "wikipedia_articles": {
+            "fields": ("title",),
+        },
     }
 
     form_widget_args = {
@@ -219,6 +278,9 @@ class EpisodeAdmin(ModelView, model=Episode):
             "readonly": True,
         },
         "categories": {
+            "multiple": True,
+        },
+        "wikipedia_articles": {
             "multiple": True,
         },
     }
@@ -337,3 +399,78 @@ class CategoryAdmin(ModelView, model=Category):
                     )
 
             data["slug"] = slug
+
+
+class WikipediaArticleAdmin(ModelView, model=WikipediaArticle):
+    name_plural = "Articles de la Viquipèdia"
+    can_create = True
+    can_edit = True
+    can_delete = True
+    can_view_details = True
+
+    column_list = [
+        WikipediaArticle.title,
+        WikipediaArticle.url,
+        WikipediaArticle.episodes,
+    ]
+    column_formatters = {
+        WikipediaArticle.episodes: lambda model, attribute: (
+            model.episodes if model.episodes else "-"
+        ),
+    }
+    list_template = "sqladmin/custom_list.html"
+    details_template = "sqladmin/custom_details.html"
+    column_searchable_list = [WikipediaArticle.title]
+    column_sortable_list = [WikipediaArticle.title]
+    column_default_sort = [(WikipediaArticle.title, False)]
+    column_details_list = [
+        WikipediaArticle.title,
+        WikipediaArticle.url,
+        WikipediaArticle.episodes,
+    ]
+
+    # The URL comes from Wikipedia when the title is saved.
+    form_columns = [WikipediaArticle.title, WikipediaArticle.episodes]
+
+    # Multi-select as tags
+    form_ajax_refs = {
+        "episodes": {
+            "fields": ("title",),
+        }
+    }
+
+    page_size = 50
+
+    async def on_model_change(
+        self,
+        data: dict,
+        model: WikipediaArticle,
+        is_created: bool,
+        request: Request,
+    ) -> None:
+        title = (data.get("title") or getattr(model, "title", "")).strip()
+        article = WikipediaClient().lookup([title])[title]
+        if article is None:
+            raise ValueError(f'La Viquipèdia no té cap article "{title}".')
+        if article.disambiguation:
+            raise ValueError(
+                f'"{article.title}" és una pàgina de desambiguació: '
+                "tria'n l'article concret."
+            )
+
+        with self.session_maker() as session:
+            existing = (
+                session.execute(
+                    select(WikipediaArticle).where(
+                        WikipediaArticle.title == article.title
+                    )
+                )
+                .scalars()
+                .first()
+            )
+            if existing and existing.id != getattr(model, "id", None):
+                raise ValueError(f'L\'article "{article.title}" ja existeix.')
+
+        # A redirect's title is saved as the article it leads to.
+        data["title"] = article.title
+        data["url"] = article.url

@@ -227,3 +227,117 @@ def _format_review_item(item: dict) -> str:
 
 def _format_review_category(category: dict) -> str:
     return f'[{category["id"]}] {category["key"]} · "{category["name"]}" · {category["episodes"]} episodis'
+
+
+WIKIPEDIA_ARTICLES_SCHEMA = {
+    "name": "wikipedia_articles",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "articles": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["articles"],
+        "additionalProperties": False,
+    },
+}
+
+
+def wikipedia_articles_prompt(
+    episode: Episode, max_articles: int, category_names: list[str]
+) -> str:
+    categories = ", ".join(category_names) or "(cap)"
+
+    return f"""
+# ROL
+Actua com un historiador i documentalista que enllaça els episodis de l'arxiu del programa de ràdio En Guàrdia amb articles de la Viquipèdia en català.
+
+# TASCA
+A partir del títol, la descripció i les categories de l'episodi, digues quins articles de la Viquipèdia en català (ca.wikipedia.org) tracten allò de què parla l'episodi, del més al menys important, fins a {max_articles}.
+
+## Regles
+- Escriu el títol de l'article tal com és a la Viquipèdia en català, sense URL: "Guerra dels Segadors", "Jaume el Conqueridor", "Fets del sis d'octubre". Si no en saps el títol exacte, escriu-ne el nom més habitual en català: es comprovarà a la Viquipèdia.
+- Només el tema principal: el fet, la persona, el lloc, l'obra o el fenomen de què tracta l'episodi. Si en tracta més d'un ("El pare Ubach i Francesc Cambó"), inclou-los tots.
+- Evita els articles genèrics que no ajuden a saber més de l'episodi ("Catalunya", "Història", "Segle XX", "Guerra"), tret que l'episodi en tracti específicament.
+- Ignora els convidats, experts i historiadors que participen al programa.
+- Si cap article no hi encaixa, retorna una llista buida.
+
+# EPISODI
+## TÍTOL
+{episode.title}
+
+## DESCRIPCIÓ
+{episode.description or "(sense descripció)"}
+
+## CATEGORIES
+{categories}
+"""
+
+
+WIKIPEDIA_CHOICES_SCHEMA = {
+    "name": "wikipedia_choices",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "choices": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "title": {"type": ["string", "null"]},
+                    },
+                    "required": ["id", "title"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["choices"],
+        "additionalProperties": False,
+    },
+}
+
+
+def wikipedia_choices_prompt(
+    episode: Episode, searches: dict[int, tuple[str, list]]
+) -> str:
+    """searches maps an id to a proposed name and the articles found for it."""
+    names = "\n\n".join(
+        _format_search(id, name, results)
+        for id, (name, results) in searches.items()
+    )
+
+    return f"""
+# ROL
+Actua com un historiador i documentalista que enllaça els episodis de l'arxiu del programa de ràdio En Guàrdia amb articles de la Viquipèdia en català.
+
+# TASCA
+Per a l'episodi, es van proposar uns noms d'article que no corresponen exactament a cap article de la Viquipèdia, o que en corresponen a una pàgina de desambiguació. Per a cada nom, tria d'entre els resultats de la cerca a la Viquipèdia l'article que tracta allò que el nom volia dir en aquest episodi.
+
+## Regles
+- `title` ha de ser exactament el títol d'un dels resultats d'aquell nom, o `null` si cap no tracta el mateix tema.
+- Un tema proper o més general no serveix: per a "Moviment veïnal", "Barcelona" no és vàlid.
+- En cas de dubte, `null`: un enllaç equivocat és pitjor que cap enllaç.
+- Retorna exactament una tria per a cada nom, amb el seu `id`.
+
+# EPISODI
+## TÍTOL
+{episode.title}
+
+## DESCRIPCIÓ
+{episode.description or "(sense descripció)"}
+
+# NOMS PROPOSATS
+{names}
+"""
+
+
+def _format_search(id: int, name: str, results: list) -> str:
+    lines = [f'[{id}] "{name}"', "Resultats:"]
+    lines += [
+        f'- "{article.title}"'
+        + (f" · {article.description}" if article.description else "")
+        for article in results
+    ] or ["- (cap)"]
+    return "\n".join(lines)

@@ -6,7 +6,12 @@ from sqlmodel import Session
 
 from database import get_session
 from dependencies import get_categories_service, get_episodes_service
-from models import CategoryType, CategoryWithCount, EpisodeWithCategories
+from models import (
+    CategoryType,
+    CategoryWithCount,
+    EpisodeDetail,
+    EpisodeWithCategories,
+)
 from services import CategoriesService, EpisodesService
 
 router = APIRouter()
@@ -31,9 +36,7 @@ def get_episodes(
     return paginate(session, query)
 
 
-@router.get(
-    "/episodes/{id}", tags=["episodis"], response_model=EpisodeWithCategories
-)
+@router.get("/episodes/{id}", tags=["episodis"], response_model=EpisodeDetail)
 def get_episode(
     id: int = Path(..., description="Episode ID"),
     service: EpisodesService = Depends(get_episodes_service),
