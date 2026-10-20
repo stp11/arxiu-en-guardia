@@ -25,25 +25,36 @@ celery_app.conf.update(
     worker_max_tasks_per_child=50,
 )
 
-celery_app.conf.beat_schedule = {
-    "ingest-and-classify-weekly": {
-        "task": "tasks.episode_tasks.ingest_and_classify_chain",
-        "schedule": crontab(
-            day_of_week=[0, 6],
-            hour=17,
-            minute=0,
-        ),
-        "kwargs": {
-            "batch_size": 1,
-            "max_total": 1,
+
+def beat_schedule(local: bool) -> dict:
+    schedule = {
+        "ingest-and-classify-weekly": {
+            "task": "tasks.episode_tasks.ingest_and_classify_chain",
+            "schedule": crontab(
+                day_of_week=[0, 6],
+                hour=17,
+                minute=0,
+            ),
+            "kwargs": {
+                "batch_size": 1,
+                "max_total": 1,
+            },
         },
-    },
-    "backup-database-weekly": {
-        "task": "tasks.backup_tasks.backup_database",
-        "schedule": crontab(
-            day_of_week=0,
-            hour=20,
-            minute=0,
-        ),
-    },
-}
+    }
+    # Local workers have the R2 credentials too, so their backups would
+    # land among production's and become the "latest" one to restore.
+    if not local:
+        schedule["backup-database-weekly"] = {
+            "task": "tasks.backup_tasks.backup_database",
+            "schedule": crontab(
+                day_of_week=0,
+                hour=20,
+                minute=0,
+            ),
+        }
+    return schedule
+
+
+celery_app.conf.beat_schedule = beat_schedule(
+    local=os.getenv("BUILD_ENVIRONMENT") == "local"
+)
