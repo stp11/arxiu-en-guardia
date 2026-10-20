@@ -34,15 +34,21 @@ def _episode_embedding_text(episode: Episode) -> str:
     return " | ".join(parts).replace("\n", " ")
 
 
-def backfill_embeddings(batch_size: int = 100, max_total: int = None):
-    """Generate embeddings for episodes that don't have one yet."""
+def backfill_embeddings(
+    batch_size: int = 100, max_total: int = None, refresh: bool = False
+):
+    """
+    Generate embeddings for episodes that don't have one yet, or for every
+    episode with refresh: the text includes category names, so vectors go
+    stale when categories are merged, renamed or added.
+    """
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     total_processed = 0
 
     logger.info(
         f"Starting embedding backfill with batch_size={batch_size}, "
-        f"max_total={max_total}"
+        f"max_total={max_total}, refresh={refresh}"
     )
 
     while max_total is None or total_processed < max_total:
@@ -54,13 +60,18 @@ def backfill_embeddings(batch_size: int = 100, max_total: int = None):
                 min(batch_size, remaining) if remaining else batch_size
             )
 
-            episodes = session.exec(
+            query = (
                 select(Episode)
                 .where(Episode.description.isnot(None))
-                .where(Episode.embedding.is_(None))
-                .order_by(Episode.published_at.desc())
+                .order_by(Episode.published_at.desc(), Episode.id)
                 .limit(current_batch_size)
-            ).all()
+            )
+            if refresh:
+                # Refreshed episodes still match, so page past them.
+                query = query.offset(total_processed)
+            else:
+                query = query.where(Episode.embedding.is_(None))
+            episodes = session.exec(query).all()
 
             if not episodes:
                 logger.info("No more episodes to embed")
@@ -114,6 +125,15 @@ if __name__ == "__main__":
         default=None,
         help="Maximum total episodes to process (default: all)",
     )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Re-embed every episode, not only those without an embedding",
+    )
 
     args = parser.parse_args()
-    backfill_embeddings(batch_size=args.batch_size, max_total=args.max_total)
+    backfill_embeddings(
+        batch_size=args.batch_size,
+        max_total=args.max_total,
+        refresh=args.refresh,
+    )
