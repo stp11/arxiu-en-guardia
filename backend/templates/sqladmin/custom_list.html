@@ -52,10 +52,13 @@
               </div>
             </div>
             <div class="card-body border-bottom py-3">
+              {% if error %}
+              <div class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endif %}
               <div class="d-flex justify-content-between">
                 <div class="dropdown col-4">
                   <button {% if not model_view.can_delete and not model_view._custom_actions_in_list %} disabled {% endif %}
-                    class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                    class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                     Actions
                   </button>
@@ -64,7 +67,7 @@
                     {% if model_view.can_delete %}
                     <a class="dropdown-item" id="action-delete" href="#" data-name="{{ model_view.name }}"
                       data-url="{{ url_for('admin:delete', identity=model_view.identity) }}" data-bs-toggle="modal"
-                      data-bs-target="#modal-delete">Delete selected items</a>
+                      data-bs-target="#modal-delete">Delete</a>
                     {% endif %}
                     {% for custom_action, label in model_view._custom_actions_in_list.items() %}
                     {% if custom_action in model_view._custom_actions_confirmation %}
@@ -128,7 +131,8 @@
                   <tr>
                     <td>
                       <input type="hidden" value="{{ get_object_identifier(row) }}">
-                      <input class="form-check-input m-0 align-middle select-box" type="checkbox" aria-label="Select item">
+                      <input class="form-check-input m-0 align-middle select-box" type="checkbox" aria-label="Select item"
+                        data-name="{{ row }}">
                     </td>
                     <td class="text-end">
                       {% if model_view.can_view_details %}
@@ -144,7 +148,7 @@
                       </a>
                       {% endif %}
                       {% if model_view.can_delete %}
-                      <a href="#" data-name="{{ model_view.name }}" data-pk="{{ get_object_identifier(row) }}"
+                      <a href="#" data-name="{{ model_view.name }}" data-pk="{{ row }}"
                         data-url="{{ model_view._url_for_delete(request, row) }}" data-bs-toggle="modal"
                         data-bs-target="#modal-delete" title="Delete">
                         <span class="me-1"><i class="fa-solid fa-trash"></i></span>
@@ -209,7 +213,7 @@
               </ul>
               <div class="dropdown text-muted">
                 Show
-                <a href="#" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                <a href="#" class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true"
                   aria-expanded="false">
                   {{ request.query_params.get("pageSize") or model_view.page_size }} / Page
                 </a>
@@ -267,4 +271,40 @@
   {% endif %}
   {% endfor %}
 </div>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script>
+  // After sqladmin's main.js, so these run after its handlers.
+  $(function () {
+    var actions = $('[aria-labelledby="dropdownMenuButton"] .dropdown-item');
+
+    function selectedNames() {
+      return $('.select-box:checked').map(function () {
+        return $(this).attr('data-name');
+      }).get();
+    }
+
+    // Bulk actions do nothing useful without a selection.
+    function toggleActions() {
+      var none = selectedNames().length === 0;
+      actions.toggleClass('disabled', none).attr('aria-disabled', none);
+    }
+    $(document).on('change', '.select-box, #select-all', toggleActions);
+    toggleActions();
+
+    // Name the selected items instead of listing their ids.
+    $(document).on('shown.bs.modal', '#modal-delete', function (event) {
+      if (event.relatedTarget && event.relatedTarget.id !== 'action-delete') {
+        return;
+      }
+      var list = $('<ul class="text-start mt-2 mb-0">');
+      selectedNames().forEach(function (name) {
+        list.append($('<li>').text(name));
+      });
+      $('#modal-delete-text').text('This will permanently delete:').append(list);
+    });
+  });
+</script>
 {% endblock %}

@@ -6,6 +6,7 @@ import pytest
 
 from main import admin
 from models import (
+    Category,
     Episode,
     EpisodeAdmin,
     WikipediaArticle,
@@ -105,3 +106,69 @@ class TestEpisodeAdmin:
 
         assert self.articles_cell(checked) == "No hi ha articles"
         assert self.articles_cell(unchecked) == "Pendent"
+
+
+class TestAdminPages:
+    @pytest.fixture(autouse=True)
+    def logged_in(self, client, db_session, monkeypatch):
+        async def authenticate(request):
+            return True
+
+        monkeypatch.setattr(
+            admin.authentication_backend, "authenticate", authenticate
+        )
+        for view in admin.views:
+            monkeypatch.setattr(
+                view, "session_maker", lambda **kw: nullcontext(db_session)
+            )
+        self.client = client
+
+        sardana = WikipediaArticle(title="Sardana", url="https://sardana")
+        db_session.add_all(
+            [
+                Episode(
+                    id=1,
+                    title="La sardana",
+                    categories=[
+                        Category(name="Música", slug="musica", type="topic")
+                    ],
+                    wikipedia_articles=[sardana],
+                    wikipedia_checked_at=datetime(2026, 10, 20),
+                ),
+                Episode(
+                    id=2,
+                    title="Sense article",
+                    wikipedia_checked_at=datetime(2026, 10, 20),
+                ),
+                Episode(id=3, title="Encara no"),
+            ]
+        )
+        db_session.commit()
+        self.db_session = db_session
+
+    def test_episode_list_opens_its_menus_and_names_what_it_deletes(self):
+        html = self.client.get("/admin/episode/list").text
+
+        assert 'data-toggle="dropdown"' not in html
+        assert 'id="dropdownMenuButton" data-bs-toggle="dropdown"' in html
+        assert 'data-pk="La sardana"' in html
+        assert ">Sardana</a>" in html
+        assert "No hi ha articles" in html
+        assert "Pendent" in html
+
+    def test_category_list_names_what_it_deletes(self):
+        html = self.client.get("/admin/category/list").text
+
+        assert 'data-pk="Música"' in html
+        # Selected rows, which the bulk delete confirmation lists.
+        assert 'data-name="Música"' in html
+
+    def test_list_shows_why_a_delete_failed(self):
+        html = self.client.get("/admin/category/list?error=Boom").text
+
+        assert 'class="alert alert-danger" role="alert">Boom</div>' in html
+
+    def test_episode_details_names_what_it_deletes(self):
+        html = self.client.get("/admin/episode/details/1").text
+
+        assert 'data-pk="La sardana"' in html
