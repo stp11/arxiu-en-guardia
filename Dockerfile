@@ -8,18 +8,23 @@ ENV BUILD_ENVIRONMENT=$BUILD_ENVIRONMENT \
 
 RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.9.7 /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /usr/local/bin/uv
+
+# The venv lives outside /app, which docker-compose mounts over.
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-COPY ./backend/requirements ./requirements
+COPY ./backend/pyproject.toml ./backend/uv.lock ./backend/.python-version ./
 
 RUN if [ "$BUILD_ENVIRONMENT" = "local" ]; then \
         echo ">>> Installing development requirements" && \
-        uv pip install --system --no-cache -r requirements/local.txt; \
+        uv sync --locked --no-cache; \
     else \
         echo ">>> Installing production requirements" && \
-        uv pip install --system --no-cache -r requirements/prod.txt; \
+        uv sync --locked --no-cache --no-dev; \
     fi
 
 COPY ./backend .

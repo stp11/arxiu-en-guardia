@@ -20,13 +20,13 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v10
         with:
-          python-version: "3.11"
-      - run: pip install pre-commit
-      - run: pre-commit run flake8 --all-files
-      - run: pre-commit run black --all-files
-      - run: pre-commit run isort --all-files
+          version: "0.13.4"  # Keep in sync with the Dockerfile
+      - run: uv sync --locked --only-dev
+      - run: uv run --no-sync pre-commit run flake8 --all-files
+      - run: uv run --no-sync pre-commit run black --all-files
+      - run: uv run --no-sync pre-commit run isort --all-files
 
   test:
     name: Test
@@ -56,16 +56,16 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v10
         with:
-          python-version: "3.11"
+          version: "0.13.4"  # Keep in sync with the Dockerfile
 
       - name: Install dependencies
-        run: pip install -r requirements/local.txt
+        run: uv sync --locked
 
       # Same command as prod's start.sh, so alembic.ini is exercised too.
       - name: Run migrations
-        run: alembic upgrade head
+        run: uv run --no-sync alembic upgrade head
 
       - name: Run tests with Pytest
-        run: python -m pytest
+        run: uv run --no-sync python -m pytest

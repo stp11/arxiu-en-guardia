@@ -1,3 +1,38 @@
+[project]
+name = "en-guardia"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]==0.143.2",
+    "fastapi-pagination==0.16.1",
+    "pydantic==2.14.1",
+    "uvicorn==0.54.0",
+    "sqlmodel[asyncio]==0.0.48",
+    "psycopg[binary]==3.3.6",
+    "alembic==1.20.0",
+    "requests==2.34.2",
+    "openai==3.31.0",
+    "python-slugify==8.0.4",
+    "sqladmin==0.32.0",
+    "itsdangerous==2.2.0",
+    "celery[redis]==5.6.3",
+    "redis==5.2.0",
+    "slowapi==0.1.10",
+    "boto3==1.43.114",
+    "pgvector==0.5.1",
+]
+
+[dependency-groups]
+dev = [
+    # Code quality
+    "pre-commit==4.7.0",  # https://github.com/pre-commit/pre-commit
+    "black==26.10.1",  # https://github.com/psf/black
+    "flake8==7.4.1",  # https://github.com/PyCQA/flake8
+    "isort==8.0.1",
+    # Testing
+    "pytest==9.1.1",
+]
+
 [tool.isort]
 profile = "black"
 line_length = 79
