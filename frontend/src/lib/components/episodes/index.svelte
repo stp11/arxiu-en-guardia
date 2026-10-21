@@ -9,8 +9,8 @@
   import { SITE_URL } from "src/lib/constants";
 
   import {
-    type Category,
     type CategoryType,
+    type CategoryWithCount,
     getCategoriesApiCategoriesGet,
     getEpisodesApiEpisodesGet,
   } from "client";
@@ -262,7 +262,7 @@
       untrack(() => timePeriodsQuery.fetchNextPage());
   });
 
-  const mapItems = (cats: Category[]) =>
+  const mapItems = (cats: CategoryWithCount[]) =>
     cats
       .filter((c) => !!c.slug)
       .map((c) => ({ slug: c.slug, name: c.name, count: c.count ?? 0 }))

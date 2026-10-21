@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from models import Episode
+from models import Episode, WikipediaArticle
 
 
 class TestEpisodes:
@@ -18,6 +18,28 @@ class TestEpisodes:
         assert response.status_code == 200
         assert response.json()["total"] == 1
         assert response.json()["items"][0]["title"] == "Test Episode"
+        assert "wikipedia_articles" not in response.json()["items"][0]
+
+    def test_get_episode_with_its_wikipedia_articles(self, client, db_session):
+        url = "https://ca.wikipedia.org/wiki/Sardana"
+        episode = Episode(
+            id=1,
+            title="La sardana",
+            wikipedia_articles=[
+                WikipediaArticle(title="Sardana", url=url),
+                WikipediaArticle(title="Cobla", url="https://cobla"),
+            ],
+        )
+        db_session.add(episode)
+        db_session.commit()
+
+        response = client.get("/api/episodes/1")
+
+        assert response.status_code == 200
+        assert response.json()["wikipedia_articles"] == [
+            {"title": "Cobla", "url": "https://cobla"},
+            {"title": "Sardana", "url": url},
+        ]
 
 
 class TestSimilarEpisodes:

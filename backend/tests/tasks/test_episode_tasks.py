@@ -53,3 +53,41 @@ class TestTaskWiring:
         mock_chain.assert_called_once()
         assert result["status"] == "Chained workflow started"
         assert "chain_id" in result
+
+    @patch("commands.link_wikipedia_articles.link_wikipedia_articles")
+    def test_link_wikipedia_task_calls_command(self, mock_link):
+        from tasks.episode_tasks import link_wikipedia_articles_task
+
+        result = link_wikipedia_articles_task(batch_size=1, max_total=1)
+
+        mock_link.assert_called_once_with(
+            batch_size=1, max_total=1, episode_ids=None
+        )
+        assert result["status"] == "success"
+
+    @patch("commands.link_wikipedia_articles.link_wikipedia_articles")
+    def test_link_wikipedia_task_links_the_episodes_asked_for(self, mock_link):
+        from tasks.episode_tasks import link_wikipedia_articles_task
+
+        link_wikipedia_articles_task(episode_ids=[1, 2])
+
+        mock_link.assert_called_once_with(
+            batch_size=50, max_total=None, episode_ids=[1, 2]
+        )
+
+    @patch("tasks.episode_tasks.chain")
+    def test_chain_links_wikipedia_last_with_the_same_cap(self, mock_chain):
+        from tasks.episode_tasks import ingest_and_classify_chain
+
+        mock_chain.return_value.apply_async.return_value.id = "test-id"
+
+        ingest_and_classify_chain(batch_size=1, max_total=1)
+
+        steps = mock_chain.call_args.args
+        assert [step.task for step in steps] == [
+            "tasks.episode_tasks.ingest_data_task",
+            "tasks.episode_tasks.classify_episodes_task",
+            "tasks.episode_tasks.generate_embeddings_task",
+            "tasks.episode_tasks.link_wikipedia_articles_task",
+        ]
+        assert steps[-1].kwargs == {"batch_size": 1, "max_total": 1}

@@ -1,8 +1,9 @@
 {% extends "sqladmin/layout.html" %}
 {% block content %}
 <style>
-  /* Limit table cell width and add ellipsis for episodes column */
-  table.card-table td.list-column {
+  /* On a div inside the cell: a flex <td> stops being a table cell, and
+     neighbouring ones merge into one, shifting the columns after them. */
+  table.card-table .list-column {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -12,7 +13,9 @@
   <div class="row">
     <div class="col-12">
       <div class="d-flex">
-        <div class="flex-grow-1 me-2">
+        {# min-width: 0 lets the list shrink beside the filters; otherwise a
+           wide table pushes the whole page sideways instead of scrolling. #}
+        <div class="flex-grow-1 me-2" style="min-width: 0;">
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">{{ model_view.name_plural }}</h3>
@@ -51,10 +54,13 @@
               </div>
             </div>
             <div class="card-body border-bottom py-3">
+              {% if error %}
+              <div class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endif %}
               <div class="d-flex justify-content-between">
                 <div class="dropdown col-4">
                   <button {% if not model_view.can_delete and not model_view._custom_actions_in_list %} disabled {% endif %}
-                    class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                    class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                     Actions
                   </button>
@@ -63,7 +69,7 @@
                     {% if model_view.can_delete %}
                     <a class="dropdown-item" id="action-delete" href="#" data-name="{{ model_view.name }}"
                       data-url="{{ url_for('admin:delete', identity=model_view.identity) }}" data-bs-toggle="modal"
-                      data-bs-target="#modal-delete">Delete selected items</a>
+                      data-bs-target="#modal-delete">Delete</a>
                     {% endif %}
                     {% for custom_action, label in model_view._custom_actions_in_list.items() %}
                     {% if custom_action in model_view._custom_actions_confirmation %}
@@ -96,7 +102,7 @@
               </div>
             </div>
             <div class="table-responsive">
-              <table class="table card-table table-vcenter text-nowrap">
+              <table class="table card-table table-vcenter">
                 <thead>
                   <tr>
                     <th class="w-1"><input class="form-check-input m-0 align-middle" type="checkbox" aria-label="Select all"
@@ -127,9 +133,10 @@
                   <tr>
                     <td>
                       <input type="hidden" value="{{ get_object_identifier(row) }}">
-                      <input class="form-check-input m-0 align-middle select-box" type="checkbox" aria-label="Select item">
+                      <input class="form-check-input m-0 align-middle select-box" type="checkbox" aria-label="Select item"
+                        data-name="{{ row }}">
                     </td>
-                    <td class="text-end">
+                    <td class="text-end text-nowrap">
                       {% if model_view.can_view_details %}
                       <a href="{{ model_view._build_url_for('admin:details', request, row) }}" data-bs-toggle="tooltip"
                         data-bs-placement="top" title="View">
@@ -143,7 +150,7 @@
                       </a>
                       {% endif %}
                       {% if model_view.can_delete %}
-                      <a href="#" data-name="{{ model_view.name }}" data-pk="{{ get_object_identifier(row) }}"
+                      <a href="#" data-name="{{ model_view.name }}" data-pk="{{ row }}"
                         data-url="{{ model_view._url_for_delete(request, row) }}" data-bs-toggle="modal"
                         data-bs-target="#modal-delete" title="Delete">
                         <span class="me-1"><i class="fa-solid fa-trash"></i></span>
@@ -153,16 +160,18 @@
                     {% for name in model_view._list_prop_names %}
                     {% set value, formatted_value = model_view.get_list_value(row, name) %}
                     {% if name in model_view._relation_names and is_list(value) and value|length > 0 %}
-                    <td class="list-column">
-                      {% for elem, formatted_elem in zip(value, formatted_value) %}
-                      <span>
-                        {% if model_view.show_compact_lists %}
-                          <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">{{ formatted_elem }}</a>{% if not loop.last %}, {% endif %}
-                        {% else %}
-                          <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">{{ formatted_elem }}</a><br/>
-                        {% endif %}
-                      </span>
-                      {% endfor %}
+                    <td>
+                      <div class="list-column">
+                        {% for elem, formatted_elem in zip(value, formatted_value) %}
+                        <span>
+                          {% if model_view.show_compact_lists %}
+                            <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">{{ formatted_elem }}</a>{% if not loop.last %}, {% endif %}
+                          {% else %}
+                            <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">{{ formatted_elem }}</a><br/>
+                          {% endif %}
+                        </span>
+                        {% endfor %}
+                      </div>
                     </td>
                     {% else %}
                     <td>{{ formatted_value }}</td>
@@ -206,7 +215,7 @@
               </ul>
               <div class="dropdown text-muted">
                 Show
-                <a href="#" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                <a href="#" class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true"
                   aria-expanded="false">
                   {{ request.query_params.get("pageSize") or model_view.page_size }} / Page
                 </a>
@@ -264,4 +273,40 @@
   {% endif %}
   {% endfor %}
 </div>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script>
+  // After sqladmin's main.js, so these run after its handlers.
+  $(function () {
+    var actions = $('[aria-labelledby="dropdownMenuButton"] .dropdown-item');
+
+    function selectedNames() {
+      return $('.select-box:checked').map(function () {
+        return $(this).attr('data-name');
+      }).get();
+    }
+
+    // Bulk actions do nothing useful without a selection.
+    function toggleActions() {
+      var none = selectedNames().length === 0;
+      actions.toggleClass('disabled', none).attr('aria-disabled', none);
+    }
+    $(document).on('change', '.select-box, #select-all', toggleActions);
+    toggleActions();
+
+    // Name the selected items instead of listing their ids.
+    $(document).on('shown.bs.modal', '#modal-delete', function (event) {
+      if (event.relatedTarget && event.relatedTarget.id !== 'action-delete') {
+        return;
+      }
+      var list = $('<ul class="text-start mt-2 mb-0">');
+      selectedNames().forEach(function (name) {
+        list.append($('<li>').text(name));
+      });
+      $('#modal-delete-text').text('This will permanently delete:').append(list);
+    });
+  });
+</script>
 {% endblock %}

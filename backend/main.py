@@ -12,7 +12,7 @@ from sqladmin import Admin
 from admin import AdminAuth
 from api.endpoints import router as api_router
 from database import engine
-from models import CategoryAdmin, EpisodeAdmin
+from models import CategoryAdmin, EpisodeAdmin, WikipediaArticleAdmin
 
 ADMIN_PATH = os.environ.get("ADMIN_PATH", "/admin")
 ADMIN_SECRET_KEY = os.environ.get("ADMIN_SECRET_KEY")
@@ -44,6 +44,7 @@ admin = Admin(
 
 admin.add_view(EpisodeAdmin)
 admin.add_view(CategoryAdmin)
+admin.add_view(WikipediaArticleAdmin)
 
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
