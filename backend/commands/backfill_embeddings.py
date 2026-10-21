@@ -35,12 +35,16 @@ def _episode_embedding_text(episode: Episode) -> str:
 
 
 def backfill_embeddings(
-    batch_size: int = 100, max_total: int = None, refresh: bool = False
+    batch_size: int = 100,
+    max_total: int = None,
+    refresh: bool = False,
+    episode_ids: list[int] | None = None,
 ):
     """
     Generate embeddings for episodes that don't have one yet, or for every
     episode with refresh: the text includes category names, so vectors go
-    stale when categories are merged, renamed or added.
+    stale when categories are merged, renamed or added. episode_ids limits
+    either to those episodes.
     """
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -48,7 +52,8 @@ def backfill_embeddings(
 
     logger.info(
         f"Starting embedding backfill with batch_size={batch_size}, "
-        f"max_total={max_total}, refresh={refresh}"
+        f"max_total={max_total}, refresh={refresh}, "
+        f"episode_ids={episode_ids}"
     )
 
     while max_total is None or total_processed < max_total:
@@ -66,6 +71,8 @@ def backfill_embeddings(
                 .order_by(Episode.published_at.desc(), Episode.id)
                 .limit(current_batch_size)
             )
+            if episode_ids is not None:
+                query = query.where(Episode.id.in_(episode_ids))
             if refresh:
                 # Refreshed episodes still match, so page past them.
                 query = query.offset(total_processed)

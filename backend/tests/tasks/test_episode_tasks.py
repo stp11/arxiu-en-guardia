@@ -54,6 +54,18 @@ class TestTaskWiring:
         assert result["status"] == "Chained workflow started"
         assert "chain_id" in result
 
+    @patch("commands.backfill_embeddings.backfill_embeddings")
+    def test_embeddings_task_re_embeds_the_episodes_asked_for(
+        self, mock_backfill
+    ):
+        from tasks.episode_tasks import generate_embeddings_task
+
+        generate_embeddings_task(episode_ids=[1, 2], refresh=True)
+
+        mock_backfill.assert_called_once_with(
+            batch_size=100, max_total=None, refresh=True, episode_ids=[1, 2]
+        )
+
     @patch("commands.link_wikipedia_articles.link_wikipedia_articles")
     def test_link_wikipedia_task_calls_command(self, mock_link):
         from tasks.episode_tasks import link_wikipedia_articles_task

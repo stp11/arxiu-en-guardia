@@ -72,3 +72,20 @@ class TestBackfillEmbeddings:
         ]
         for id in (1, 2, 3):
             assert list(db_session.get(Episode, id).embedding) == NEW
+
+    def test_refresh_re_embeds_only_the_episodes_asked_for(
+        self, db_session, monkeypatch
+    ):
+        self.seed(db_session)
+
+        embedded = self.run(
+            db_session,
+            monkeypatch,
+            batch_size=1,
+            refresh=True,
+            episode_ids=[1, 3],
+        )
+
+        assert sorted(embedded) == ["Almansa | 1707", "Olivares | 1640"]
+        assert list(db_session.get(Episode, 1).embedding) == NEW
+        assert list(db_session.get(Episode, 2).embedding) == OLD

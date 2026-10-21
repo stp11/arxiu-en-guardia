@@ -20,7 +20,10 @@ from sqlmodel import (
     select,
 )
 
-from tasks.episode_tasks import link_wikipedia_articles_task
+from tasks.episode_tasks import (
+    generate_embeddings_task,
+    link_wikipedia_articles_task,
+)
 from wikipedia import WikipediaClient
 
 
@@ -297,24 +300,17 @@ class EpisodeAdmin(ModelView, model=Episode):
 
     page_size = 25
 
-    # Only in the list: on the details page, sqladmin's confirmation adds a
-    # second ?pks= to the URL, which already carries the episode's.
+    # The confirmations read for one episode, from its page, or for many.
     @action(
         name="relink-wikipedia",
         label="Busca articles a la Viquipèdia",
         confirmation_message=(
-            "Els articles de la Viquipèdia d'aquests episodis se substituiran "
-            "pels que es trobin ara. Recarrega la pàgina d'aquí a uns segons "
-            "per veure'ls."
+            "Els articles de la Viquipèdia se substituiran pels que es trobin "
+            "ara. Recarrega la pàgina d'aquí a uns segons per veure'ls."
         ),
-        add_in_detail=False,
     )
     async def relink_wikipedia(self, request: Request) -> RedirectResponse:
-        ids = [
-            int(pk)
-            for pk in request.query_params.get("pks", "").split(",")
-            if pk
-        ]
+        ids = self._selected_ids(request)
         with self.session_maker() as session:
             episodes = (
                 session.execute(select(Episode).where(Episode.id.in_(ids)))
@@ -329,7 +325,35 @@ class EpisodeAdmin(ModelView, model=Episode):
         # Queued once they're cleared: the linking skips episodes that still
         # look checked. The worker searches while the page reloads.
         link_wikipedia_articles_task.delay(episode_ids=ids)
+        return self._go_back(request)
 
+    @action(
+        name="regenerate-embeddings",
+        label="Regenera els vectors",
+        confirmation_message=(
+            "Els vectors, amb què es trien els episodis similars, es tornaran "
+            "a calcular amb les categories actuals."
+        ),
+    )
+    async def regenerate_embeddings(
+        self, request: Request
+    ) -> RedirectResponse:
+        # Replaced in place: the episodes keep their vectors, and their
+        # similar episodes, until the new ones are saved.
+        generate_embeddings_task.delay(
+            episode_ids=self._selected_ids(request), refresh=True
+        )
+        return self._go_back(request)
+
+    def _selected_ids(self, request: Request) -> list[int]:
+        return [
+            int(pk)
+            for pk in request.query_params.get("pks", "").split(",")
+            if pk
+        ]
+
+    # To the list or the episode's page, wherever the action was run from.
+    def _go_back(self, request: Request) -> RedirectResponse:
         referer = request.headers.get("Referer")
         return RedirectResponse(
             referer or request.url_for("admin:list", identity=self.identity),

@@ -13,7 +13,10 @@ from models import (
     WikipediaArticle,
     WikipediaArticleAdmin,
 )
-from tasks.episode_tasks import link_wikipedia_articles_task
+from tasks.episode_tasks import (
+    generate_embeddings_task,
+    link_wikipedia_articles_task,
+)
 from wikipedia import Article
 
 SEGADORS = Article(
@@ -155,6 +158,7 @@ class TestAdminPages:
         assert 'id="dropdownMenuButton" data-bs-toggle="dropdown"' in html
         assert 'data-pk="La sardana"' in html
         assert "Busca articles a la Viquipèdia" in html
+        assert "Regenera els vectors" in html
         assert ">Sardana</a>" in html
         assert "No hi ha articles" in html
         assert "Pendent" in html
@@ -181,7 +185,15 @@ class TestAdminPages:
         html = self.client.get("/admin/episode/details/1").text
 
         assert 'data-pk="La sardana"' in html
-        assert "Busca articles a la Viquipèdia" not in html
+
+    def test_episode_details_runs_the_actions_on_the_episode(self):
+        html = self.client.get("/admin/episode/details/1").text
+
+        assert "Busca articles a la Viquipèdia" in html
+        assert "Regenera els vectors" in html
+        # The confirmations' "Yes", for this episode only.
+        assert 'action/relink-wikipedia?pks=1"' in html
+        assert 'action/regenerate-embeddings?pks=1"' in html
 
     def test_relinking_clears_the_episodes_and_queues_a_search(
         self, monkeypatch
@@ -212,3 +224,24 @@ class TestAdminPages:
         # The article stays for other episodes; only the link goes.
         assert self.db_session.exec(select(WikipediaArticle)).one()
         assert queued == [([1, 2], None)]
+
+    def test_regenerating_embeddings_queues_them_for_the_episodes(
+        self, monkeypatch
+    ):
+        queued = []
+        monkeypatch.setattr(
+            generate_embeddings_task,
+            "delay",
+            lambda **kwargs: queued.append(kwargs),
+        )
+        referer = "http://testserver/admin/episode/list?page=2"
+
+        response = self.client.get(
+            "/admin/episode/action/regenerate-embeddings?pks=1,3",
+            headers={"Referer": referer},
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+        assert response.headers["location"] == referer
+        assert queued == [{"episode_ids": [1, 3], "refresh": True}]
