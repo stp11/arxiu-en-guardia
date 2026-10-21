@@ -226,6 +226,7 @@ class EpisodeAdmin(ModelView, model=Episode):
         Episode.id,
         Episode.title,
         Episode.categories,
+        Episode.wikipedia_articles,
         Episode.published_at,
     ]
     column_formatters = {
@@ -233,6 +234,16 @@ class EpisodeAdmin(ModelView, model=Episode):
             [category.name for category in model.categories]
             if model.categories
             else "No hi ha categories"
+        ),
+        # "Pendent" marks where the last Wikipedia linking batch stopped.
+        Episode.wikipedia_articles: lambda model, attribute: (
+            [article.title for article in model.wikipedia_articles]
+            if model.wikipedia_articles
+            else (
+                "No hi ha articles"
+                if model.wikipedia_checked_at
+                else "Pendent"
+            )
         ),
     }
     list_template = "sqladmin/custom_list.html"

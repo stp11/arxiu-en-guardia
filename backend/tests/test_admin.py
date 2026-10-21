@@ -1,10 +1,16 @@
 import asyncio
 from contextlib import nullcontext
+from datetime import datetime
 
 import pytest
 
 from main import admin
-from models import WikipediaArticle, WikipediaArticleAdmin
+from models import (
+    Episode,
+    EpisodeAdmin,
+    WikipediaArticle,
+    WikipediaArticleAdmin,
+)
 from wikipedia import Article
 
 SEGADORS = Article(
@@ -68,3 +74,34 @@ class TestWikipediaArticleAdmin:
         with pytest.raises(ValueError, match="ja existeix"):
             self.save("Revolta catalana")
         assert self.save("Revolta catalana", saved)["title"] == SEGADORS.title
+
+
+class TestEpisodeAdmin:
+    def setup_method(self):
+        self.view = next(
+            view for view in admin.views if isinstance(view, EpisodeAdmin)
+        )
+
+    def articles_cell(self, episode: Episode):
+        value = self.view.get_list_value(episode, "wikipedia_articles")
+        return asyncio.run(value)[1]
+
+    def test_lists_the_articles_of_each_episode(self):
+        episode = Episode(
+            title="La sardana",
+            wikipedia_articles=[
+                WikipediaArticle(title="Sardana", url="https://sardana"),
+                WikipediaArticle(title="Cobla", url="https://cobla"),
+            ],
+        )
+
+        assert self.articles_cell(episode) == ["Sardana", "Cobla"]
+
+    def test_tells_unprocessed_episodes_from_those_without_articles(self):
+        checked = Episode(
+            title="Sense article", wikipedia_checked_at=datetime(2026, 10, 20)
+        )
+        unchecked = Episode(title="Encara no")
+
+        assert self.articles_cell(checked) == "No hi ha articles"
+        assert self.articles_cell(unchecked) == "Pendent"
