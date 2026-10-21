@@ -60,8 +60,20 @@ class TestTaskWiring:
 
         result = link_wikipedia_articles_task(batch_size=1, max_total=1)
 
-        mock_link.assert_called_once_with(batch_size=1, max_total=1)
+        mock_link.assert_called_once_with(
+            batch_size=1, max_total=1, episode_ids=None
+        )
         assert result["status"] == "success"
+
+    @patch("commands.link_wikipedia_articles.link_wikipedia_articles")
+    def test_link_wikipedia_task_links_the_episodes_asked_for(self, mock_link):
+        from tasks.episode_tasks import link_wikipedia_articles_task
+
+        link_wikipedia_articles_task(episode_ids=[1, 2])
+
+        mock_link.assert_called_once_with(
+            batch_size=50, max_total=None, episode_ids=[1, 2]
+        )
 
     @patch("tasks.episode_tasks.chain")
     def test_chain_links_wikipedia_last_with_the_same_cap(self, mock_chain):

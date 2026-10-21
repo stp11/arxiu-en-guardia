@@ -3,6 +3,7 @@ from contextlib import nullcontext
 from datetime import datetime
 
 import pytest
+from sqlmodel import select
 
 from main import admin
 from models import (
@@ -12,6 +13,7 @@ from models import (
     WikipediaArticle,
     WikipediaArticleAdmin,
 )
+from tasks.episode_tasks import link_wikipedia_articles_task
 from wikipedia import Article
 
 SEGADORS = Article(
@@ -152,6 +154,7 @@ class TestAdminPages:
         assert 'data-toggle="dropdown"' not in html
         assert 'id="dropdownMenuButton" data-bs-toggle="dropdown"' in html
         assert 'data-pk="La sardana"' in html
+        assert "Busca articles a la Viquipèdia" in html
         assert ">Sardana</a>" in html
         assert "No hi ha articles" in html
         assert "Pendent" in html
@@ -168,7 +171,44 @@ class TestAdminPages:
 
         assert 'class="alert alert-danger" role="alert">Boom</div>' in html
 
+    def test_episode_form_leaves_the_checked_date_to_the_linking(self):
+        html = self.client.get("/admin/episode/edit/1").text
+
+        assert 'name="wikipedia_articles"' in html
+        assert "wikipedia_checked_at" not in html
+
     def test_episode_details_names_what_it_deletes(self):
         html = self.client.get("/admin/episode/details/1").text
 
         assert 'data-pk="La sardana"' in html
+        assert "Busca articles a la Viquipèdia" not in html
+
+    def test_relinking_clears_the_episodes_and_queues_a_search(
+        self, monkeypatch
+    ):
+        queued = []
+
+        def delay(episode_ids):
+            # Cleared first, or the linking would skip the episode.
+            episode = self.db_session.get(Episode, 1)
+            queued.append((episode_ids, episode.wikipedia_checked_at))
+
+        monkeypatch.setattr(link_wikipedia_articles_task, "delay", delay)
+        referer = "http://testserver/admin/episode/list?page=2"
+
+        response = self.client.get(
+            "/admin/episode/action/relink-wikipedia?pks=1,2",
+            headers={"Referer": referer},
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+        assert response.headers["location"] == referer
+        self.db_session.expire_all()
+        for id in (1, 2):
+            episode = self.db_session.get(Episode, id)
+            assert episode.wikipedia_articles == []
+            assert episode.wikipedia_checked_at is None
+        # The article stays for other episodes; only the link goes.
+        assert self.db_session.exec(select(WikipediaArticle)).one()
+        assert queued == [([1, 2], None)]

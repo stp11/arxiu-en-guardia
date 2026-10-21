@@ -142,6 +142,20 @@ class TestLinkWikipediaArticles:
         assert prompted == ["La sardana"]
         assert db_session.get(Episode, 2).wikipedia_checked_at is None
 
+    def test_links_only_the_episodes_asked_for(self, db_session, monkeypatch):
+        self.seed(db_session)
+
+        prompted = self.run(
+            db_session,
+            monkeypatch,
+            {"Sense article": [], "Vida de Mahoma": ["Mahoma"]},
+            episode_ids=[3, 2, 4],
+        )
+
+        # Episode 4 was asked for, but it's checked already.
+        assert prompted == ["Vida de Mahoma", "Sense article"]
+        assert db_session.get(Episode, 1).wikipedia_checked_at is None
+
     def test_leaves_failed_episodes_for_the_next_run(
         self, db_session, monkeypatch
     ):

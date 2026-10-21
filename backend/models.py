@@ -4,10 +4,11 @@ from enum import Enum
 from typing import Any, Callable
 
 from fastapi import Request
+from fastapi.responses import RedirectResponse
 from pgvector.sqlalchemy import Vector
 from pydantic import NaiveDatetime
 from slugify import slugify
-from sqladmin import ModelView
+from sqladmin import ModelView, action
 from sqlalchemy import Select
 from sqlmodel import (
     TEXT,
@@ -19,6 +20,7 @@ from sqlmodel import (
     select,
 )
 
+from tasks.episode_tasks import link_wikipedia_articles_task
 from wikipedia import WikipediaClient
 
 
@@ -260,14 +262,11 @@ class EpisodeAdmin(ModelView, model=Episode):
         Episode.wikipedia_checked_at,
     ]
 
-    # Emptying wikipedia_checked_at, with no articles left, has the next
-    # Wikipedia linking run look at the episode again.
     form_columns = [
         Episode.title,
         Episode.description,
         Episode.categories,
         Episode.wikipedia_articles,
-        Episode.wikipedia_checked_at,
     ]
 
     # Multi-select as tags
@@ -297,6 +296,45 @@ class EpisodeAdmin(ModelView, model=Episode):
     }
 
     page_size = 25
+
+    # Only in the list: on the details page, sqladmin's confirmation adds a
+    # second ?pks= to the URL, which already carries the episode's.
+    @action(
+        name="relink-wikipedia",
+        label="Busca articles a la Viquipèdia",
+        confirmation_message=(
+            "Els articles de la Viquipèdia d'aquests episodis se substituiran "
+            "pels que es trobin ara. Recarrega la pàgina d'aquí a uns segons "
+            "per veure'ls."
+        ),
+        add_in_detail=False,
+    )
+    async def relink_wikipedia(self, request: Request) -> RedirectResponse:
+        ids = [
+            int(pk)
+            for pk in request.query_params.get("pks", "").split(",")
+            if pk
+        ]
+        with self.session_maker() as session:
+            episodes = (
+                session.execute(select(Episode).where(Episode.id.in_(ids)))
+                .scalars()
+                .all()
+            )
+            for episode in episodes:
+                episode.wikipedia_articles = []
+                episode.wikipedia_checked_at = None
+            session.commit()
+
+        # Queued once they're cleared: the linking skips episodes that still
+        # look checked. The worker searches while the page reloads.
+        link_wikipedia_articles_task.delay(episode_ids=ids)
+
+        referer = request.headers.get("Referer")
+        return RedirectResponse(
+            referer or request.url_for("admin:list", identity=self.identity),
+            status_code=302,
+        )
 
 
 class CategoryWithoutEpisodesFilter:

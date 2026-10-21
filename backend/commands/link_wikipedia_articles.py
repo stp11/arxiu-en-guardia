@@ -24,7 +24,10 @@ from wikipedia import WikipediaClient
 
 
 def link_wikipedia_articles(
-    batch_size: int = 50, max_total: int | None = None, dry_run: bool = False
+    batch_size: int = 50,
+    max_total: int | None = None,
+    dry_run: bool = False,
+    episode_ids: list[int] | None = None,
 ):
     openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     wikipedia_client = WikipediaClient()
@@ -55,14 +58,17 @@ def link_wikipedia_articles(
                 min(batch_size, remaining) if remaining else batch_size
             )
 
-            episodes = session.exec(
+            query = (
                 select(Episode)
                 .where(Episode.wikipedia_checked_at.is_(None))
                 .where(~Episode.wikipedia_articles.any())
                 .where(Episode.id.not_in(list(skipped)))
                 .order_by(Episode.published_at.desc(), Episode.id)
                 .limit(current_batch_size)
-            ).all()
+            )
+            if episode_ids is not None:
+                query = query.where(Episode.id.in_(episode_ids))
+            episodes = session.exec(query).all()
 
             if not episodes:
                 logger.info("No more episodes to link")

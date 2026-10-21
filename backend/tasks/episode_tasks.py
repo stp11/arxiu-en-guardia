@@ -134,7 +134,11 @@ def generate_embeddings_task(
     default_retry_delay=300,  # 5 minutes
 )
 def link_wikipedia_articles_task(
-    self, previous_result=None, batch_size=50, max_total=None
+    self,
+    previous_result=None,
+    batch_size=50,
+    max_total=None,
+    episode_ids=None,
 ):
     """
     Celery task wrapper for Wikipedia linking.
@@ -145,10 +149,12 @@ def link_wikipedia_articles_task(
         previous_result: Result from previous task in chain (ignored)
         batch_size: Number of episodes committed together
         max_total: Maximum total episodes to process (None = all)
+        episode_ids: Only these episodes, as the admin asks (None = any)
     """
     logger.info(
         f"Starting Celery task: link_wikipedia_articles_task "
-        f"(batch_size={batch_size}, max_total={max_total})"
+        f"(batch_size={batch_size}, max_total={max_total}, "
+        f"episode_ids={episode_ids})"
     )
 
     if previous_result:
@@ -157,13 +163,18 @@ def link_wikipedia_articles_task(
     try:
         from commands.link_wikipedia_articles import link_wikipedia_articles
 
-        link_wikipedia_articles(batch_size=batch_size, max_total=max_total)
+        link_wikipedia_articles(
+            batch_size=batch_size,
+            max_total=max_total,
+            episode_ids=episode_ids,
+        )
         logger.info("Successfully completed link_wikipedia_articles_task")
         return {
             "status": "success",
             "message": "Episodes linked to Wikipedia successfully",
             "batch_size": batch_size,
             "max_total": max_total,
+            "episode_ids": episode_ids,
         }
 
     except Exception as e:
