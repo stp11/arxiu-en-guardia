@@ -90,7 +90,12 @@ def classify_episodes_task(
     default_retry_delay=300,  # 5 minutes
 )
 def generate_embeddings_task(
-    self, previous_result=None, batch_size=100, max_total=None
+    self,
+    previous_result=None,
+    batch_size=100,
+    max_total=None,
+    refresh=False,
+    episode_ids=None,
 ):
     """
     Celery task wrapper for embedding generation.
@@ -101,10 +106,13 @@ def generate_embeddings_task(
         previous_result: Result from previous task in chain (ignored)
         batch_size: Number of episodes per API call
         max_total: Maximum total episodes to process (None = all)
+        refresh: Embed again episodes that have an embedding already
+        episode_ids: Only these episodes, as the admin asks (None = any)
     """
     logger.info(
         f"Starting Celery task: generate_embeddings_task "
-        f"(batch_size={batch_size}, max_total={max_total})"
+        f"(batch_size={batch_size}, max_total={max_total}, "
+        f"refresh={refresh}, episode_ids={episode_ids})"
     )
 
     if previous_result:
@@ -113,13 +121,20 @@ def generate_embeddings_task(
     try:
         from commands.backfill_embeddings import backfill_embeddings
 
-        backfill_embeddings(batch_size=batch_size, max_total=max_total)
+        backfill_embeddings(
+            batch_size=batch_size,
+            max_total=max_total,
+            refresh=refresh,
+            episode_ids=episode_ids,
+        )
         logger.info("Successfully completed generate_embeddings_task")
         return {
             "status": "success",
             "message": "Embeddings generated successfully",
             "batch_size": batch_size,
             "max_total": max_total,
+            "refresh": refresh,
+            "episode_ids": episode_ids,
         }
 
     except Exception as e:
