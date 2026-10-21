@@ -93,7 +93,7 @@
           target="_blank"
           rel="noopener noreferrer"
           class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
-          >github.com/stp11/en-guardia</a
+          >github.com/stp11/arxiu-en-guardia</a
         >.
       </p>
     </section>
