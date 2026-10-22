@@ -4,6 +4,10 @@ Restore a PostgreSQL backup from Cloudflare R2.
 Downloads the latest (or specified) .sql.gz backup from R2,
 decompresses it, and restores into the target database via psql.
 
+The target must be empty. Restore as the user the app connects with, so it
+owns the tables, into a database where the superuser has already created
+pgvector.
+
 Usage:
     python -m commands.restore_backup
     python -m commands.restore_backup --file filename.sql.gz
@@ -49,8 +53,25 @@ def download(client, bucket: str, key: str) -> bytes:
     return data
 
 
+def without_extension_comments(sql: bytes) -> bytes:
+    """Drop COMMENT ON EXTENSION, which only the superuser may run"""
+    lines = []
+    # Rows of COPY data are kept whatever they start with.
+    in_copy_data = False
+    for line in sql.splitlines(keepends=True):
+        if in_copy_data:
+            in_copy_data = line.rstrip(b"\r\n") != b"\\."
+        elif line.startswith(b"COPY ") and line.rstrip().endswith(b"stdin;"):
+            in_copy_data = True
+        elif line.startswith(b"COMMENT ON EXTENSION "):
+            continue
+        lines.append(line)
+    return b"".join(lines)
+
+
 def restore(sql: bytes, database_url: str):
     log.info("Restoring to %s...", database_url.split("@")[-1])
+    sql = without_extension_comments(sql)
     # Without these psql carries on past errors and exits 0, leaving a
     # half-restored database that looks fine.
     result = subprocess.run(

@@ -13,7 +13,7 @@ x-app: &app
       condition: service_healthy
 
 x-connections: &connections
-  DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/en_guardia
+  DATABASE_URL: ${DATABASE_URL:?}
   REDIS_URL: redis://redis:6379/0
 
 services:
@@ -59,13 +59,16 @@ services:
   postgres:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
+    # Only read when the volume is first created; changing them later has
+    # no effect.
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: en_guardia
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:?}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d en_guardia"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10

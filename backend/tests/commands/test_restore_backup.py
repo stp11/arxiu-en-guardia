@@ -3,7 +3,7 @@ import os
 import pytest
 from sqlalchemy import inspect
 
-from commands.restore_backup import restore
+from commands.restore_backup import restore, without_extension_comments
 from database import engine
 
 
@@ -34,3 +34,31 @@ class TestRestore:
             )
 
         assert not self.probe_exists()
+
+
+class TestWithoutExtensionComments:
+    def test_drops_the_extension_comment(self):
+        dump = (
+            b"CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;\n"
+            b"COMMENT ON EXTENSION vector IS 'vector data type';\n"
+            b"CREATE TABLE public.users (id integer);\n"
+        )
+
+        assert without_extension_comments(dump) == (
+            b"CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;\n"
+            b"CREATE TABLE public.users (id integer);\n"
+        )
+
+    def test_keeps_copy_rows_that_look_like_one(self):
+        dump = (
+            b"COPY public.category (name) FROM stdin;\n"
+            b"COMMENT ON EXTENSION vector IS 'a category'\n"
+            b"\\.\n"
+            b"COMMENT ON EXTENSION vector IS 'vector data type';\n"
+        )
+
+        assert without_extension_comments(dump) == (
+            b"COPY public.category (name) FROM stdin;\n"
+            b"COMMENT ON EXTENSION vector IS 'a category'\n"
+            b"\\.\n"
+        )
