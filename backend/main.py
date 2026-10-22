@@ -17,6 +17,9 @@ from models import CategoryAdmin, EpisodeAdmin, WikipediaArticleAdmin
 ADMIN_PATH = os.environ.get("ADMIN_PATH", "/admin")
 ADMIN_SECRET_KEY = os.environ.get("ADMIN_SECRET_KEY")
 ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+# For origins that can't be listed ahead of time, like per-deploy previews.
+# Compose passes an empty string when it's unset.
+ORIGIN_REGEX = os.environ.get("ALLOWED_ORIGIN_REGEX") or None
 
 
 def get_cloudflare_ip(request: Request):
@@ -50,6 +53,7 @@ app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ORIGINS,
+    allow_origin_regex=ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

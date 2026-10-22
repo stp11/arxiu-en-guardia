@@ -27,6 +27,7 @@ services:
       ADMIN_PATH: ${ADMIN_PATH}
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      ALLOWED_ORIGIN_REGEX: ${ALLOWED_ORIGIN_REGEX}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
