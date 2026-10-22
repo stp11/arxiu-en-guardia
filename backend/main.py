@@ -61,5 +61,5 @@ add_pagination(app)
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Railway and Cloudflare."""
+    """Health check endpoint."""
     return {"status": "healthy"}
