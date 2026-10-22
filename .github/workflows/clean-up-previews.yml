@@ -1,56 +1,38 @@
 name: Clean Up Previews
 
 # Cloudflare Pages keeps every preview it builds, each reachable at its own
-# URL, long after the branch is gone. Whenever a pull request closes, merged
-# or not, delete every preview whose branch has no open pull request. Run it
-# by hand to sweep up after runs that were skipped or failed.
+# URL, long after the branch is gone. Once a pull request closes, merged or
+# not, delete its branch's previews.
 on:
   pull_request:
     types: [closed]
-  workflow_dispatch:
 
-permissions:
-  pull-requests: read
-
-# Overlapping sweeps would try to delete the same previews.
-concurrency:
-  group: clean-up-previews
+permissions: {}
 
 jobs:
   delete-previews:
     name: Delete previews
     runs-on: ubuntu-latest
-    # Fork and Dependabot pull requests get no secrets; the next run sweeps
-    # up after them.
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]')
+    # Pull requests from forks get no secrets.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm install --global wrangler@4.151.3
-      - name: Delete previews of branches without an open pull request
+      # list only returns the newest page of previews, so a branch can leave
+      # behind ones older than that.
+      - name: Delete the branch's preview deployments
         env:
           # Needs Cloudflare Pages: Edit on the account.
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref }}
         run: |
-          keep=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-            --json headRefName --jq 'map(.headRefName)')
-          echo "Keeping previews of $keep"
-
-          # list only returns the newest page of previews, so delete what it
-          # shows and list again, until a page has nothing left to delete.
-          while :; do
-            ids=$(wrangler pages deployment list --project-name en-guardia \
-              --environment preview --json \
-              | jq -r --argjson keep "$keep" '.[] | select(.Branch | IN($keep[]) | not) | .Id')
-            [ -n "$ids" ] || break
-            for id in $ids; do
-              # --force, because a branch's newest preview holds its alias URL
-              wrangler pages deployment delete "$id" --project-name en-guardia --force
-            done
+          ids=$(wrangler pages deployment list --project-name en-guardia \
+            --environment preview --json \
+            | jq -r --arg branch "$BRANCH" '.[] | select(.Branch == $branch) | .Id')
+          for id in $ids; do
+            # --force, because the newest one holds the branch's alias URL
+            wrangler pages deployment delete "$id" --project-name en-guardia --force
           done
