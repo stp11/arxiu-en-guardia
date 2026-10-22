@@ -1,4 +1,5 @@
 from fastapi import Request
+from fastapi.concurrency import run_in_threadpool
 from sqladmin.authentication import AuthenticationBackend
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -23,9 +24,13 @@ class AdminAuth(AuthenticationBackend):
             )
             user = session.execute(statement).scalars().first()
 
-            if user and user.verify_password(password):
+            if user and await run_in_threadpool(
+                user.verify_password, password
+            ):
                 if user.password_needs_rehash():
-                    user.password_hash = Users.hash_password(password)
+                    user.password_hash = await run_in_threadpool(
+                        Users.hash_password, password
+                    )
                     session.commit()
                 request.session.update(
                     {"user_id": user.id, "user_username": user.username}
