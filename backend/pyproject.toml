@@ -16,7 +16,7 @@ dependencies = [
     "sqladmin==0.32.0",
     "itsdangerous==2.2.0",
     "celery[redis]==5.6.3",
-    "redis==5.2.0",
+    "redis==8.1.0",
     "slowapi==0.1.10",
     "boto3==1.43.114",
     "pgvector==0.5.1",
