@@ -1,15 +1,18 @@
 import asyncio
+import hashlib
 from contextlib import nullcontext
 from datetime import datetime
 
 import pytest
-from sqlmodel import select
+from sqlmodel import Session, select
 
+from database import engine
 from main import admin
 from models import (
     Category,
     Episode,
     EpisodeAdmin,
+    Users,
     WikipediaArticle,
     WikipediaArticleAdmin,
 )
@@ -245,3 +248,69 @@ class TestAdminPages:
         assert response.status_code == 302
         assert response.headers["location"] == referer
         assert queued == [{"episode_ids": [1, 3], "refresh": True}]
+
+
+def legacy_hash(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+class TestPasswords:
+    def test_hashes_new_passwords_with_argon2(self):
+        user = Users(username="admin", password_hash=Users.hash_password("pa"))
+
+        assert user.password_hash.startswith("$argon2id$")
+        assert user.verify_password("pa")
+        assert not user.verify_password("pb")
+        assert not user.password_needs_rehash()
+
+    def test_accepts_legacy_hashes_until_they_are_replaced(self):
+        user = Users(username="admin", password_hash=legacy_hash("pa"))
+
+        assert user.verify_password("pa")
+        assert not user.verify_password("pb")
+        assert user.password_needs_rehash()
+
+    def test_rejects_a_malformed_hash(self):
+        user = Users(username="admin", password_hash="$argon2id$broken")
+
+        assert not user.verify_password("pa")
+
+
+class TestLogin:
+    # The login opens its own session, so the user is committed for real.
+    @pytest.fixture(autouse=True)
+    def user(self, client):
+        with Session(engine) as session:
+            user = Users(username="admin", password_hash=legacy_hash("pa"))
+            session.add(user)
+            session.commit()
+            user_id = user.id
+        self.client = client
+        yield
+        with Session(engine) as session:
+            session.delete(session.get(Users, user_id))
+            session.commit()
+
+    def login(self, password: str):
+        self.client.cookies.clear()
+        return self.client.post(
+            "/admin/login",
+            data={"username": "admin", "password": password},
+            follow_redirects=False,
+        )
+
+    def stored_hash(self) -> str:
+        with Session(engine) as session:
+            statement = select(Users.password_hash).where(
+                Users.username == "admin"
+            )
+            return session.exec(statement).one()
+
+    def test_replaces_a_legacy_hash_on_login(self):
+        assert self.login("pa").status_code == 302
+        assert self.stored_hash().startswith("$argon2id$")
+        assert self.login("pa").status_code == 302
+
+    def test_leaves_the_hash_alone_on_a_wrong_password(self):
+        assert self.login("pb").status_code == 400
+        assert self.stored_hash() == legacy_hash("pa")
