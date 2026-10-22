@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
 
+  import ThemeToggle from "lib/components/theme-toggle.svelte";
   import { cn } from "lib/utils";
 
   const links = [
@@ -33,5 +34,8 @@
         </a>
       </li>
     {/each}
+    <li class="flex">
+      <ThemeToggle />
+    </li>
   </ul>
 </nav>

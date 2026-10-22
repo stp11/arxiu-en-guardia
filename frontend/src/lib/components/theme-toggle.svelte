@@ -22,8 +22,8 @@
   class="text-ink-2 p-1 hover:text-vermillion-deep"
 >
   {#if isDark}
-    <SunIcon class="size-4" />
+    <SunIcon class="size-3.5" />
   {:else}
-    <MoonIcon class="size-4" />
+    <MoonIcon class="size-3.5" />
   {/if}
 </button>
