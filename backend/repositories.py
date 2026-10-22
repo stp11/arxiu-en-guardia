@@ -42,16 +42,15 @@ class CategoriesRepository(ICategoriesRepository):
         return self.db_session.exec(select(Category)).all()
 
     def get_categories_query(self, type: CategoryType) -> Select:
-        count_col = (
-            select(func.count(EpisodeCategory.episode_id))
-            .where(EpisodeCategory.category_id == Category.id)
-            .correlate(Category)
-            .scalar_subquery()
-            .label("count")
-        )
+        # Counted in one pass over the links, not one per category, and the
+        # inner join leaves out the categories without episodes.
         return (
-            select(Category, count_col)
-            .where(Category.type == type, Category.episodes.any())
+            select(
+                Category, func.count(EpisodeCategory.episode_id).label("count")
+            )
+            .join(EpisodeCategory)
+            .where(Category.type == type)
+            .group_by(Category.id)
             .order_by(Category.name)
         )
 

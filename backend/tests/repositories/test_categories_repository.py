@@ -34,14 +34,25 @@ class TestCategoriesRepository:
         assert len(results) == 3
 
     def test_get_categories_query(self, db_session: Session):
-        episode = Episode(id=1, title="Test Episode")
-        db_session.add_all(self.categories)
-        db_session.add(episode)
+        episodes = [
+            Episode(id=1, title="Test Episode"),
+            Episode(id=2, title="Another Episode"),
+        ]
+        unused = Category(name="Roma", slug="roma", type=CategoryType.LOCATION)
+        db_session.add_all([*self.categories, unused, *episodes])
         db_session.flush()
-        db_session.add(
-            EpisodeCategory(
-                episode_id=episode.id, category_id=self.categories[0].id
-            )
+        db_session.add_all(
+            [
+                EpisodeCategory(
+                    episode_id=episode.id, category_id=self.categories[0].id
+                )
+                for episode in episodes
+            ]
+            + [
+                EpisodeCategory(
+                    episode_id=1, category_id=self.categories[1].id
+                )
+            ]
         )
         db_session.commit()
         repo = CategoriesRepository(session=db_session)
@@ -49,11 +60,12 @@ class TestCategoriesRepository:
         query = repo.get_categories_query(CategoryType.LOCATION)
         assert query is not None
 
+        # Roma has no episodes, so it's left out.
         results = db_session.exec(query).all()
         assert len(results) == 1
         category, count = results[0]
         assert category.name == "Antiga Grecia"
-        assert count == 1
+        assert count == 2
 
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)
