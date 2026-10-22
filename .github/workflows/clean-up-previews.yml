@@ -20,19 +20,26 @@ jobs:
         with:
           node-version: 24
       - run: npm install --global wrangler@4.151.3
-      # list only returns the newest page of previews, so a branch can leave
-      # behind ones older than that.
       - name: Delete the branch's preview deployments
+        # Unlike the default, this sets pipefail, so a failing wrangler fails
+        # the step instead of handing jq nothing to match.
+        shell: bash
         env:
           # Needs Cloudflare Pages: Edit on the account.
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           BRANCH: ${{ github.head_ref }}
         run: |
-          ids=$(wrangler pages deployment list --project-name en-guardia \
-            --environment preview --json \
-            | jq -r --arg branch "$BRANCH" '.[] | select(.Branch == $branch) | .Id')
-          for id in $ids; do
-            # --force, because the newest one holds the branch's alias URL
-            wrangler pages deployment delete "$id" --project-name en-guardia --force
+          # list only returns the newest page of previews, so delete what it
+          # shows and list again, until it shows none of the branch's. Other
+          # branches' previews filling the whole page still hide older ones.
+          while :; do
+            ids=$(wrangler pages deployment list --project-name en-guardia \
+              --environment preview --json \
+              | jq -r --arg branch "$BRANCH" '.[] | select(.Branch == $branch) | .Id')
+            [ -n "$ids" ] || break
+            for id in $ids; do
+              # --force, because the newest one holds the branch's alias URL
+              wrangler pages deployment delete "$id" --project-name en-guardia --force
+            done
           done
