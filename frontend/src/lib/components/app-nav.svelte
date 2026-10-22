@@ -15,7 +15,7 @@
   };
 </script>
 
-<nav aria-label="Navegació principal" class="mx-auto w-full max-w-screen-2xl px-6 pt-4 md:px-10">
+<nav aria-label="Navegació principal" class="mx-auto w-full max-w-screen-xl px-6 pt-4 md:px-10">
   <ul
     class="m-0 flex list-none items-center justify-end gap-4 p-0 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 sm:gap-6"
   >
