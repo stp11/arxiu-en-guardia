@@ -21,8 +21,6 @@ services:
     <<: *app
     environment:
       <<: *connections
-      # start.sh defaults to ::, which needs IPv6.
-      HOST: 0.0.0.0
       PORT: 8080
       ADMIN_PATH: ${ADMIN_PATH}
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}

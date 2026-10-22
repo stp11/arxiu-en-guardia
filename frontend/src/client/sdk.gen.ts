@@ -61,7 +61,7 @@ export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = fal
 /**
  * Health Check
  *
- * Health check endpoint for Railway and Cloudflare.
+ * Health check endpoint.
  */
 export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckHealthGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({
