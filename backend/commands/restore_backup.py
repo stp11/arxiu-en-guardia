@@ -51,8 +51,16 @@ def download(client, bucket: str, key: str) -> bytes:
 
 def restore(sql: bytes, database_url: str):
     log.info("Restoring to %s...", database_url.split("@")[-1])
+    # Without these psql carries on past errors and exits 0, leaving a
+    # half-restored database that looks fine.
     result = subprocess.run(
-        ["psql", database_url],
+        [
+            "psql",
+            "-v",
+            "ON_ERROR_STOP=1",
+            "--single-transaction",
+            database_url,
+        ],
         input=sql,
         capture_output=True,
     )
