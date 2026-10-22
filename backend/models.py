@@ -1,8 +1,11 @@
 import hashlib
+import hmac
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable
 
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from pgvector.sqlalchemy import Vector
@@ -25,6 +28,8 @@ from tasks.episode_tasks import (
     link_wikipedia_articles_task,
 )
 from wikipedia import WikipediaClient
+
+password_hasher = PasswordHasher()
 
 
 class EpisodeCategory(SQLModel, table=True):
@@ -170,12 +175,27 @@ class Users(SQLModel, table=True):
 
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password using SHA-256"""
-        return hashlib.sha256(password.encode()).hexdigest()
+        """Hash a password using Argon2id"""
+        return password_hasher.hash(password)
 
     def verify_password(self, password: str) -> bool:
         """Verify a password against the stored hash"""
-        return self.password_hash == self.hash_password(password)
+        if self.has_legacy_hash():
+            legacy_hash = hashlib.sha256(password.encode()).hexdigest()
+            return hmac.compare_digest(self.password_hash, legacy_hash)
+        try:
+            return password_hasher.verify(self.password_hash, password)
+        except (VerificationError, InvalidHashError):
+            return False
+
+    def has_legacy_hash(self) -> bool:
+        """Unsalted SHA-256 hashes from before Argon2"""
+        return not self.password_hash.startswith("$argon2")
+
+    def password_needs_rehash(self) -> bool:
+        return self.has_legacy_hash() or password_hasher.check_needs_rehash(
+            self.password_hash
+        )
 
     def __str__(self) -> str:
         return self.username

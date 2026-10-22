@@ -20,6 +20,7 @@ dependencies = [
     "slowapi==0.1.10",
     "boto3==1.43.114",
     "pgvector==0.5.1",
+    "argon2-cffi==25.1.0",
 ]
 
 [dependency-groups]

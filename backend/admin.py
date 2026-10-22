@@ -24,6 +24,9 @@ class AdminAuth(AuthenticationBackend):
             user = session.execute(statement).scalars().first()
 
             if user and user.verify_password(password):
+                if user.password_needs_rehash():
+                    user.password_hash = Users.hash_password(password)
+                    session.commit()
                 request.session.update(
                     {"user_id": user.id, "user_username": user.username}
                 )
