@@ -47,3 +47,6 @@ celerybeat-schedule.*
 
 # Setup docs
 docs
+
+# Wrangler cache
+.wrangler
