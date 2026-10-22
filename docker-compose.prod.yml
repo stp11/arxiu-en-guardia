@@ -1,0 +1,93 @@
+# Production stack. CI builds and pushes the app image (see
+# be-lint-and-test.yml).
+
+x-app: &app
+  image: ghcr.io/stp11/arxiu-en-guardia:${IMAGE_TAG:-main}
+  # main moves on every deploy; without this, `up` reuses the cached image.
+  pull_policy: always
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+x-connections: &connections
+  DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/en_guardia
+  REDIS_URL: redis://redis:6379/0
+
+services:
+  backend:
+    <<: *app
+    environment:
+      <<: *connections
+      # start.sh defaults to ::, which needs IPv6.
+      HOST: 0.0.0.0
+      PORT: 8080
+      ADMIN_PATH: ${ADMIN_PATH}
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  celery-worker:
+    <<: *app
+    entrypoint: /app/entrypoints/celery-worker.sh
+    environment:
+      <<: *connections
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+
+  # Off until COMPOSE_PROFILES=scheduler: only one server may schedule the
+  # weekly jobs, or a second one ingests twice and uploads backups of its
+  # own data as the latest.
+  celery-beat:
+    <<: *app
+    profiles: [scheduler]
+    entrypoint: /app/entrypoints/celery-beat.sh
+    environment:
+      REDIS_URL: redis://redis:6379/0
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: en_guardia
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d en_guardia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.0
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    # Lets the tunnel reach ports published on the host.
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+volumes:
+  postgres_data:

@@ -1,0 +1,2 @@
+# Local secrets must never end up in an image, even one built by hand.
+**/.env*
