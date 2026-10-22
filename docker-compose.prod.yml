@@ -1,5 +1,5 @@
 # Production stack. CI builds and pushes the app image (see
-# be-lint-and-test.yml).
+# build-and-publish.yml).
 
 x-app: &app
   image: ghcr.io/stp11/arxiu-en-guardia:${IMAGE_TAG:-main}
