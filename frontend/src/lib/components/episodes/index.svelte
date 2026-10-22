@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { Loader2, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
+  import { ChevronDown, Loader2, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
   import { SITE_URL } from "src/lib/constants";
 
@@ -790,18 +790,24 @@
             {/if}
             <label class="flex items-center gap-2">
               Per pàgina
-              <select
-                value={pageSize}
-                onchange={(e) => {
-                  pageSize = Number(e.currentTarget.value);
-                  page = 1;
-                }}
-                class="cursor-pointer rounded-sm border border-rule bg-paper-2 px-2 py-1.5 font-mono text-[11px] uppercase tracking-[0.06em] text-ink focus:border-vermillion focus:outline-none"
-              >
-                {#each [10, 20, 30, 50] as opt (opt)}
-                  <option value={opt}>{opt}</option>
-                {/each}
-              </select>
+              <span class="relative flex">
+                <select
+                  value={pageSize}
+                  onchange={(e) => {
+                    pageSize = Number(e.currentTarget.value);
+                    page = 1;
+                  }}
+                  class="cursor-pointer appearance-none rounded-sm border border-rule bg-paper-2 py-1.5 pr-7 pl-2 font-mono text-[11px] uppercase tracking-[0.06em] text-ink focus:border-vermillion focus:outline-none"
+                >
+                  {#each [10, 20, 30, 50] as opt (opt)}
+                    <option value={opt}>{opt}</option>
+                  {/each}
+                </select>
+                <ChevronDown
+                  class="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-ink-3"
+                  aria-hidden="true"
+                />
+              </span>
             </label>
           </nav>
         {/if}
