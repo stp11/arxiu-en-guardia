@@ -33,7 +33,7 @@
     "@types/node": "^26",
     "bits-ui": "^2.19.5",
     "clsx": "^2.1.1",
-    "eslint": "^9.38.0",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.23.1",
     "globals": "^16.4.0",
