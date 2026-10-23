@@ -70,7 +70,19 @@
 
       <p class="mt-4 font-serif text-lg leading-relaxed">
         Encara hi ha categories que no són del tot precises i que anirem millorant amb el temps. Si
-        hi detectes errors o tens propostes, no dubtis a contactar-nos.
+        hi detectes errors o tens propostes de millora, escriu-nos a <span class="font-bold"
+          >info@arxiu-en-guardia.com</span
+        >.
+      </p>
+
+      <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
+        Si el projecte et resulta útil i vols donar-hi suport, pots convidar-nos a un cafè a <a
+          href="https://buymeacoffee.com/arxiuenguardia"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
+          >Buy Me a Coffee</a
+        >.
       </p>
     </section>
 
@@ -94,29 +106,6 @@
           rel="noopener noreferrer"
           class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
           >github.com/stp11/arxiu-en-guardia</a
-        >.
-      </p>
-    </section>
-
-    <!-- Contacte -->
-    <section id="contacte" class="mt-16 max-w-[70ch] scroll-mt-20">
-      <h2
-        class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
-      >
-        Contacte
-      </h2>
-      <p class="font-serif text-lg leading-relaxed text-ink">
-        Si tens suggeriments, correccions o vols saludar, escriu-nos a <span class="font-bold"
-          >info@arxiu-en-guardia.com</span
-        >.
-      </p>
-      <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
-        Si el projecte et resulta útil i vols donar-hi suport, pots convidar-nos a un cafè a <a
-          href="https://buymeacoffee.com/arxiuenguardia"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
-          >Buy Me a Coffee</a
         >.
       </p>
     </section>

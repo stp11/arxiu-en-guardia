@@ -56,8 +56,8 @@
     <!-- Intro -->
     <section class="mt-12 max-w-[70ch]">
       <p class="font-serif text-[clamp(1.2rem,2vw,1.625rem)] leading-snug text-pretty text-ink">
-        Aquesta web no recull dades personals. No té formularis, comptes, galetes pròpies ni
-        analítica que t'identifiqui.
+        Aquest web no recull dades personals. No té formularis, comptes, galetes pròpies ni sistemes
+        d'analítica que t'identifiquin.
       </p>
     </section>
 
@@ -66,11 +66,11 @@
       <h2
         class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
       >
-        Preferències al navegador
+        Preferències del navegador
       </h2>
       <p class="font-serif text-lg leading-relaxed text-ink">
-        L'única cosa que el web desa al teu dispositiu és si prefereixes el tema clar o el fosc. Es
-        guarda a l'emmagatzematge local del navegador.
+        El web només desa al teu dispositiu si prefereixes el mode clar o el fosc. Aquesta
+        informació es guarda a l'emmagatzematge local del navegador.
       </p>
     </section>
 
@@ -83,8 +83,8 @@
       </h2>
       <p class="font-serif text-lg leading-relaxed text-ink">
         Fem servir Cloudflare Web Analytics per saber quantes visites rep el web i quines pàgines es
-        consulten més. No fa servir galetes ni crea perfils dels visitants: només en veiem xifres
-        agregades. Pots consultar la <a
+        consulten més. Aquesta eina no utilitza galetes ni crea perfils dels visitants: només en
+        veiem xifres agregades. Pots consultar la <a
           href="https://www.cloudflare.com/privacypolicy/"
           target="_blank"
           rel="noopener noreferrer"
@@ -101,10 +101,10 @@
         Allotjament i registres
       </h2>
       <p class="font-serif text-lg leading-relaxed text-ink">
-        El web es distribueix a través de Cloudflare, que tracta dades tècniques de cada petició,
-        com ara l'adreça IP o el navegador, per servir les pàgines i protegir-les d'abusos, d'acord
-        amb la seva política de privadesa. Les dades de l'arxiu s'allotgen en un proveïdor de
-        servidors. El nostre servidor no guarda registres de les visites.
+        El web es distribueix a través de Cloudflare, que tracta dades tècniques de cada petició
+        (com ara l'adreça IP o el navegador) per servir les pàgines i protegir-les d'abusos, d'acord
+        amb la seva política de privadesa. La base de dades i l'API de l'arxiu estan allotjades en
+        un servidor d'un proveïdor extern. Aquest servidor no guarda cap registre de les visites.
       </p>
     </section>
 
@@ -117,8 +117,8 @@
       </h2>
       <p class="font-serif text-lg leading-relaxed text-ink">
         Els episodis s'escolten amb el reproductor oficial de 3Cat, integrat a la pàgina de cada
-        episodi. En obrir-la, el teu navegador es connecta a 3Cat, que pot fer servir galetes i
-        eines d'analítica pròpies. Aquest reproductor es regeix per la <a
+        episodi. Quan hi accedeixes, el teu navegador es connecta a 3Cat, que pot fer servir galetes
+        i eines d'analítica pròpies. Aquest reproductor es regeix per la <a
           href="https://www.3cat.cat/avis-legal/privacitat/dades/"
           target="_blank"
           rel="noopener noreferrer"
