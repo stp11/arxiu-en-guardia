@@ -70,7 +70,7 @@
 
       <p class="mt-4 font-serif text-lg leading-relaxed">
         Encara hi ha categories que no són del tot precises i que anirem millorant amb el temps. Si
-        hi detectes errors, o tens propostes de millora escriu-nos a <span class="font-bold"
+        hi detectes errors o tens propostes de millora, escriu-nos a <span class="font-bold"
           >info@arxiu-en-guardia.com</span
         >.
       </p>

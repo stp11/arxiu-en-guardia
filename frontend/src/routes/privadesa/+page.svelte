@@ -103,8 +103,8 @@
       <p class="font-serif text-lg leading-relaxed text-ink">
         El web es distribueix a través de Cloudflare, que tracta dades tècniques de cada petició
         (com ara l'adreça IP o el navegador) per servir les pàgines i protegir-les d'abusos, d'acord
-        amb la seva política de privadesa. Els fitxers del web estan allotjats en un proveïdor de
-        servidors. El nostre servidor no guarda cap registre de les visites.
+        amb la seva política de privadesa. La base de dades i l'API de l'arxiu estan allotjades en
+        un servidor d'un proveïdor extern. Aquest servidor no guarda cap registre de les visites.
       </p>
     </section>
 
