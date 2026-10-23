@@ -17,42 +17,49 @@ ni per la Corporació Catalana de Mitjans Audiovisuals (CCMA).
 ## Desenvolupament
 
 Requisits: [Docker](https://www.docker.com/) i [Bun](https://bun.sh/).
+Les ordres habituals són al [`Makefile`](Makefile).
 
-Copia els fitxers d'entorn i emplena'ls amb els teus valors:
+Copia els fitxers d'entorn (si encara no existeixen) i instal·la les
+dependències del frontend:
 
 ```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+make setup
 ```
+
+Després emplena `backend/.env` i `frontend/.env` amb els teus valors.
 
 Aixeca el backend (FastAPI + Postgres) i el frontend (SvelteKit):
 
 ```bash
-docker compose up -d
-cd frontend && bun install && bun run dev
+make start-backend
+make start-frontend
 ```
 
 El frontend queda disponible a `http://localhost:5173` i l'API a
 `http://localhost:8000`. Les migracions s'apliquen automàticament a
-l'arrencada del backend.
+l'arrencada del backend. Per aturar-lo, `make stop-backend` (les
+dades de la base de dades es conserven).
 
 Per poblar la base de dades, classificar episodis amb IA o afegir
 migracions, mira els scripts a `backend/commands/` i les tasques a
-`backend/tasks/`. La classificació requereix `OPENAI_API_KEY`.
+`backend/tasks/`. La classificació necessita una `OPENAI_API_KEY`.
 
 Les tasques en segon pla (Celery + Redis) estan darrere d'un perfil de
 Docker Compose i no s'aixequen per defecte. Si les necessites:
 
 ```bash
-docker compose --profile celery up -d
+make start-celery
 ```
 
-Per executar els tests del backend (fan servir una base de dades
-temporal pròpia; la de desenvolupament no es toca):
+Per executar els tests del backend:
 
 ```bash
-docker compose exec backend python -m pytest
+make test-backend
 ```
+
+El `Makefile` també té ordres per regenerar el client de l'API
+(`make generate-client`) i per formatar i revisar el frontend
+(`make lint-frontend`).
 
 ---
 
