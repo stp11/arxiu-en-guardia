@@ -41,7 +41,7 @@ const escapeXml = (value: string): string =>
 const fetchAllEpisodes = async (apiUrl: string, fetchFn: typeof fetch): Promise<EpisodeRow[]> => {
   const all: EpisodeRow[] = [];
   let page = 1;
-  let totalPages = 1;
+  let totalPages: number;
 
   do {
     const url = `${apiUrl}/api/episodes?page=${page}&size=${PAGE_SIZE}&order=desc`;
