@@ -30,7 +30,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: lint
+    # In parallel with lint; publishing still waits for both.
+    if: github.event.pull_request.draft == false
     services:
       postgres:
         image: pgvector/pgvector:pg17
