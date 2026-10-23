@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
   import { SvelteURLSearchParams } from "svelte/reactivity";
 
   import { goto } from "$app/navigation";
@@ -48,65 +48,76 @@
     "des",
   ];
 
-  let searchText = $state("");
-  let searchQuery = $state("");
-  let page = $state(initialPage);
-  let pageSize = $state(defaultPageSize);
-  let categories = $state<Record<CategoryType, string[]>>({
-    topic: [],
-    character: [],
-    location: [],
-    time_period: [],
-  });
-  let order = $state<"asc" | "desc">("desc");
-  let searchInput: HTMLInputElement | null = $state(null);
-  let filtersOpen = $state(false);
-
-  let isInitialized = false;
-  onMount(() => {
+  // Read before the episodes query is created: setting the state on mount
+  // fetched the unfiltered episodes first, then the filtered ones.
+  const readUrlState = () => {
     const params = pageStore.url.searchParams;
+    const state = {
+      search: "",
+      page: initialPage,
+      pageSize: defaultPageSize,
+      order: "desc" as "asc" | "desc",
+      categories: {
+        topic: [],
+        character: [],
+        location: [],
+        time_period: [],
+      } as Record<CategoryType, string[]>,
+    };
 
     const urlPage = params.get("page");
     if (urlPage) {
       const n = Number.parseInt(urlPage, 10);
-      if (!Number.isNaN(n) && n > 0) page = n;
+      if (!Number.isNaN(n) && n > 0) state.page = n;
     }
 
     const urlPageSize = params.get("pageSize");
     if (urlPageSize) {
       const n = Number.parseInt(urlPageSize, 10);
-      if (!Number.isNaN(n) && n > 0 && n <= maxPageSize) pageSize = n;
+      if (!Number.isNaN(n) && n > 0 && n <= maxPageSize) state.pageSize = n;
     }
 
     const urlSearch = params.get("search");
     if (urlSearch && urlSearch.trim().length >= minSearchChars) {
-      searchText = urlSearch;
-      searchQuery = urlSearch.trim();
+      state.search = urlSearch;
     }
 
     const urlOrder = params.get("order");
     if (urlOrder === "asc" || urlOrder === "desc") {
-      order = urlOrder;
+      state.order = urlOrder;
     }
 
-    const nextCategories = { ...categories };
     for (const t of ALL_TYPES) {
       const raw = params.get(t);
       if (!raw) continue;
-      const slugs = raw
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-      if (slugs.length > 0) nextCategories[t] = slugs;
+      // Unique, or the keyed list of selected categories throws.
+      const slugs = [
+        ...new Set(
+          raw
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0)
+        ),
+      ];
+      if (slugs.length > 0) state.categories[t] = slugs;
     }
-    categories = nextCategories;
 
-    isInitialized = true;
-  });
+    return state;
+  };
+
+  const fromUrl = readUrlState();
+
+  let searchText = $state(fromUrl.search);
+  let searchQuery = $state(fromUrl.search.trim());
+  let page = $state(fromUrl.page);
+  let pageSize = $state(fromUrl.pageSize);
+  let categories = $state<Record<CategoryType, string[]>>(fromUrl.categories);
+  let order = $state<"asc" | "desc">(fromUrl.order);
+  let searchInput: HTMLInputElement | null = $state(null);
+  let filtersOpen = $state(false);
 
   let urlTimer: ReturnType<typeof setTimeout> | null = null;
   const updateUrl = () => {
-    if (!isInitialized) return;
     if (urlTimer) clearTimeout(urlTimer);
     urlTimer = setTimeout(() => {
       const params = new SvelteURLSearchParams(pageStore.url.searchParams);
@@ -143,7 +154,7 @@
     searchQuery; // eslint-disable-line @typescript-eslint/no-unused-expressions
     order; // eslint-disable-line @typescript-eslint/no-unused-expressions
     categoriesString; // eslint-disable-line @typescript-eslint/no-unused-expressions
-    if (isInitialized) updateUrl();
+    updateUrl();
   });
 
   let searchTimer: ReturnType<typeof setTimeout> | null = null;
