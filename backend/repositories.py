@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy import Float, Select, Subquery, case, cast, func, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import defer, selectinload
 from sqlmodel import Session, select
 
 from models import (
@@ -128,7 +128,10 @@ class EpisodesRepository(IEpisodesRepository):
     def get_episodes_query(
         self, search: str | None, order: str, categories: list[str] = []
     ) -> Select:
-        query = select(Episode).options(selectinload(Episode.categories))
+        # The list doesn't show the vectors, which are most of each row.
+        query = select(Episode).options(
+            defer(Episode.embedding), selectinload(Episode.categories)
+        )
 
         if search and search.strip():
             search_term = f"%{search.strip()}%"
