@@ -30,7 +30,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@tsconfig/svelte": "^5.0.8",
-    "@types/node": "^22",
+    "@types/node": "^26",
     "bits-ui": "^2.19.5",
     "clsx": "^2.1.1",
     "eslint": "^9.38.0",
