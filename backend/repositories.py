@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy import Select, func, or_
+from sqlalchemy import Float, Select, Subquery, case, cast, func, or_
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -12,6 +12,11 @@ from models import (
     EpisodeWikipediaArticle,
     WikipediaArticle,
 )
+
+# How much sharing categories counts for similar episodes, next to the
+# vectors' cosine similarity. Both are 0 to 1: at 0.2, sharing every category
+# is worth as much as a vector 0.2 closer.
+CATEGORY_WEIGHT = 0.2
 
 
 class ICategoriesRepository(ABC):
@@ -196,14 +201,61 @@ class EpisodesRepository(IEpisodesRepository):
     def get_similar_episodes(
         self, episode: Episode, limit: int
     ) -> list[Episode]:
+        # Categories are curated in the admin, and count as soon as they're
+        # edited, while vectors wait to be regenerated.
+        categories = self._category_similarity(episode)
         return self.db_session.exec(
             select(Episode)
+            .outerjoin(categories, categories.c.episode_id == Episode.id)
             .where(Episode.embedding.isnot(None))
             .where(Episode.id != episode.id)
             .options(selectinload(Episode.categories))
-            .order_by(Episode.embedding.cosine_distance(episode.embedding))
+            .order_by(
+                Episode.embedding.cosine_distance(episode.embedding)
+                - CATEGORY_WEIGHT * func.coalesce(categories.c.similarity, 0.0)
+            )
             .limit(limit)
         ).all()
+
+    def _category_similarity(self, episode: Episode) -> Subquery:
+        """
+        The cosine similarity, 0 to 1, of each episode's categories to the
+        episode's, each one weighing more the fewer episodes it has (tf-idf):
+        sharing Jaume I says more than sharing Franquisme.
+        """
+        episodes = select(func.count()).select_from(Episode).scalar_subquery()
+        weights = (
+            select(
+                EpisodeCategory.category_id,
+                func.ln(cast(episodes, Float) / func.count()).label("weight"),
+            )
+            .group_by(EpisodeCategory.category_id)
+            .subquery()
+        )
+        squared = weights.c.weight * weights.c.weight
+        shared = weights.c.category_id.in_(
+            [category.id for category in episode.categories]
+        )
+        norm = (
+            select(func.sqrt(func.sum(squared))).where(shared)
+        ).scalar_subquery()
+
+        # An episode whose categories every episode has weighs 0, and
+        # divides by NULL rather than by zero.
+        return (
+            select(
+                EpisodeCategory.episode_id,
+                (
+                    func.sum(case((shared, squared), else_=0.0))
+                    / func.nullif(func.sqrt(func.sum(squared)) * norm, 0)
+                ).label("similarity"),
+            )
+            .join(
+                weights, weights.c.category_id == EpisodeCategory.category_id
+            )
+            .group_by(EpisodeCategory.episode_id)
+            .subquery()
+        )
 
 
 class IWikipediaArticlesRepository(ABC):
