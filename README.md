@@ -42,7 +42,7 @@ dades de la base de dades es conserven).
 
 Per poblar la base de dades, classificar episodis amb IA o afegir
 migracions, mira els scripts a `backend/commands/` i les tasques a
-`backend/tasks/`. La classificació requereix `OPENAI_API_KEY`.
+`backend/tasks/`. La classificació necessita una `OPENAI_API_KEY`.
 
 Les tasques en segon pla (Celery + Redis) estan darrere d'un perfil de
 Docker Compose i no s'aixequen per defecte. Si les necessites:
