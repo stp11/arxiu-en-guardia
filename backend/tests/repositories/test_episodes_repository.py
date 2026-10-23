@@ -6,6 +6,10 @@ from models import Category, CategoryType, Episode, EpisodeCategory
 from repositories import EpisodesRepository
 
 
+def embedding(x: float, y: float) -> list[float]:
+    return [x, y] + [0.0] * 1534
+
+
 class TestEpisodesRepository:
     def setup_method(self):
         self.episodes = [
@@ -126,9 +130,6 @@ class TestEpisodesRepository:
         assert episode is None
 
     def test_repository_get_similar_episodes(self, db_session: Session):
-        def embedding(x: float, y: float) -> list[float]:
-            return [x, y] + [0.0] * 1534
-
         source = Episode(id=1, title="Font", embedding=embedding(1.0, 0.0))
         db_session.add_all(
             [
@@ -146,3 +147,75 @@ class TestEpisodesRepository:
 
         results = repo.get_similar_episodes(source, limit=1)
         assert [e.id for e in results] == [3]
+
+    def test_repository_get_similar_episodes_weighs_shared_categories(
+        self, db_session: Session
+    ):
+        almogavers = Category(id=1, name="Almogàvers", slug="almogavers")
+        source = Episode(
+            id=1,
+            title="Font",
+            embedding=embedding(1.0, 0.0),
+            categories=[almogavers],
+        )
+        db_session.add_all(
+            [
+                source,
+                Episode(id=2, title="Proper", embedding=embedding(0.9, 0.1)),
+                Episode(
+                    id=3,
+                    title="Mateixa categoria",
+                    embedding=embedding(0.8, 0.2),
+                    categories=[almogavers],
+                ),
+                Episode(id=4, title="Llunyà", embedding=embedding(0.1, 0.9)),
+            ]
+        )
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        results = repo.get_similar_episodes(source, limit=5)
+        assert [e.id for e in results] == [3, 2, 4]
+
+    def test_repository_get_similar_episodes_rarer_categories_weigh_more(
+        self, db_session: Session
+    ):
+        franquisme = Category(id=1, name="Franquisme", slug="franquisme")
+        maquis = Category(id=2, name="Maquis", slug="maquis")
+        source = Episode(
+            id=1,
+            title="Font",
+            embedding=embedding(1.0, 0.0),
+            categories=[franquisme, maquis],
+        )
+        db_session.add_all(
+            [
+                source,
+                Episode(
+                    id=2,
+                    title="Comuna",
+                    embedding=embedding(0.9, 0.1),
+                    categories=[franquisme],
+                ),
+                Episode(
+                    id=3,
+                    title="Rara",
+                    embedding=embedding(0.9, 0.1),
+                    categories=[maquis],
+                ),
+                *[
+                    Episode(
+                        id=id,
+                        title="Franquisme",
+                        embedding=embedding(0.1, 0.9),
+                        categories=[franquisme],
+                    )
+                    for id in (4, 5, 6)
+                ],
+            ]
+        )
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        results = repo.get_similar_episodes(source, limit=2)
+        assert [e.id for e in results] == [3, 2]

@@ -1,6 +1,9 @@
 from types import SimpleNamespace
 
-from commands.backfill_embeddings import backfill_embeddings
+from commands.backfill_embeddings import (
+    _episode_embedding_text,
+    backfill_embeddings,
+)
 from models import Episode
 
 OLD = [0.0] * 1536
@@ -56,6 +59,16 @@ class TestBackfillEmbeddings:
         assert embedded == ["Olivares | 1640"]
         assert list(db_session.get(Episode, 1).embedding) == OLD
 
+    def test_embeds_episodes_without_a_description(
+        self, db_session, monkeypatch
+    ):
+        db_session.add(Episode(id=4, title="Casp"))
+        db_session.commit()
+
+        embedded = self.run(db_session, monkeypatch)
+
+        assert embedded == ["Casp"]
+
     def test_refresh_re_embeds_every_episode_once(
         self, db_session, monkeypatch
     ):
@@ -89,3 +102,48 @@ class TestBackfillEmbeddings:
         assert sorted(embedded) == ["Almansa | 1707", "Olivares | 1640"]
         assert list(db_session.get(Episode, 1).embedding) == NEW
         assert list(db_session.get(Episode, 2).embedding) == OLD
+
+
+class TestEpisodeEmbeddingText:
+    def test_drops_the_episode_and_chapter_numbers(self):
+        episode = Episode(
+            title="702 - Els anglesos a la guerra del Francès",
+            description="Capítol 1.000 - Tercera part. La flota anglesa.",
+        )
+
+        assert _episode_embedding_text(episode) == (
+            "Els anglesos a la guerra del Francès | La flota anglesa."
+        )
+
+    def test_drops_the_placeholder_description(self):
+        episode = Episode(
+            title="153 - L'aigua i els romans", description="En guàrdia"
+        )
+
+        assert _episode_embedding_text(episode) == "L'aigua i els romans"
+
+    def test_drops_the_guests_but_not_their_books(self):
+        episode = Episode(
+            title="Les companyies mercenàries",
+            description=(
+                "Capítol 1299. Entraven, saquejaven i es feien fonedissos. "
+                "En parlem amb Josep Maria Solé i Sabaté, historiador, i "
+                "Flocel Sabaté, catedràtic d'Història Medieval de la UdL. "
+                'També és autor del llibre "Companyies estranyes d\'armes".'
+            ),
+        )
+
+        assert _episode_embedding_text(episode) == (
+            "Les companyies mercenàries | Entraven, saquejaven i es feien "
+            "fonedissos. Companyies estranyes d'armes"
+        )
+
+    def test_drops_html(self):
+        episode = Episode(
+            title="La revolta hongaresa",
+            description="L&#x2019;<b>Exèrcit Roig</b> la va aplacar.",
+        )
+
+        assert _episode_embedding_text(episode) == (
+            "La revolta hongaresa | L’Exèrcit Roig la va aplacar."
+        )

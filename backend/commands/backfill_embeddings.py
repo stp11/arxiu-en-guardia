@@ -1,4 +1,6 @@
+import html
 import os
+import re
 
 from openai import OpenAI
 from sqlmodel import select
@@ -17,10 +19,44 @@ CATEGORY_TYPE_LABELS = {
 }
 
 
+# What 3Cat repeats in every episode would otherwise pull episodes together
+# for their format rather than their topic.
+EPISODE_NUMBER = re.compile(r"^\d+\s*-\s*")
+# "Capítol 1308. ", "Capítol 1.000 - Tercera part. ", "Capítol 715 - "...
+CHAPTER_NUMBER = re.compile(
+    r"^Capítol(?: [\d.]+)?(?:\s*-\s*\w+ part)?\s*[.-]\s*"
+)
+# The description of the early episodes.
+PLACEHOLDER = "En guàrdia"
+# From the sentence that introduces the guests, "En parlem amb Josep M. Solé
+# i Sabaté, historiador, i...", to the end: their names and posts.
+GUESTS = re.compile(
+    r"[^.?!]*\b(?:[Pp]arlem amb|En parlen|Josep M(?:aria|\.)? Solé(?: i)? "
+    r"Sabat[eé])\b.*",
+    re.S,
+)
+# Though the books and theses the guests wrote usually name it.
+QUOTED = re.compile(r"[\"“«]([^\"”»]+)[\"”»]")
+HTML_TAG = re.compile(r"<[^>]+>")
+
+
+def _clean_description(description: str) -> str:
+    text = HTML_TAG.sub("", html.unescape(description)).strip()
+    if text == PLACEHOLDER:
+        return ""
+    text = EPISODE_NUMBER.sub("", CHAPTER_NUMBER.sub("", text))
+    guests = GUESTS.search(text)
+    if guests:
+        titles = QUOTED.findall(guests.group())
+        text = " ".join([text[: guests.start()], *titles])
+    return " ".join(text.split())
+
+
 def _episode_embedding_text(episode: Episode) -> str:
-    parts: list[str] = [episode.title]
-    if episode.description:
-        parts.append(episode.description)
+    parts: list[str] = [EPISODE_NUMBER.sub("", episode.title).strip()]
+    description = _clean_description(episode.description or "")
+    if description:
+        parts.append(description)
 
     by_type: dict[str, list[str]] = {}
     for category in episode.categories:
@@ -65,9 +101,10 @@ def backfill_embeddings(
                 min(batch_size, remaining) if remaining else batch_size
             )
 
+            # Episodes without a description too, from their title and
+            # categories: otherwise they have no similar episodes at all.
             query = (
                 select(Episode)
-                .where(Episode.description.isnot(None))
                 .order_by(Episode.published_at.desc(), Episode.id)
                 .limit(current_batch_size)
             )
