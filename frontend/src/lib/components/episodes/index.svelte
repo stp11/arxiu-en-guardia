@@ -488,7 +488,7 @@
           <SlidersHorizontal class="size-4" />
           {#if activeFilterCount > 0}
             <span
-              class="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-vermillion-deep px-1 font-mono text-[9px] font-semibold leading-none tracking-normal text-paper"
+              class="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-vermillion-deep px-1 font-mono text-[9px] font-medium leading-none tracking-normal text-paper"
             >
               {activeFilterCount}
             </span>
