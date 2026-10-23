@@ -9,15 +9,12 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.svelte --max-warnings=0 --no-warn-ignored",
     "lint:fix": "bun run lint -- --fix",
-    "lint:fix:test": "bun run lint:fix && bun run test",
     "lint:staged": "eslint --ext .ts,.svelte --max-warnings=0 --fix --no-warn-ignored",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "prettier:fix": "prettier --write src/ *[.js,.ts]",
     "prettier:check": "prettier --check src/",
-    "test:unit": "vitest",
-    "test": "npm run test:unit -- --run",
     "generate-client": "openapi-ts"
   },
   "devDependencies": {
@@ -49,8 +46,7 @@
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.0",
-    "vite": "^7.1.10",
-    "vitest": "^4.0.5"
+    "vite": "^7.1.10"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
