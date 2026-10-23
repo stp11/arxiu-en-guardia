@@ -9,7 +9,7 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url("/fonts/CormorantGaramond.ttf") format("truetype-variations");
+  src: url("/fonts/CormorantGaramond.woff2") format("woff2");
 }
 
 @font-face {
@@ -17,7 +17,7 @@
   font-style: italic;
   font-weight: 400 500;
   font-display: swap;
-  src: url("/fonts/CormorantGaramond-Italic.ttf") format("truetype-variations");
+  src: url("/fonts/CormorantGaramond-Italic.woff2") format("woff2");
 }
 
 @font-face {
@@ -25,7 +25,7 @@
   font-style: normal;
   font-weight: 400 600;
   font-display: swap;
-  src: url("/fonts/Lora.ttf") format("truetype-variations");
+  src: url("/fonts/Lora.woff2") format("woff2");
 }
 
 @font-face {
@@ -33,7 +33,7 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/Lora-Italic.ttf") format("truetype-variations");
+  src: url("/fonts/Lora-Italic.woff2") format("woff2");
 }
 
 @font-face {
@@ -41,7 +41,7 @@
   font-style: normal;
   font-weight: 400 500;
   font-display: swap;
-  src: url("/fonts/JetBrainsMono.ttf") format("truetype-variations");
+  src: url("/fonts/JetBrainsMono.woff2") format("woff2");
 }
 
 :root {
@@ -56,12 +56,12 @@
   --ink-3: #6e5f48;
   --rule: #c8b994;
   --vermillion: #e8542d;
-  --vermillion-deep: #c93f1b;
+  --vermillion-deep: #b63918;
   --amber: #f39042;
   --teal: #2e5e58;
   --plum: #5b3a4a;
   --moss: #5a6b3a;
-  --character: #a25c12;
+  --character: #955511;
 
   /* Shadcn semantic tokens mapped to the paper palette */
   --background: var(--paper);
@@ -100,7 +100,7 @@
   --paper-edge: #2a2219;
   --ink: #ede2cc;
   --ink-2: #c9bba0;
-  --ink-3: #8e7f66;
+  --ink-3: #8f8066;
   --rule: #3a2f22;
   --vermillion: #f26b43;
   --vermillion-deep: #e8542d;
