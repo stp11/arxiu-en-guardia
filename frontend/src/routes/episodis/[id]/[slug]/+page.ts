@@ -4,11 +4,18 @@ import { getEpisodeApiEpisodesIdGet, getSimilarEpisodesApiEpisodesIdSimilarGet }
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
-  const response = await getEpisodeApiEpisodesIdGet({
-    path: {
-      id: +params.id,
-    },
-  });
+  // Fetched in parallel; the similar episodes are discarded if we error or redirect
+  const [response, similarResponse] = await Promise.all([
+    getEpisodeApiEpisodesIdGet({
+      path: {
+        id: +params.id,
+      },
+    }),
+    getSimilarEpisodesApiEpisodesIdSimilarGet({
+      path: { id: +params.id },
+      query: { limit: 3 },
+    }),
+  ]);
 
   if (response.error) {
     throw error(response.response.status);
@@ -19,11 +26,6 @@ export const load: PageLoad = async ({ params }) => {
   if (episode?.slug && params.slug !== episode.slug) {
     throw redirect(301, `/episodis/${params.id}/${episode.slug}`);
   }
-
-  const similarResponse = await getSimilarEpisodesApiEpisodesIdSimilarGet({
-    path: { id: +params.id },
-    query: { limit: 3 },
-  });
 
   return {
     episode: response.data,
