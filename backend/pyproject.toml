@@ -3,7 +3,7 @@ name = "en-guardia"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi[standard]==0.151.0",
+    "fastapi[standard]==0.157.0",
     "fastapi-pagination==0.16.1",
     "pydantic==2.14.1",
     "uvicorn==0.54.0",
@@ -18,7 +18,7 @@ dependencies = [
     "celery[redis]==5.6.3",
     "redis==5.2.0",
     "slowapi==0.1.10",
-    "boto3==1.43.115",
+    "boto3==1.43.116",
     "pgvector==0.5.1",
     "argon2-cffi==25.1.0",
 ]
