@@ -23,6 +23,13 @@ celery_app.conf.update(
     task_soft_time_limit=3300,
     worker_prefetch_multiplier=1,
     worker_max_tasks_per_child=50,
+    worker_log_format=(
+        "[%(asctime)s: level=%(levelname)s %(processName)s] %(message)s"
+    ),
+    worker_task_log_format=(
+        "[%(asctime)s: level=%(levelname)s %(processName)s] "
+        "%(task_name)s[%(task_id)s]: %(message)s"
+    ),
 )
 
 
