@@ -41,3 +41,12 @@ updates:
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 5
+
+  # Only cloudflared: redis/pgvector tags would get major-version bumps.
+  - package-ecosystem: 'docker-compose'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-name: 'cloudflare/cloudflared'
