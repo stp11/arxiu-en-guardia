@@ -5,7 +5,13 @@ from openai import OpenAI
 from sqlalchemy import Select
 
 from logger import logger
-from models import Category, CategoryType, Episode, LocationWithCount
+from models import (
+    Category,
+    CategoryType,
+    Episode,
+    LocationStats,
+    LocationWithCount,
+)
 from prompts import (  # noqa: E501
     CLASSIFICATION_KEYS,
     CLASSIFICATION_SCHEMA,
@@ -205,6 +211,9 @@ class CategoriesService:
 
     def get_locations(self) -> list[LocationWithCount]:
         return self.categories_repository.get_locations()
+
+    def get_location_stats(self) -> LocationStats:
+        return self.categories_repository.get_location_stats()
 
 
 class GeocodingService:

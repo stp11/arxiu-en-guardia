@@ -78,6 +78,13 @@ class LocationWithCount(SQLModel):
     count: int
 
 
+class LocationStats(SQLModel):
+    # Episodes in at least one place on the map, each counted once, out of
+    # all the archive's.
+    episodes: int
+    total: int
+
+
 class Category(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     slug: str = Field(unique=True, index=True)
