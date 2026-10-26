@@ -121,6 +121,15 @@ class IEpisodesRepository(ABC):
         pass
 
 
+UPSTREAM_EPISODE_FIELDS = (
+    "title",
+    "slug",
+    "description",
+    "published_at",
+    "image_url",
+)
+
+
 class EpisodesRepository(IEpisodesRepository):
     def __init__(self, session: Session):
         self.db_session = session
@@ -170,7 +179,15 @@ class EpisodesRepository(IEpisodesRepository):
         ).first()
 
     def save_episode(self, episode: Episode) -> Episode:
-        return self.db_session.merge(episode)
+        existing = self.db_session.get(Episode, episode.id)
+        if existing is None:
+            self.db_session.add(episode)
+            return episode
+        # Only what the feed provides; the vector and the linking state are
+        # worked out here, and a merge would reset them to their defaults.
+        for field in UPSTREAM_EPISODE_FIELDS:
+            setattr(existing, field, getattr(episode, field))
+        return existing
 
     def link_episode_to_category(
         self, episode_id: int, category_id: int
