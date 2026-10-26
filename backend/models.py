@@ -22,6 +22,7 @@ from sqlmodel import (
     SQLModel,
     select,
 )
+from wtforms import FloatField
 
 from tasks.episode_tasks import (
     generate_embeddings_task,
@@ -68,11 +69,26 @@ class CategoryWithCount(CategoryBase):
     count: int
 
 
+class LocationWithCount(SQLModel):
+    id: int
+    slug: str
+    name: str
+    latitude: float
+    longitude: float
+    count: int
+
+
 class Category(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     slug: str = Field(unique=True, index=True)
     name: str = Field(index=True)
     type: CategoryType | None = Field(index=True)
+    # Where a location goes on the map, from its Catalan Wikipedia article.
+    latitude: float | None = None
+    longitude: float | None = None
+    # When the geocoding job, or the admin, last placed the location, so
+    # the job doesn't look it up again, nor undo the admin's edits.
+    geocoded_at: NaiveDatetime | None = None
 
     episodes: list["Episode"] = Relationship(
         back_populates="categories", link_model=EpisodeCategory
@@ -452,10 +468,23 @@ class CategoryAdmin(ModelView, model=Category):
         Category.name,
         Category.slug,
         Category.type,
+        Category.latitude,
+        Category.longitude,
+        Category.geocoded_at,
         Category.episodes,
     ]
 
-    form_columns = [Category.name, Category.type, Category.episodes]
+    # Clearing a location's coordinates keeps it off the map.
+    form_columns = [
+        Category.name,
+        Category.type,
+        Category.latitude,
+        Category.longitude,
+        Category.episodes,
+    ]
+    # SQLAlchemy's Float is no longer a Numeric, so sqladmin has no field
+    # of its own for it.
+    form_overrides = {"latitude": FloatField, "longitude": FloatField}
 
     # Multi-select as tags
     form_ajax_refs = {
@@ -492,6 +521,32 @@ class CategoryAdmin(ModelView, model=Category):
                     )
 
             data["slug"] = slug
+
+        # Coordinates edited here stay. A renamed location is looked up
+        # again, under its new name, by the next geocoding job.
+        coordinates = (data.get("latitude"), data.get("longitude"))
+        if coordinates != (model.latitude, model.longitude):
+            self._check_coordinates(*coordinates)
+            data["geocoded_at"] = datetime.now(timezone.utc).replace(
+                tzinfo=None
+            )
+        elif name != model.name:
+            data["geocoded_at"] = None
+
+    @staticmethod
+    def _check_coordinates(
+        latitude: float | None, longitude: float | None
+    ) -> None:
+        if (latitude is None) != (longitude is None):
+            raise ValueError(
+                "Cal la latitud i la longitud, o cap de les dues."
+            )
+        if latitude is not None and not (
+            -90 <= latitude <= 90 and -180 <= longitude <= 180
+        ):
+            raise ValueError(
+                "La latitud va de -90 a 90, i la longitud, de -180 a 180."
+            )
 
 
 class WikipediaArticleAdmin(ModelView, model=WikipediaArticle):

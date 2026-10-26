@@ -130,6 +130,19 @@ class TestLookup:
 
         assert found["Felip V"].disambiguation
 
+    def test_reads_the_coordinates_of_places(self):
+        montserrat = {"lat": 41.5933, "lon": 1.8375, "primary": True}
+        wiki = FakeWiki(
+            pages={"Montserrat": {"coordinates": [montserrat]}, "Sardana": {}}
+        )
+
+        found = WikipediaClient(wiki).lookup(["Montserrat", "Sardana"])
+
+        assert found["Montserrat"].coordinates == (41.5933, 1.8375)
+        assert found["Sardana"].coordinates is None
+        # Ten coordinates for the whole query otherwise, not ten per page.
+        assert wiki.requests[0]["colimit"] == "max"
+
     def test_asks_for_fifty_titles_at_most_per_request(self):
         wiki = FakeWiki()
         titles = [f"Article {n}" for n in range(120)]

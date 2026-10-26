@@ -11,6 +11,8 @@ from database import engine
 from main import admin
 from models import (
     Category,
+    CategoryAdmin,
+    CategoryType,
     Episode,
     EpisodeAdmin,
     Users,
@@ -117,6 +119,71 @@ class TestEpisodeAdmin:
         assert self.articles_cell(unchecked) == "Pendent"
 
 
+class TestCategoryAdmin:
+    CHECKED = datetime(2026, 10, 20, 17, 0)
+
+    @pytest.fixture(autouse=True)
+    def view(self, db_session, monkeypatch):
+        view = next(
+            view for view in admin.views if isinstance(view, CategoryAdmin)
+        )
+        monkeypatch.setattr(
+            view, "session_maker", lambda: nullcontext(db_session)
+        )
+        self.view = view
+        self.montserrat = Category(
+            id=1,
+            name="Montserrat",
+            slug="montserrat",
+            type=CategoryType.LOCATION,
+            latitude=41.6,
+            longitude=1.8,
+            geocoded_at=self.CHECKED,
+        )
+
+    def save(self, **fields) -> dict:
+        data = {
+            "name": "Montserrat",
+            "latitude": 41.6,
+            "longitude": 1.8,
+            **fields,
+        }
+        asyncio.run(
+            self.view.on_model_change(data, self.montserrat, False, None)
+        )
+        return data
+
+    def test_leaves_the_jobs_coordinates_alone(self):
+        data = self.save()
+
+        assert "geocoded_at" not in data
+
+    def test_keeps_coordinates_typed_in(self):
+        data = self.save(latitude=41.5933, longitude=1.8375)
+
+        assert (data["latitude"], data["longitude"]) == (41.5933, 1.8375)
+        assert data["geocoded_at"] > self.CHECKED
+
+    def test_keeps_a_location_cleared_off_the_map(self):
+        data = self.save(latitude=None, longitude=None)
+
+        assert (data["latitude"], data["longitude"]) == (None, None)
+        assert data["geocoded_at"] > self.CHECKED
+
+    def test_looks_up_a_renamed_location_again(self):
+        data = self.save(name="Muntanya de Montserrat")
+
+        assert data["geocoded_at"] is None
+
+    def test_rejects_half_a_place(self):
+        with pytest.raises(ValueError, match="cap de les dues"):
+            self.save(longitude=None)
+
+    def test_rejects_coordinates_off_the_globe(self):
+        with pytest.raises(ValueError, match="de -90 a 90"):
+            self.save(latitude=141.6)
+
+
 class TestAdminPages:
     @pytest.fixture(autouse=True)
     def logged_in(self, client, db_session, monkeypatch):
@@ -184,6 +251,63 @@ class TestAdminPages:
 
         assert 'name="wikipedia_articles"' in html
         assert "wikipedia_checked_at" not in html
+
+    def test_category_form_saves_the_coordinates_typed_in(self):
+        montserrat = Category(
+            name="Montserrat", slug="montserrat", type=CategoryType.LOCATION
+        )
+        self.db_session.add(montserrat)
+        self.db_session.commit()
+        url = f"/admin/category/edit/{montserrat.id}"
+
+        html = self.client.get(url).text
+        assert 'name="latitude"' in html
+        assert 'name="geocoded_at"' not in html
+
+        response = self.client.post(
+            url,
+            data={
+                "name": "Montserrat",
+                "type": "LOCATION",
+                "latitude": "41.5933",
+                "longitude": "1.8375",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+        self.db_session.expire_all()
+        saved = self.db_session.get(Category, montserrat.id)
+        assert (saved.latitude, saved.longitude) == (41.5933, 1.8375)
+        assert saved.geocoded_at
+
+    def test_category_form_keeps_a_cleared_location_off_the_map(self):
+        europa = Category(
+            name="Europa",
+            slug="europa",
+            type=CategoryType.LOCATION,
+            latitude=48.7,
+            longitude=9.1,
+        )
+        self.db_session.add(europa)
+        self.db_session.commit()
+
+        response = self.client.post(
+            f"/admin/category/edit/{europa.id}",
+            data={
+                "name": "Europa",
+                "type": "LOCATION",
+                "latitude": "",
+                "longitude": "",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+        self.db_session.expire_all()
+        saved = self.db_session.get(Category, europa.id)
+        assert (saved.latitude, saved.longitude) == (None, None)
+        assert saved.geocoded_at
 
     def test_episode_details_names_what_it_deletes(self):
         html = self.client.get("/admin/episode/details/1").text

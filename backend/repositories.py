@@ -10,6 +10,7 @@ from models import (
     Episode,
     EpisodeCategory,
     EpisodeWikipediaArticle,
+    LocationWithCount,
     WikipediaArticle,
 )
 
@@ -26,6 +27,10 @@ class ICategoriesRepository(ABC):
 
     @abstractmethod
     def get_categories_query(self, type: CategoryType) -> Select:
+        pass
+
+    @abstractmethod
+    def get_locations(self) -> list[LocationWithCount]:
         pass
 
     @abstractmethod
@@ -58,6 +63,26 @@ class CategoriesRepository(ICategoriesRepository):
             .group_by(Category.id)
             .order_by(Category.name)
         )
+
+    def get_locations(self) -> list[LocationWithCount]:
+        # The places on the map: those with coordinates and episodes.
+        rows = self.db_session.exec(
+            select(
+                Category.id,
+                Category.slug,
+                Category.name,
+                Category.latitude,
+                Category.longitude,
+                func.count(EpisodeCategory.episode_id).label("count"),
+            )
+            .join(EpisodeCategory)
+            .where(Category.type == CategoryType.LOCATION)
+            .where(Category.latitude.is_not(None))
+            .where(Category.longitude.is_not(None))
+            .group_by(Category.id)
+            .order_by(Category.name)
+        ).all()
+        return [LocationWithCount(**row._mapping) for row in rows]
 
     def get_or_create_category(
         self, name: str, type: CategoryType
