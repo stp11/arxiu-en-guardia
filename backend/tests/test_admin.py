@@ -6,6 +6,7 @@ from datetime import datetime
 import pytest
 from sqlmodel import Session, select
 
+from commands.create_user import set_password
 from database import engine
 from main import admin
 from models import (
@@ -318,3 +319,13 @@ class TestLogin:
     def test_other_sites_cant_send_the_session(self):
         cookie = self.login("pa").headers["set-cookie"]
         assert "samesite=strict" in cookie.lower()
+
+    def test_a_new_password_ends_the_sessions_opened_before(self):
+        self.login("pa")
+        index = self.client.get("/admin/", follow_redirects=False)
+        assert index.status_code == 200
+
+        set_password("admin", "pb")
+
+        index = self.client.get("/admin/", follow_redirects=False)
+        assert index.status_code == 302

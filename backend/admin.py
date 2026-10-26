@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+
 from fastapi import Request
 from fastapi.concurrency import run_in_threadpool
 from sqladmin.authentication import AuthenticationBackend
@@ -6,6 +9,12 @@ from sqlalchemy.orm import Session
 
 from database import engine
 from models import Users
+
+
+def password_fingerprint(user: Users) -> str:
+    """Ties a session to the password it was opened with, so changing the
+    password ends it. The cookie is signed but readable, hence a digest."""
+    return hashlib.sha256(user.password_hash.encode()).hexdigest()[:16]
 
 
 class AdminAuth(AuthenticationBackend):
@@ -33,7 +42,11 @@ class AdminAuth(AuthenticationBackend):
                     )
                     session.commit()
                 request.session.update(
-                    {"user_id": user.id, "user_username": user.username}
+                    {
+                        "user_id": user.id,
+                        "user_username": user.username,
+                        "password": password_fingerprint(user),
+                    }
                 )
                 return True
 
@@ -54,4 +67,7 @@ class AdminAuth(AuthenticationBackend):
                 Users.id == user_id, Users.is_active.is_(True)
             )
             user = session.execute(statement).scalars().first()
-            return user is not None
+            return user is not None and hmac.compare_digest(
+                request.session.get("password", ""),
+                password_fingerprint(user),
+            )
