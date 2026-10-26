@@ -24,7 +24,7 @@ def get_episodes(
     service: EpisodesService = Depends(get_episodes_service),
     # We still need the session for the pagination function
     session: Session = Depends(get_session),
-    search: str = "",
+    search: str = Query("", max_length=100),
     order: str = "desc",
     categories: str = Query(
         "", description="Comma-separated list of category slugs"

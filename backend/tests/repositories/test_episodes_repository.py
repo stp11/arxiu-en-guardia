@@ -56,6 +56,17 @@ class TestEpisodesRepository:
         assert len(results) == 1
         assert results[0].title == "Episodi sobre la Guerra del Vietnam"
 
+    def test_repository_search_takes_wildcards_literally(
+        self, db_session: Session
+    ):
+        db_session.add_all(self.episodes)
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        for search in ["Guerra%Vietnam", "Gu_rra", "%"]:
+            query = repo.get_episodes_query(search=search, order="asc")
+            assert db_session.exec(query).all() == []
+
     def test_repository_ordering(self, db_session: Session):
         db_session.add_all(self.episodes)
         db_session.commit()

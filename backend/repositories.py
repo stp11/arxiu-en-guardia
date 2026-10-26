@@ -134,11 +134,14 @@ class EpisodesRepository(IEpisodesRepository):
         )
 
         if search and search.strip():
-            search_term = f"%{search.strip()}%"
+            # Escaped, so % and _ are matched as typed, not as wildcards.
+            search_term = search.strip()
             query = query.where(
                 or_(
-                    Episode.title.ilike(search_term),
-                    Episode.description.ilike(search_term),
+                    Episode.title.icontains(search_term, autoescape=True),
+                    Episode.description.icontains(
+                        search_term, autoescape=True
+                    ),
                 )
             )
 

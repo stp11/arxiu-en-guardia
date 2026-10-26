@@ -20,6 +20,13 @@ class TestEpisodes:
         assert response.json()["items"][0]["title"] == "Test Episode"
         assert "wikipedia_articles" not in response.json()["items"][0]
 
+    def test_get_episodes_search_length_validation(self, client):
+        response = client.get("/api/episodes", params={"search": "a" * 100})
+        assert response.status_code == 200
+
+        response = client.get("/api/episodes", params={"search": "a" * 101})
+        assert response.status_code == 422
+
     def test_get_episode_with_its_wikipedia_articles(self, client, db_session):
         url = "https://ca.wikipedia.org/wiki/Sardana"
         episode = Episode(
