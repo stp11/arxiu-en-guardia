@@ -1,3 +1,11 @@
+<script lang="ts">
+  import type { Snippet } from "svelte";
+
+  // The line under the title, the archive's own unless a page has another.
+  // Anything else passed in goes below it.
+  let { tagline, children }: { tagline?: Snippet; children?: Snippet } = $props();
+</script>
+
 <header
   class="border-b-[3px] border-double border-rule pt-4 pb-7 text-left md:pt-8 md:pb-8 md:text-center"
 >
@@ -14,7 +22,12 @@
     <em class="font-medium italic text-vermillion-deep">En Guàrdia</em>
   </h1>
   <h2 class="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3 md:text-[11px]">
-    Cerca, filtra i descobreix les batalles, les aventures,<br />
-    les heroïcitats de la història de Catalunya i del món.
+    {#if tagline}
+      {@render tagline()}
+    {:else}
+      Cerca, filtra i descobreix les batalles, les aventures,<br />
+      les heroïcitats de la història de Catalunya i del món.
+    {/if}
   </h2>
+  {@render children?.()}
 </header>

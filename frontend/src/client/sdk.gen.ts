@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
+import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetLocationsApiLocationsGetData, GetLocationsApiLocationsGetResponses, GetLocationStatsApiLocationsStatsGetData, GetLocationStatsApiLocationsStatsGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -54,6 +54,26 @@ export const getSimilarEpisodesApiEpisodesIdSimilarGet = <ThrowOnError extends b
 export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({
         url: '/api/categories',
+        ...options
+    });
+};
+
+/**
+ * Get Locations
+ */
+export const getLocationsApiLocationsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationsApiLocationsGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetLocationsApiLocationsGetResponses, unknown, ThrowOnError>({
+        url: '/api/locations',
+        ...options
+    });
+};
+
+/**
+ * Get Location Stats
+ */
+export const getLocationStatsApiLocationsStatsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationStatsApiLocationsStatsGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetLocationStatsApiLocationsStatsGetResponses, unknown, ThrowOnError>({
+        url: '/api/locations/stats',
         ...options
     });
 };

@@ -5,7 +5,7 @@
   import type { CategoryType } from "client";
 
   import AppLogo from "lib/components/app-logo.svelte";
-  import { CATEGORY_TYPE_LABELS, cn, hasDescription } from "lib/utils";
+  import { CATEGORY_TYPE_LABELS, cn, formatDate, hasDescription } from "lib/utils";
 
   const { data } = $props();
 
@@ -45,15 +45,6 @@
       };
     return JSON.stringify(obj).replace(/</g, "\\u003c");
   });
-
-  const fmtLong = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString("ca", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
 
   const groupedCategories = $derived.by(() => {
     if (!data.episode?.categories)
@@ -118,7 +109,7 @@
             datetime={episode.published_at}
             class="mb-5 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-vermillion-deep"
           >
-            {fmtLong(episode.published_at)}
+            {formatDate(episode.published_at)}
           </time>
         {/if}
 
@@ -225,7 +216,7 @@
                 Emissió
               </h2>
               <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
-                {fmtLong(episode.published_at)}
+                {formatDate(episode.published_at)}
               </div>
             </section>
           {/if}
@@ -311,7 +302,7 @@
                     datetime={similar.published_at}
                     class="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3"
                   >
-                    {fmtLong(similar.published_at)}
+                    {formatDate(similar.published_at)}
                   </time>
                 {/if}
               </a>

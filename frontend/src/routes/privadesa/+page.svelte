@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft } from "@lucide/svelte";
   import { SITE_NAME, SITE_URL } from "src/lib/constants";
-
-  import AppLogo from "lib/components/app-logo.svelte";
 
   const title = `Privadesa · ${SITE_NAME}`;
   const description =
@@ -25,36 +22,17 @@
 </svelte:head>
 
 <div class="mx-auto w-full max-w-[1100px] px-6 pt-8 pb-12 md:px-10 md:pt-14">
-  <!-- Mini masthead bar -->
-  <div
-    class="flex items-center justify-between gap-4 border-b-[3px] border-double border-rule pt-5 pb-4"
-  >
-    <AppLogo />
-    <a
-      href="/"
-      class="inline-flex items-center gap-2 rounded-sm border border-ink bg-ink px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-paper transition-colors hover:border-vermillion-deep hover:bg-vermillion-deep"
-    >
-      <ArrowLeft class="size-3.5" />
-      Torna a l'arxiu
-    </a>
-  </div>
-
   <article>
-    <header class="border-b border-rule py-12 md:py-14">
-      <span
-        class="mb-5 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-vermillion-deep"
-      >
-        Privadesa
-      </span>
+    <header class="border-b-[3px] border-double border-rule pt-4 pb-7 md:pt-8 md:pb-8">
       <h1
-        class="max-w-[18ch] font-serif text-[clamp(2.25rem,5.5vw,4.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
+        class="max-w-[18ch] font-serif text-[clamp(2rem,5vw,3.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
       >
         Política de privadesa
       </h1>
     </header>
 
     <!-- Intro -->
-    <section class="mt-12 max-w-[70ch]">
+    <section class="mt-9 max-w-[70ch]">
       <p class="font-serif text-[clamp(1.2rem,2vw,1.625rem)] leading-snug text-pretty text-ink">
         Aquest web no recull dades personals. No té formularis, comptes, galetes pròpies ni sistemes
         d'analítica que t'identifiquin.
