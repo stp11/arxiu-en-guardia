@@ -199,14 +199,50 @@ def link_wikipedia_articles_task(
         raise self.retry(exc=e)
 
 
+@celery_app.task(
+    bind=True,
+    name="tasks.episode_tasks.geocode_locations_task",
+    max_retries=3,
+    default_retry_delay=300,  # 5 minutes
+)
+def geocode_locations_task(self, previous_result=None):
+    """
+    Celery task wrapper for geocoding.
+
+    Places the locations not looked up yet at their Wikipedia coordinates.
+
+    Args:
+        previous_result: Result from previous task in chain (ignored)
+    """
+    logger.info("Starting Celery task: geocode_locations_task")
+
+    if previous_result:
+        logger.info(f"Previous task result: {previous_result}")
+
+    try:
+        from commands.geocode_locations import geocode_locations
+
+        geocode_locations()
+        logger.info("Successfully completed geocode_locations_task")
+        return {
+            "status": "success",
+            "message": "Locations geocoded successfully",
+        }
+
+    except Exception as e:
+        logger.error(f"Error in geocode_locations_task: {e}", exc_info=True)
+        raise self.retry(exc=e)
+
+
 @celery_app.task(name="tasks.episode_tasks.ingest_and_classify_chain")
 def ingest_and_classify_chain(batch_size=50, max_total=None):
     """
-    Chain ingestion, classification, embedding and Wikipedia linking tasks.
-    Each step only runs if the previous succeeds.
+    Chain ingestion, classification, embedding, Wikipedia linking and
+    geocoding tasks. Each step only runs if the previous succeeds.
     """
     logger.info(
-        "Starting chained ingest -> classify -> embed -> link workflow"
+        "Starting chained ingest -> classify -> embed -> link -> geocode "
+        "workflow"
     )
 
     workflow = chain(
@@ -218,6 +254,8 @@ def ingest_and_classify_chain(batch_size=50, max_total=None):
         link_wikipedia_articles_task.s(
             batch_size=batch_size, max_total=max_total
         ),
+        # Uncapped: the week's new locations take a request or two.
+        geocode_locations_task.s(),
     )
 
     result = workflow.apply_async()

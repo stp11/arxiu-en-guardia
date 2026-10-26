@@ -67,6 +67,51 @@ class TestCategoriesRepository:
         assert category.name == "Antiga Grecia"
         assert count == 2
 
+    def test_get_locations(self, db_session: Session):
+        grecia, guerra, _ = self.categories
+        grecia.latitude, grecia.longitude = 38.0, 23.7
+        guerra.latitude, guerra.longitude = 40.4, -3.7
+        roma = Category(
+            name="Roma",
+            slug="roma",
+            type=CategoryType.LOCATION,
+            latitude=41.9,
+            longitude=12.5,
+        )
+        catalunya = Category(
+            name="Catalunya", slug="catalunya", type=CategoryType.LOCATION
+        )
+        db_session.add_all(
+            [
+                *self.categories,
+                roma,
+                catalunya,
+                Episode(
+                    id=1,
+                    title="Test Episode",
+                    categories=[grecia, guerra, catalunya],
+                ),
+                Episode(id=2, title="Another Episode", categories=[grecia]),
+            ]
+        )
+        db_session.commit()
+        repo = CategoriesRepository(session=db_session)
+
+        # Only places with coordinates and episodes: not the topic, nor
+        # Roma, without episodes, nor Catalunya, kept off the map.
+        assert [
+            location.model_dump() for location in repo.get_locations()
+        ] == [
+            {
+                "id": grecia.id,
+                "slug": "antiga-grecia",
+                "name": "Antiga Grecia",
+                "latitude": 38.0,
+                "longitude": 23.7,
+                "count": 2,
+            }
+        ]
+
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)
         db_session.commit()

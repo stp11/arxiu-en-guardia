@@ -5,7 +5,7 @@ from openai import OpenAI
 from sqlalchemy import Select
 
 from logger import logger
-from models import Category, CategoryType, Episode
+from models import Category, CategoryType, Episode, LocationWithCount
 from prompts import (  # noqa: E501
     CLASSIFICATION_KEYS,
     CLASSIFICATION_SCHEMA,
@@ -202,6 +202,35 @@ class CategoriesService:
 
     def get_categories_query(self, type: CategoryType) -> Select:
         return self.categories_repository.get_categories_query(type=type)
+
+    def get_locations(self) -> list[LocationWithCount]:
+        return self.categories_repository.get_locations()
+
+
+class GeocodingService:
+    def __init__(self, wikipedia_client: WikipediaClient):
+        self.wikipedia_client = wikipedia_client
+
+    def geocode(self, locations: list[Category]) -> list[Category]:
+        """
+        Places each location where its Catalan Wikipedia article says, and
+        returns those it couldn't: without an article, at a disambiguation
+        page, or at an article without coordinates. Those keep whatever
+        coordinates they had; all count as looked up.
+        """
+        found = self.wikipedia_client.lookup(
+            location.name for location in locations
+        )
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        unplaced = []
+        for location in locations:
+            article = found[location.name]
+            if article and article.coordinates and not article.disambiguation:
+                location.latitude, location.longitude = article.coordinates
+            else:
+                unplaced.append(location)
+            location.geocoded_at = now
+        return unplaced
 
 
 class WikipediaLinkingService:

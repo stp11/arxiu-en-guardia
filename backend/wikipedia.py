@@ -25,6 +25,8 @@ class Article:
     url: str
     description: str = ""
     disambiguation: bool = False
+    # Latitude and longitude, for the articles about a place.
+    coordinates: tuple[float, float] | None = None
 
 
 class WikipediaClient:
@@ -86,9 +88,11 @@ class WikipediaClient:
                 "action": "query",
                 "format": "json",
                 "formatversion": 2,
-                "prop": "info|pageprops|description",
+                "prop": "info|pageprops|description|coordinates",
                 "inprop": "url",
                 "ppprop": "disambiguation",
+                # Ten for the whole query otherwise, not per page.
+                "colimit": "max",
                 **params,
             },
             timeout=30,
@@ -109,9 +113,16 @@ def _renames(items: list[dict]) -> dict[str, str]:
 
 
 def _article(page: dict) -> Article:
+    # Only the article's primary coordinates, the place it's about.
+    coordinates = page.get("coordinates", [])
     return Article(
         title=page["title"],
         url=page["fullurl"],
         description=page.get("description", ""),
         disambiguation="disambiguation" in page.get("pageprops", {}),
+        coordinates=(
+            (coordinates[0]["lat"], coordinates[0]["lon"])
+            if coordinates
+            else None
+        ),
     )

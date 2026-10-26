@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from models import Episode, WikipediaArticle
+from models import Category, CategoryType, Episode, WikipediaArticle
 
 
 class TestEpisodes:
@@ -46,6 +46,35 @@ class TestEpisodes:
         assert response.json()["wikipedia_articles"] == [
             {"title": "Cobla", "url": "https://cobla"},
             {"title": "Sardana", "url": url},
+        ]
+
+
+class TestLocations:
+    def test_get_locations(self, client, db_session):
+        montserrat = Category(
+            name="Montserrat",
+            slug="montserrat",
+            type=CategoryType.LOCATION,
+            latitude=41.6,
+            longitude=1.8,
+        )
+        db_session.add(
+            Episode(id=1, title="La moreneta", categories=[montserrat])
+        )
+        db_session.commit()
+
+        response = client.get("/api/locations")
+
+        assert response.status_code == 200
+        assert response.json() == [
+            {
+                "id": montserrat.id,
+                "slug": "montserrat",
+                "name": "Montserrat",
+                "latitude": 41.6,
+                "longitude": 1.8,
+                "count": 1,
+            }
         ]
 
 

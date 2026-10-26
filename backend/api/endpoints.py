@@ -11,6 +11,7 @@ from models import (
     CategoryWithCount,
     EpisodeDetail,
     EpisodeWithCategories,
+    LocationWithCount,
 )
 from services import CategoriesService, EpisodesService
 
@@ -95,3 +96,15 @@ def get_categories(
         service.get_categories_query(type=type),
         transformer=transform,
     )
+
+
+@router.get(
+    "/locations",
+    tags=["categories"],
+    response_model=list[LocationWithCount],
+)
+def get_locations(
+    service: CategoriesService = Depends(get_categories_service),
+):
+    # All of them: the map shows every place at once.
+    return service.get_locations()

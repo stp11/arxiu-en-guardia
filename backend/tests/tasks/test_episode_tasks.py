@@ -87,8 +87,19 @@ class TestTaskWiring:
             batch_size=50, max_total=None, episode_ids=[1, 2]
         )
 
+    @patch("commands.geocode_locations.geocode_locations")
+    def test_geocode_task_calls_command(self, mock_geocode):
+        from tasks.episode_tasks import geocode_locations_task
+
+        result = geocode_locations_task()
+
+        mock_geocode.assert_called_once_with()
+        assert result["status"] == "success"
+
     @patch("tasks.episode_tasks.chain")
-    def test_chain_links_wikipedia_last_with_the_same_cap(self, mock_chain):
+    def test_chain_links_wikipedia_with_the_same_cap_then_geocodes(
+        self, mock_chain
+    ):
         from tasks.episode_tasks import ingest_and_classify_chain
 
         mock_chain.return_value.apply_async.return_value.id = "test-id"
@@ -101,5 +112,7 @@ class TestTaskWiring:
             "tasks.episode_tasks.classify_episodes_task",
             "tasks.episode_tasks.generate_embeddings_task",
             "tasks.episode_tasks.link_wikipedia_articles_task",
+            "tasks.episode_tasks.geocode_locations_task",
         ]
-        assert steps[-1].kwargs == {"batch_size": 1, "max_total": 1}
+        assert steps[3].kwargs == {"batch_size": 1, "max_total": 1}
+        assert steps[4].kwargs == {}
