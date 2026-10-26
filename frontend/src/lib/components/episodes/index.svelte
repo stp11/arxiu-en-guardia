@@ -382,10 +382,10 @@
   <AppHero>
     <a
       href="/mapa"
-      class="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
+      class="group mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
     >
       Explora el mapa
-      <ArrowRight class="size-3.5" />
+      <ArrowRight class="size-3.5 transition-transform group-hover:translate-x-0.5" />
     </a>
   </AppHero>
 
