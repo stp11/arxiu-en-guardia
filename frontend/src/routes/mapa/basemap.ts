@@ -1,9 +1,16 @@
-import type { ExpressionSpecification, MapLibreMap } from "maplibre-gl";
+import type { ExpressionSpecification, MapLibreMap, TransformStyleFunction } from "maplibre-gl";
 
 export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
+// MapLibre fades every paint change, so even the first repaint would fade
+// out of Positron's white; the theme toggle switches the site at once, too.
+export const withoutTransitions: TransformStyleFunction = (_, style) => ({
+  ...style,
+  transition: { duration: 0, delay: 0 },
+});
+
 export type Palette = Record<
-  "paper" | "paper2" | "edge" | "ink2" | "ink3" | "rule" | "teal" | "moss" | "vermillion",
+  "paper" | "paper2" | "edge" | "ink2" | "ink3" | "rule" | "teal" | "sea" | "moss" | "vermillion",
   string
 >;
 
@@ -19,6 +26,7 @@ export const readPalette = (): Palette => {
     ink3: token("ink-3"),
     rule: token("rule"),
     teal: token("teal"),
+    sea: token("sea"),
     moss: token("moss"),
     vermillion: token("vermillion-deep"),
   };
@@ -42,7 +50,7 @@ const CATALAN_NAME: ExpressionSpecification = [
 
 // Recolours OpenFreeMap's Positron with the paper palette.
 export const paintBasemap = (map: MapLibreMap, p: Palette) => {
-  const water = mix(p.paper, p.teal, 0.2);
+  const water = mix(p.paper, p.sea, 0.25);
   const green = mix(p.paper, p.moss, 0.1);
   const road = mix(p.paper, p.rule, 0.5);
 
@@ -71,7 +79,7 @@ export const paintBasemap = (map: MapLibreMap, p: Palette) => {
       map.setPaintProperty(id, "line-color", road);
     } else if (type === "symbol") {
       const strong = id.startsWith("label_country") || id === "label_city_capital";
-      const color = id.startsWith("water_name") ? mix(p.teal, p.paper, 0.2) : p.ink3;
+      const color = id.startsWith("water_name") ? p.sea : p.ink3;
       map.setLayoutProperty(id, "text-field", CATALAN_NAME);
       map.setPaintProperty(id, "text-color", strong ? p.ink2 : color);
       map.setPaintProperty(id, "text-halo-color", p.paper);

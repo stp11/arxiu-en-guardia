@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { fade } from "svelte/transition";
 
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
-  import { House, Minus, Plus } from "@lucide/svelte";
+  import { House, Loader2, Minus, Plus } from "@lucide/svelte";
   import {
     type ExpressionSpecification,
     type JumpToOptions,
@@ -20,7 +21,7 @@
 
   import AppHero from "lib/components/app-hero.svelte";
 
-  import { STYLE_URL, paintBasemap, readPalette } from "./basemap";
+  import { STYLE_URL, paintBasemap, readPalette, withoutTransitions } from "./basemap";
   import LocationCard from "./location-card.svelte";
 
   const { data } = $props();
@@ -75,6 +76,7 @@
   let container: HTMLDivElement;
   let map: MapLibreMap | undefined;
   let selected = $state<number | null>(null);
+  let loaded = $state(false);
 
   const selectedLocation = $derived(selected === null ? null : locations[selected]);
 
@@ -125,7 +127,6 @@
     setWorkerUrl(workerUrl);
     const instance = new MapLibreMap({
       container,
-      style: STYLE_URL,
       minZoom: 1,
       maxZoom: 14,
       dragRotate: false,
@@ -134,10 +135,14 @@
       locale: { "AttributionControl.ToggleAttribution": "Mostra l'atribució" },
     });
     map = instance;
+    // Not the style option: only setStyle takes a transformStyle.
+    instance.setStyle(STYLE_URL, { transformStyle: withoutTransitions });
     instance.jumpTo(homeCamera(instance));
     instance.touchZoomRotate.disableRotation();
 
-    instance.on("load", () => {
+    // As soon as the style arrives, before anything is drawn, so the first
+    // frame is already in the site's palette and has the pins.
+    instance.on("style.load", () => {
       instance.addSource("locations", {
         type: "geojson",
         data: {
@@ -181,6 +186,8 @@
         reveal(shared, 0);
       }
     });
+    // Every tile in, pins included: the cover lifts.
+    instance.on("load", () => (loaded = true));
 
     const tooltip = new Popup({
       closeButton: false,
@@ -282,6 +289,20 @@
     <div class="map relative h-[72dvh] min-h-[440px] overflow-hidden border border-rule">
       <!-- MapLibre's stylesheet makes it position: relative, so no inset-0 -->
       <div bind:this={container} class="h-full w-full"></div>
+      <!-- The map's own paper, so it appears whole rather than tile by tile -->
+      {#if !loaded}
+        <div
+          out:fade={{ duration: 200 }}
+          role="status"
+          class="absolute inset-0 grid place-items-center bg-paper"
+        >
+          <span
+            class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3"
+          >
+            <Loader2 class="size-3 animate-spin" /> Carregant el mapa…
+          </span>
+        </div>
+      {/if}
       <div
         class="absolute top-2.5 right-2.5 z-10 flex flex-col divide-y divide-rule border border-rule bg-popover"
       >
