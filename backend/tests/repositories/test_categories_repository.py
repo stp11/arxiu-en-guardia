@@ -112,6 +112,39 @@ class TestCategoriesRepository:
             }
         ]
 
+    def test_get_location_stats(self, db_session: Session):
+        grecia, guerra, _ = self.categories
+        grecia.latitude, grecia.longitude = 38.0, 23.7
+        roma = Category(
+            name="Roma",
+            slug="roma",
+            type=CategoryType.LOCATION,
+            latitude=41.9,
+            longitude=12.5,
+        )
+        catalunya = Category(
+            name="Catalunya", slug="catalunya", type=CategoryType.LOCATION
+        )
+        db_session.add_all(
+            [
+                Episode(
+                    id=1, title="Roma i Grècia", categories=[roma, grecia]
+                ),
+                Episode(id=2, title="Grècia", categories=[grecia]),
+                Episode(id=3, title="Catalunya", categories=[catalunya]),
+                Episode(id=4, title="Sense lloc", categories=[guerra]),
+            ]
+        )
+        db_session.commit()
+        repo = CategoriesRepository(session=db_session)
+
+        # The first episode is in two places, but counts once; the third's
+        # only place is off the map.
+        assert repo.get_location_stats().model_dump() == {
+            "episodes": 2,
+            "total": 4,
+        }
+
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)
         db_session.commit()

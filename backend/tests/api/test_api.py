@@ -77,6 +77,27 @@ class TestLocations:
             }
         ]
 
+    def test_get_location_stats(self, client, db_session):
+        montserrat = Category(
+            name="Montserrat",
+            slug="montserrat",
+            type=CategoryType.LOCATION,
+            latitude=41.6,
+            longitude=1.8,
+        )
+        db_session.add_all(
+            [
+                Episode(id=1, title="La moreneta", categories=[montserrat]),
+                Episode(id=2, title="Sense lloc"),
+            ]
+        )
+        db_session.commit()
+
+        response = client.get("/api/locations/stats")
+
+        assert response.status_code == 200
+        assert response.json() == {"episodes": 1, "total": 2}
+
 
 class TestSimilarEpisodes:
     def test_get_similar_episodes_returns_results(self, client):

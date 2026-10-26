@@ -10,6 +10,7 @@ from models import (
     Episode,
     EpisodeCategory,
     EpisodeWikipediaArticle,
+    LocationStats,
     LocationWithCount,
     WikipediaArticle,
 )
@@ -31,6 +32,10 @@ class ICategoriesRepository(ABC):
 
     @abstractmethod
     def get_locations(self) -> list[LocationWithCount]:
+        pass
+
+    @abstractmethod
+    def get_location_stats(self) -> LocationStats:
         pass
 
     @abstractmethod
@@ -65,24 +70,42 @@ class CategoriesRepository(ICategoriesRepository):
         )
 
     def get_locations(self) -> list[LocationWithCount]:
-        # The places on the map: those with coordinates and episodes.
         rows = self.db_session.exec(
-            select(
-                Category.id,
-                Category.slug,
-                Category.name,
-                Category.latitude,
-                Category.longitude,
-                func.count(EpisodeCategory.episode_id).label("count"),
+            self._on_map(
+                select(
+                    Category.id,
+                    Category.slug,
+                    Category.name,
+                    Category.latitude,
+                    Category.longitude,
+                    func.count(EpisodeCategory.episode_id).label("count"),
+                )
             )
-            .join(EpisodeCategory)
-            .where(Category.type == CategoryType.LOCATION)
-            .where(Category.latitude.is_not(None))
-            .where(Category.longitude.is_not(None))
             .group_by(Category.id)
             .order_by(Category.name)
         ).all()
         return [LocationWithCount(**row._mapping) for row in rows]
+
+    def get_location_stats(self) -> LocationStats:
+        on_map = self._on_map(
+            select(func.count(EpisodeCategory.episode_id.distinct()))
+        )
+        total = select(func.count(Episode.id))
+        episodes, total = self.db_session.exec(
+            select(on_map.scalar_subquery(), total.scalar_subquery())
+        ).one()
+        return LocationStats(episodes=episodes, total=total)
+
+    @staticmethod
+    def _on_map(query: Select) -> Select:
+        # The places on the map: those with coordinates and episodes.
+        return (
+            query.select_from(Category)
+            .join(EpisodeCategory)
+            .where(Category.type == CategoryType.LOCATION)
+            .where(Category.latitude.is_not(None))
+            .where(Category.longitude.is_not(None))
+        )
 
     def get_or_create_category(
         self, name: str, type: CategoryType
