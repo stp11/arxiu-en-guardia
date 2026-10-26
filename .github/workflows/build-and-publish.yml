@@ -41,8 +41,10 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:main
             ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # In the registry rather than the Actions cache, which every job
+          # in the run can write to, so only this job can supply layers.
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache,mode=max
 
   deploy:
     name: Deploy

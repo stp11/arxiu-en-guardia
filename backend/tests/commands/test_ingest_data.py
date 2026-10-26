@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from unittest.mock import Mock
 
 from sqlmodel import select
@@ -101,6 +102,35 @@ class TestIngestData:
         # No new episodes should be ingested
         assert len(episodes) == 3
         assert {e.id for e in episodes} == {item["id"] for item in self.items}
+
+    def test_reingesting_keeps_what_was_worked_out_here(
+        self, db_session, monkeypatch
+    ):
+        monkeypatch.setattr(
+            "commands.ingest_data.requests.get",
+            mock_api_response(self.items[:1], {"total_pagines": 1}),
+        )
+        monkeypatch.setattr(
+            "commands.ingest_data.get_session", lambda: iter([db_session])
+        )
+        checked_at = datetime(2026, 10, 1)
+        db_session.add(
+            Episode(
+                id=1,
+                title="Old title",
+                embedding=[0.0] * 1536,
+                wikipedia_checked_at=checked_at,
+            )
+        )
+        db_session.commit()
+
+        ingest_data()
+        db_session.expire_all()
+        episode = db_session.get(Episode, 1)
+
+        assert episode.title == "Test Episode"
+        assert episode.wikipedia_checked_at == checked_at
+        assert episode.embedding is not None
 
     def test_ingest_paginated_data(self, db_session, monkeypatch):
         """

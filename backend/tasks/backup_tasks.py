@@ -61,6 +61,12 @@ def _cleanup_old_backups(
 )
 def backup_database(self):
     """Dump the database, compress, upload to R2, and clean up old backups."""
+    # Other environments share the bucket and prefix, so their dump would
+    # become the "latest" one to restore. Queued by hand or by beat alike.
+    if os.getenv("BUILD_ENVIRONMENT") != "prod":
+        logger.warning("Backups only run in production; skipped.")
+        return {"status": "skipped"}
+
     bucket = os.environ["S3_BUCKET"]
     prefix = os.getenv("BACKUP_PREFIX", "en-guardia")
     retention_days = int(os.getenv("BACKUP_RETENTION_DAYS", "30"))
