@@ -134,6 +134,50 @@ export type HttpValidationError = {
 };
 
 /**
+ * LocationStats
+ */
+export type LocationStats = {
+    /**
+     * Episodes
+     */
+    episodes: number;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * LocationWithCount
+ */
+export type LocationWithCount = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Latitude
+     */
+    latitude: number;
+    /**
+     * Longitude
+     */
+    longitude: number;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * PageCustomized[CategoryWithCount]
  */
 export type PageCustomizedCategoryWithCount = {
@@ -391,6 +435,40 @@ export type GetCategoriesApiCategoriesGetResponses = {
 };
 
 export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGetResponses[keyof GetCategoriesApiCategoriesGetResponses];
+
+export type GetLocationsApiLocationsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/locations';
+};
+
+export type GetLocationsApiLocationsGetResponses = {
+    /**
+     * Response Get Locations Api Locations Get
+     *
+     * Successful Response
+     */
+    200: Array<LocationWithCount>;
+};
+
+export type GetLocationsApiLocationsGetResponse = GetLocationsApiLocationsGetResponses[keyof GetLocationsApiLocationsGetResponses];
+
+export type GetLocationStatsApiLocationsStatsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/locations/stats';
+};
+
+export type GetLocationStatsApiLocationsStatsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: LocationStats;
+};
+
+export type GetLocationStatsApiLocationsStatsGetResponse = GetLocationStatsApiLocationsStatsGetResponses[keyof GetLocationStatsApiLocationsStatsGetResponses];
 
 export type HealthCheckHealthGetData = {
     body?: never;

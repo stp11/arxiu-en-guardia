@@ -63,6 +63,10 @@ export const hasDescription = (description: string | null) => {
   return trimmedDescription !== "" && trimmedDescription.toLocaleLowerCase() !== "en guàrdia";
 };
 
+// "14 de gener del 2024", or "14 de gen. del 2024" with a short month
+export const formatDate = (iso: string, month: "long" | "short" = "long") =>
+  new Date(iso).toLocaleDateString("ca", { day: "numeric", month, year: "numeric" });
+
 export type HighlightChunk = { text: string; match: boolean };
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

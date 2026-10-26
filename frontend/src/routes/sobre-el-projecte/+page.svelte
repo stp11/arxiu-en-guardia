@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft } from "@lucide/svelte";
   import { SITE_NAME, SITE_URL } from "src/lib/constants";
-
-  import AppLogo from "lib/components/app-logo.svelte";
 
   const title = `Sobre l'arxiu · ${SITE_NAME}`;
   const description =
@@ -23,40 +20,19 @@
 </svelte:head>
 
 <div class="mx-auto w-full max-w-[1100px] px-6 pt-8 pb-12 md:px-10 md:pt-14">
-  <!-- Mini masthead bar -->
-  <div
-    class="flex items-center justify-between gap-4 border-b-[3px] border-double border-rule pt-5 pb-4"
-  >
-    <AppLogo />
-    <a
-      href="/"
-      class="inline-flex items-center gap-2 rounded-sm border border-ink bg-ink px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-paper transition-colors hover:border-vermillion-deep hover:bg-vermillion-deep"
-    >
-      <ArrowLeft class="size-3.5" />
-      Torna a l'arxiu
-    </a>
-  </div>
-
   <article>
-    <header class="border-b border-rule py-12 md:py-14">
-      <span
-        class="mb-5 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-vermillion-deep"
-      >
-        Sobre el projecte
-      </span>
+    <header class="border-b-[3px] border-double border-rule pt-4 pb-7 md:pt-8 md:pb-8">
       <h1
-        class="max-w-[18ch] font-serif text-[clamp(2.25rem,5.5vw,4.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
+        class="max-w-[18ch] font-serif text-[clamp(2rem,5vw,3.25rem)] font-medium text-balance leading-[1.05] tracking-[-0.015em]"
       >
         Sobre l'arxiu
       </h1>
     </header>
 
     <!-- Intro -->
-    <section class="mt-12 max-w-[70ch]">
-      <p
-        class="font-serif text-[clamp(1.2rem,2vw,1.625rem)] leading-snug text-pretty text-ink first-letter:float-left first-letter:mt-2 first-letter:mr-2.5 first-letter:font-serif first-letter:text-[76px] first-letter:font-semibold first-letter:leading-[0.85] first-letter:text-vermillion-deep"
-      >
-        Arxiu en Guàrdia, neix amb la voluntat d'organitzar i fer accessible el ric patrimoni de
+    <section class="mt-9 max-w-[70ch]">
+      <p class="font-serif text-[clamp(1.2rem,2vw,1.625rem)] leading-snug text-pretty text-ink">
+        Arxiu en Guàrdia neix amb la voluntat d'organitzar i fer accessible el ric patrimoni de
         batalles, aventures i heroïcitats que s'han narrat al programa En Guàrdia de Catalunya Ràdio
         al llarg dels anys.
       </p>
@@ -83,6 +59,35 @@
           class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
           >Buy Me a Coffee</a
         >.
+      </p>
+    </section>
+
+    <!-- Viquipèdia i mapa -->
+    <section class="mt-16 max-w-[70ch]">
+      <h2
+        class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+      >
+        Viquipèdia i mapa
+      </h2>
+      <p class="font-serif text-lg leading-relaxed text-ink">
+        Cada episodi enllaça als articles de la <a
+          href="https://ca.wikipedia.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">Viquipèdia</a
+        > que tracten el mateix tema, per si vols aprofundir-hi.
+      </p>
+      <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
+        Els llocs dels episodis també es poden explorar en un <a
+          href="/mapa"
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">mapa</a
+        >. Les coordenades provenen també de la Viquipèdia, i el mapa base, d'<a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">OpenStreetMap</a
+        >
+        .
       </p>
     </section>
 

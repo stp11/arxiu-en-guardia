@@ -66,6 +66,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
 
   const staticUrls: { loc: string; lastmod: string; priority: string; changefreq: string }[] = [
     { loc: `${SITE_URL}/`, lastmod: today, priority: "1.0", changefreq: "daily" },
+    { loc: `${SITE_URL}/mapa`, lastmod: today, priority: "0.6", changefreq: "weekly" },
     {
       loc: `${SITE_URL}/sobre-el-projecte`,
       lastmod: today,
