@@ -314,3 +314,7 @@ class TestLogin:
     def test_leaves_the_hash_alone_on_a_wrong_password(self):
         assert self.login("pb").status_code == 400
         assert self.stored_hash() == legacy_hash("pa")
+
+    def test_other_sites_cant_send_the_session(self):
+        cookie = self.login("pa").headers["set-cookie"]
+        assert "samesite=strict" in cookie.lower()

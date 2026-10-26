@@ -36,7 +36,11 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-authentication_backend = AdminAuth(secret_key=ADMIN_SECRET_KEY)
+# Strict, so a link on another site can't run admin actions, which are
+# plain GETs, with the admin's session.
+authentication_backend = AdminAuth(
+    secret_key=ADMIN_SECRET_KEY, same_site="strict"
+)
 admin = Admin(
     app=app,
     engine=engine,
