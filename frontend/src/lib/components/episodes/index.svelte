@@ -17,10 +17,20 @@
     extractSnippet,
     hasDescription,
     highlightMatches,
+    isPlainClick,
   } from "#lib/utils.js";
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import { ChevronDown, Loader2, MapIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
+  import {
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    MapIcon,
+    Search,
+    SlidersHorizontal,
+    XIcon,
+  } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import Facet from "./facet.svelte";
@@ -299,6 +309,16 @@
   const findItem = (type: CategoryType, slug: string) =>
     allCategoryItems[type].find((i) => i.slug === slug);
 
+  // The chips grouped as the backend combines them: any of a group ("o"),
+  // and every group ("i"). Those not loaded yet are left out, so the
+  // connectors never dangle.
+  const chipGroups = $derived(
+    ALL_TYPES.map((type) => ({
+      type,
+      items: categories[type].map((slug) => findItem(type, slug)).filter((i) => !!i),
+    })).filter((g) => g.items.length > 0)
+  );
+
   const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
   const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
 
@@ -326,6 +346,25 @@
     }
     return out;
   });
+
+  // The page links' href: the current URL with only ?page= changed. It's for
+  // what the browser does with a link (a new tab, copying it, crawlers).
+  const pageHref = (n: number) => {
+    const params = new SvelteURLSearchParams(pageStore.url.search);
+    if (n === initialPage) params.delete("page");
+    else params.set("page", String(n));
+    const qs = params.toString();
+    return qs ? `?${qs}` : pageStore.url.pathname;
+  };
+
+  // A plain click sets the page here instead of following the href: this
+  // component reads the URL only when it's created, so a navigation to
+  // ?page=3 on the same route would change the URL but not the list.
+  const goToPage = (e: MouseEvent, n: number) => {
+    if (!isPlainClick(e)) return;
+    e.preventDefault();
+    page = n;
+  };
 
   const start = $derived((page - 1) * pageSize);
   const shown = $derived(items.length);
@@ -458,8 +497,8 @@
       {@render facetPanel()}
     </aside>
 
-    <!-- Main column -->
-    <main class="min-w-0">
+    <!-- Main column: a section, as the layout already has the <main> -->
+    <section aria-label="Episodis" class="min-w-0">
       <!-- Search bar (+ mobile filter button) -->
       <div class="flex items-stretch gap-2">
         <div
@@ -515,7 +554,7 @@
 
       <!-- Active filter chips -->
       {#if hasFilters}
-        <div class="mt-3 flex flex-wrap gap-1.5">
+        <div class="mt-3 flex flex-wrap items-center gap-1.5">
           {#if searchQuery}
             <span
               class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
@@ -536,26 +575,31 @@
               </button>
             </span>
           {/if}
-          {#each ALL_TYPES as type (type)}
-            {#each categories[type] as slug (`${type}-${slug}`)}
-              {@const item = findItem(type, slug)}
-              {#if item}
-                <span
-                  class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
-                >
-                  <span class="size-1.5 rounded-full" style:background={CATEGORY_TYPE_COLORS[type]}
-                  ></span>
-                  {item.name}
-                  <button
-                    type="button"
-                    aria-label={`Treu ${item.name}`}
-                    onclick={() => removeCategory(type, slug)}
-                    class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-                  >
-                    <XIcon class="size-3" />
-                  </button>
-                </span>
+          {#each chipGroups as group, g (group.type)}
+            {#if g > 0 || searchQuery}
+              <span class="px-1 font-serif text-[17px] italic text-ink-2">i</span>
+            {/if}
+            {#each group.items as item, i (item.slug)}
+              {#if i > 0}
+                <span class="font-serif text-[17px] italic text-ink-3">o</span>
               {/if}
+              <span
+                class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
+              >
+                <span
+                  class="size-1.5 rounded-full"
+                  style:background={CATEGORY_TYPE_COLORS[group.type]}
+                ></span>
+                {item.name}
+                <button
+                  type="button"
+                  aria-label={`Treu ${item.name}`}
+                  onclick={() => removeCategory(group.type, item.slug)}
+                  class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
+                >
+                  <XIcon class="size-3" />
+                </button>
+              </span>
             {/each}
           {/each}
           {#if activeFilterCount > 0}
@@ -660,16 +704,36 @@
           <h2 class="mb-2 font-serif text-3xl font-medium italic text-ink-2">
             Cap episodi a la lleixa
           </h2>
-          <p class="mb-5 text-sm">Proveu d'esborrar algun filtre o de canviar la cerca.</p>
+          <p class="mb-5 text-sm">Prova d'esborrar algun filtre o de canviar la cerca.</p>
           <button
             type="button"
             onclick={clearAll}
             class="cursor-pointer bg-ink px-6 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-paper hover:bg-vermillion-deep"
           >
-            Tornar a començar
+            Torna a començar
           </button>
         </div>
       {:else}
+        {#snippet categoryChip(c: NonNullable<(typeof items)[number]["categories"]>[number])}
+          <button
+            type="button"
+            onclick={() => toggleCategory(c.type as CategoryType, c.slug)}
+            class={cn(
+              "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
+              {
+                "border-vermillion-deep/30 text-vermillion-deep": c.type === "topic",
+                "border-teal/30 text-teal": c.type === "location",
+                "border-character/30 text-character": c.type === "character",
+                "border-plum/30 text-plum": c.type === "time_period",
+              }
+            )}
+          >
+            <span class="size-1.5 rounded-full" style:background="currentColor" style:opacity="0.9"
+            ></span>
+            {c.name}
+          </button>
+        {/snippet}
+
         <table class="w-full border-collapse font-body">
           <thead>
             <tr>
@@ -732,30 +796,19 @@
                       {/each}
                     </span>
                   {/if}
+                  <!-- Without the Categories column, the first few under the title -->
+                  {#if ep.categories?.length}
+                    <div class="relative z-10 mt-2.5 flex flex-wrap gap-1.5 lg:hidden">
+                      {#each ep.categories.slice(0, 3) as c (c.id)}
+                        {@render categoryChip(c)}
+                      {/each}
+                    </div>
+                  {/if}
                 </td>
                 <td class="hidden px-3 py-4 pr-0 align-top lg:table-cell" style="width: 38%">
                   <div class="relative z-10 flex flex-wrap gap-1.5">
                     {#each ep.categories ?? [] as c (c.id)}
-                      <button
-                        type="button"
-                        onclick={() => toggleCategory(c.type as CategoryType, c.slug)}
-                        class={cn(
-                          "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
-                          {
-                            "border-vermillion-deep/30 text-vermillion-deep": c.type === "topic",
-                            "border-teal/30 text-teal": c.type === "location",
-                            "border-character/30 text-character": c.type === "character",
-                            "border-plum/30 text-plum": c.type === "time_period",
-                          }
-                        )}
-                      >
-                        <span
-                          class="size-1.5 rounded-full"
-                          style:background="currentColor"
-                          style:opacity="0.9"
-                        ></span>
-                        {c.name}
-                      </button>
+                      {@render categoryChip(c)}
                     {/each}
                   </div>
                 </td>
@@ -774,37 +827,62 @@
               {start + 1}–{start + shown} de {total.toLocaleString("ca")}
             </div>
             {#if totalPages > 1}
+              {@const pageClass =
+                "inline-flex min-w-9 items-center justify-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink"}
+              {@const pageOffClass = cn(
+                pageClass,
+                "cursor-not-allowed opacity-35 hover:border-rule hover:text-ink-2"
+              )}
               <div class="flex items-center gap-1">
-                <button
-                  type="button"
-                  onclick={() => (page = Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  ← Anterior
-                </button>
+                {#if page > 1}
+                  <a
+                    href={pageHref(page - 1)}
+                    onclick={(e) => goToPage(e, page - 1)}
+                    rel="prev"
+                    aria-label="Pàgina anterior"
+                    class={pageClass}
+                    ><ChevronLeft class="size-3.5" /><span class="max-sm:hidden">Anterior</span></a
+                  >
+                {:else}
+                  <span aria-disabled="true" class={pageOffClass}
+                    ><ChevronLeft class="size-3.5" /><span class="max-sm:hidden">Anterior</span
+                    ></span
+                  >
+                {/if}
+                <!-- On phones the numbers don't fit: just where you are -->
+                <span class="px-2 sm:hidden">pàg. {page} de {totalPages}</span>
                 {#each pageNumbers as p, i (i)}
                   {#if p === "..."}
-                    <span class="px-1.5 text-ink-3">...</span>
+                    <span class="px-1.5 text-ink-3 max-sm:hidden">...</span>
                   {:else}
-                    <button
-                      type="button"
-                      onclick={() => (page = p)}
+                    <a
+                      href={pageHref(p)}
+                      onclick={(e) => goToPage(e, p)}
+                      aria-current={p === page ? "page" : undefined}
                       class={cn(
-                        "min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink",
+                        pageClass,
+                        "max-sm:hidden",
                         p === page && "border-ink bg-ink text-paper hover:bg-ink hover:text-paper"
-                      )}>{p}</button
+                      )}>{p}</a
                     >
                   {/if}
                 {/each}
-                <button
-                  type="button"
-                  onclick={() => (page = Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
-                  class="min-w-9 cursor-pointer rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  Següent →
-                </button>
+                {#if page < totalPages}
+                  <a
+                    href={pageHref(page + 1)}
+                    onclick={(e) => goToPage(e, page + 1)}
+                    rel="next"
+                    aria-label="Pàgina següent"
+                    class={pageClass}
+                    ><span class="max-sm:hidden">Següent</span><ChevronRight class="size-3.5" /></a
+                  >
+                {:else}
+                  <span aria-disabled="true" class={pageOffClass}
+                    ><span class="max-sm:hidden">Següent</span><ChevronRight
+                      class="size-3.5"
+                    /></span
+                  >
+                {/if}
               </div>
             {/if}
             <label class="flex items-center gap-2">
@@ -831,7 +909,7 @@
           </nav>
         {/if}
       {/if}
-    </main>
+    </section>
   </div>
 </div>
 
