@@ -1,11 +1,11 @@
 <script lang="ts">
+  import Footer from "#lib/components/app-footer.svelte";
+  import Nav from "#lib/components/app-nav.svelte";
+  import MapAnnouncement from "#lib/components/map-announcement.svelte";
   import { browser } from "$app/env";
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
-  import "src/routes/layout.css";
 
-  import Footer from "lib/components/app-footer.svelte";
-  import Nav from "lib/components/app-nav.svelte";
-  import MapAnnouncement from "lib/components/map-announcement.svelte";
+  import "./layout.css";
 
   const queryClient = new QueryClient({
     defaultOptions: {

@@ -1,11 +1,9 @@
 <script lang="ts">
+  import type { CategoryType } from "#client";
+  import AppLogo from "#lib/components/app-logo.svelte";
+  import { SITE_NAME, SITE_URL } from "#lib/constants.js";
+  import { CATEGORY_TYPE_LABELS, cn, formatDate, hasDescription } from "#lib/utils.js";
   import { ArrowLeft } from "@lucide/svelte";
-  import { SITE_NAME, SITE_URL } from "src/lib/constants.js";
-
-  import type { CategoryType } from "client";
-
-  import AppLogo from "lib/components/app-logo.svelte";
-  import { CATEGORY_TYPE_LABELS, cn, formatDate, hasDescription } from "lib/utils";
 
   const { data } = $props();
 

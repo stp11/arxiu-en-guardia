@@ -2,28 +2,26 @@
   import { untrack } from "svelte";
   import { SvelteURLSearchParams } from "svelte/reactivity";
 
-  import { goto } from "$app/navigation";
-  import { page as pageStore } from "$app/state";
-  import { ChevronDown, Loader2, MapIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
-  import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
-  import { SITE_NAME, SITE_URL } from "src/lib/constants";
-
   import {
     type CategoryType,
     type CategoryWithCount,
     getCategoriesApiCategoriesGet,
     getEpisodesApiEpisodesGet,
-  } from "client";
-
-  import AppHero from "lib/components/app-hero.svelte";
-  import * as Sheet from "lib/components/ui/sheet";
+  } from "#client";
+  import AppHero from "#lib/components/app-hero.svelte";
+  import * as Sheet from "#lib/components/ui/sheet/index.js";
+  import { SITE_NAME, SITE_URL } from "#lib/constants.js";
   import {
     CATEGORY_TYPE_COLORS,
     cn,
     extractSnippet,
     hasDescription,
     highlightMatches,
-  } from "lib/utils";
+  } from "#lib/utils.js";
+  import { goto } from "$app/navigation";
+  import { page as pageStore } from "$app/state";
+  import { ChevronDown, Loader2, MapIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
+  import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 
   import Facet from "./facet.svelte";
 

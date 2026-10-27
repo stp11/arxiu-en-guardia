@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SITE_NAME, SITE_URL } from "src/lib/constants";
+  import { SITE_NAME, SITE_URL } from "#lib/constants.js";
 
   const title = `Privadesa · ${SITE_NAME}`;
   const description =
