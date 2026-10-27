@@ -53,6 +53,14 @@
 
   const mercatorY = (lat: number) => MercatorCoordinate.fromLngLat([0, lat]).y;
 
+  // Web Mercator ends at 85.05° and the poles lie infinitely beyond it, so
+  // pins stay within 84°, whole on the map even fully zoomed out.
+  const LATITUDE_LIMIT = 84;
+  const position = (index: number): [number, number] => {
+    const { longitude, latitude } = locations[index];
+    return [longitude, Math.max(-LATITUDE_LIMIT, Math.min(LATITUDE_LIMIT, latitude))];
+  };
+
   const homeCamera = (m: MapLibreMap): JumpToOptions => {
     const camera = m.cameraForBounds(HOME, { padding: PADDING });
     if (!camera?.center || camera.zoom === undefined) return {};
@@ -150,7 +158,7 @@
           features: locations.map((l, i) => ({
             type: "Feature",
             id: i,
-            geometry: { type: "Point", coordinates: [l.longitude, l.latitude] },
+            geometry: { type: "Point", coordinates: position(i) },
             properties: { count: l.count },
           })),
         },
@@ -204,7 +212,7 @@
       const l = locations[index];
       instance.getCanvas().style.cursor = "pointer";
       label.textContent = `${l.name} · ${l.count}`;
-      tooltip.setLngLat([l.longitude, l.latitude]).setDOMContent(label).addTo(instance);
+      tooltip.setLngLat(position(index)).setDOMContent(label).addTo(instance);
     });
     instance.on("mouseleave", "locations", () => {
       instance.getCanvas().style.cursor = "";
@@ -225,7 +233,7 @@
         { layers: ["locations"] }
       );
       const distance = (index: number) => {
-        const pin = instance.project([locations[index].longitude, locations[index].latitude]);
+        const pin = instance.project(position(index));
         return Math.round(Math.hypot(pin.x - x, pin.y - y) / 4);
       };
       const count = (index: number) => locations[index].count;
@@ -240,8 +248,8 @@
     // The card covers the bottom of a phone's map and the left of a
     // desktop's; a pin it hides, or off the map, is panned into view.
     const reveal = (index: number, duration = 400) => {
-      const { longitude, latitude } = locations[index];
-      const pin = instance.project([longitude, latitude]);
+      const center = position(index);
+      const pin = instance.project(center);
       const { clientWidth: width, clientHeight: height } = container;
       const wide = window.matchMedia("(min-width: 768px)").matches;
       const [left, bottom] = wide ? [400, height] : [0, height * 0.45];
@@ -250,7 +258,7 @@
       if (within(left, bottom)) return;
       const offset: [number, number] = wide ? [200, 0] : [0, -height * 0.275];
       const zoom = within(0, height) ? instance.getZoom() : Math.min(instance.getZoom(), AWAY_ZOOM);
-      instance.easeTo({ center: [longitude, latitude], offset, zoom, duration });
+      instance.easeTo({ center, offset, zoom, duration });
     };
 
     const observer = new MutationObserver(paint);

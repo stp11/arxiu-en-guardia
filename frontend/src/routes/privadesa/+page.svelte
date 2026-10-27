@@ -47,8 +47,8 @@
         Preferències del navegador
       </h2>
       <p class="font-serif text-lg leading-relaxed text-ink">
-        El web només desa al teu dispositiu si prefereixes el mode clar o el fosc. Aquesta
-        informació es guarda a l'emmagatzematge local del navegador.
+        El web només desa al teu dispositiu si prefereixes el mode clar o el fosc, i quins avisos de
+        novetats has tancat. Aquesta informació es guarda a l'emmagatzematge local del navegador.
       </p>
     </section>
 
