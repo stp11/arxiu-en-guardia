@@ -6,7 +6,7 @@
   import { SITE_NAME, SITE_URL } from "#lib/constants.js";
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
-  import { House, Loader2, Minus, Plus } from "@lucide/svelte";
+  import { House, List, Loader2, Minus, Plus } from "@lucide/svelte";
   import {
     type ExpressionSpecification,
     type JumpToOptions,
@@ -290,6 +290,13 @@
       Descobreix on van passar les batalles, les aventures<br class="max-md:hidden" />
       i les heroïcitats de la història de Catalunya i del món.
     {/snippet}
+    <a
+      href="/"
+      class="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
+    >
+      <List class="size-3.5" />
+      Torna al llistat
+    </a>
   </AppHero>
 
   <figure class="mt-9">

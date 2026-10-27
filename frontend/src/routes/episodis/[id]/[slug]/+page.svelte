@@ -118,7 +118,7 @@
         class="inline-flex items-center gap-2 rounded-sm border border-ink bg-ink px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-paper transition-colors hover:border-vermillion-deep hover:bg-vermillion-deep"
       >
         <ArrowLeft class="size-3.5" />
-        Torna a l'arxiu
+        Torna al llistat
       </a>
     </div>
 
