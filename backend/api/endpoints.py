@@ -7,6 +7,7 @@ from sqlmodel import Session
 from database import get_session
 from dependencies import get_categories_service, get_episodes_service
 from models import (
+    CategoryCount,
     CategoryType,
     CategoryWithCount,
     EpisodeDetail,
@@ -97,6 +98,23 @@ def get_categories(
         service.get_categories_query(type=type),
         transformer=transform,
     )
+
+
+@router.get(
+    "/categories/counts",
+    tags=["categories"],
+    response_model=list[CategoryCount],
+)
+def get_category_counts(
+    service: CategoriesService = Depends(get_categories_service),
+    search: str = Query("", max_length=100),
+    categories: str = Query(
+        "", description="Comma-separated list of category slugs"
+    ),
+):
+    # Per category, the episodes the list would show with it added to the
+    # filters; those that would show none are left out.
+    return service.get_category_counts(search=search, categories=categories)
 
 
 @router.get(

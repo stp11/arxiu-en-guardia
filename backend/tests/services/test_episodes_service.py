@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from models import Episode
 from repositories import IEpisodesRepository
-from services import EpisodesService
+from services import EpisodesService, parse_categories
 
 
 class TestEpisodesService:
@@ -23,7 +23,7 @@ class TestEpisodesService:
         )
 
     def test_episodes_service_calls_repository_with_categories(self):
-        result = self.service._parse_categories(
+        result = parse_categories(
             categories_str="guerra-civil, roma-antiga ,edat-mitjana"
         )
         assert result == ["guerra-civil", "roma-antiga", "edat-mitjana"]

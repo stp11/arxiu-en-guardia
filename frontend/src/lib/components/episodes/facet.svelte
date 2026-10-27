@@ -15,6 +15,9 @@
     placeholder?: string;
     showSearch?: boolean;
     loading?: boolean;
+    // Per slug, the episodes the list would show with it added; without
+    // it, each item's own count. A slug missing from it would show none.
+    counts?: Map<string, number>;
   };
 
   let {
@@ -27,7 +30,10 @@
     showSearch = true,
     placeholder,
     loading = false,
+    counts,
   }: FacetProps = $props();
+
+  const countOf = (item: FacetItem) => (counts ? (counts.get(item.slug) ?? 0) : item.count);
 
   let collapsed = $state(false);
   let expanded = $state(false);
@@ -37,10 +43,20 @@
   const selectedSet = $derived(new Set(selected));
   const itemsBySlug = $derived(new Map(items.map((i) => [i.slug, i])));
 
+  // Dead ends with the current filters are left out, but not the selected
+  // ones, so they can be unticked; the rest, most episodes first.
+  const available = $derived(
+    counts
+      ? items
+          .filter((i) => countOf(i) > 0 || selectedSet.has(i.slug))
+          .sort((a, b) => countOf(b) - countOf(a) || a.name.localeCompare(b.name, "ca"))
+      : items
+  );
+
   const filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((i) => i.name.toLowerCase().includes(q));
+    if (!q) return available;
+    return available.filter((i) => i.name.toLowerCase().includes(q));
   });
 
   const visible = $derived.by(() => {
@@ -142,7 +158,7 @@
                 <span class="line-clamp-1">{item.name}</span>
               </span>
               <span class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
-                >{item.count}</span
+                >{countOf(item)}</span
               >
             </button>
           </li>

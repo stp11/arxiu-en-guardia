@@ -145,6 +145,44 @@ class TestCategoriesRepository:
             "total": 4,
         }
 
+    def test_get_category_counts(self, db_session: Session):
+        grecia, guerra, frances = self.categories
+        db_session.add_all(
+            [
+                Episode(id=1, title="Atenes en guerra", categories=[grecia]),
+                Episode(id=2, title="Esparta", categories=[grecia, guerra]),
+                Episode(id=3, title="Bruc", categories=[frances]),
+            ]
+        )
+        db_session.commit()
+        repo = CategoriesRepository(session=db_session)
+
+        def counts(search: str | None, categories: list[str]):
+            return {
+                c.slug: c.count
+                for c in repo.get_category_counts(search, categories)
+            }
+
+        assert counts(None, []) == {
+            "antiga-grecia": 2,
+            "guerra-civil": 1,
+            "guerra-del-frances": 1,
+        }
+        # Only the episodes that match the search.
+        assert counts("guerra", []) == {"antiga-grecia": 1}
+        # A topic selected: everything narrows to its episodes, and the
+        # other topic, in none of them, is left out.
+        assert counts(None, ["guerra-civil"]) == {
+            "antiga-grecia": 1,
+            "guerra-civil": 1,
+        }
+        # A place selected: the Guerra del Francès isn't in it, so it's
+        # left out.
+        assert counts(None, ["antiga-grecia"]) == {
+            "antiga-grecia": 2,
+            "guerra-civil": 1,
+        }
+
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)
         db_session.commit()

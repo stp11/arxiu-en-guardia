@@ -7,6 +7,7 @@ from sqlalchemy import Select
 from logger import logger
 from models import (
     Category,
+    CategoryCount,
     CategoryType,
     Episode,
     LocationStats,
@@ -36,6 +37,16 @@ CATEGORY_TYPE_TO_KEY: dict[CategoryType, str] = {
 }
 
 
+def parse_categories(categories_str: str) -> list[str]:
+    """
+    Parse comma-separated category slugs string into a list.
+    """
+    if not categories_str or not categories_str.strip():
+        return []
+
+    return [cat.strip() for cat in categories_str.split(",") if cat.strip()]
+
+
 class EpisodesService:
     def __init__(self, episodes_repository: IEpisodesRepository):
         self.episodes_repository = episodes_repository
@@ -46,10 +57,8 @@ class EpisodesService:
         """
         Orchestrates fetching the episodes query from the repository.
         """
-        category_list = self._parse_categories(categories)
-
         return self.episodes_repository.get_episodes_query(
-            search=search, order=order, categories=category_list
+            search=search, order=order, categories=parse_categories(categories)
         )
 
     def get_episode_by_id(self, id: int) -> Episode:
@@ -60,17 +69,6 @@ class EpisodesService:
         if episode is None or episode.embedding is None:
             return []
         return self.episodes_repository.get_similar_episodes(episode, limit)
-
-    def _parse_categories(self, categories_str: str) -> list[int]:
-        """
-        Parse comma-separated category slugs string into a list.
-        """
-        if not categories_str or not categories_str.strip():
-            return []
-
-        return [
-            cat.strip() for cat in categories_str.split(",") if cat.strip()
-        ]
 
     def create_episode_from_api_data(self, data: dict) -> Episode:
         """Maps API data dictionary to an Episode object."""
@@ -208,6 +206,13 @@ class CategoriesService:
 
     def get_categories_query(self, type: CategoryType) -> Select:
         return self.categories_repository.get_categories_query(type=type)
+
+    def get_category_counts(
+        self, search: str | None, categories: str = ""
+    ) -> list[CategoryCount]:
+        return self.categories_repository.get_category_counts(
+            search=search, categories=parse_categories(categories)
+        )
 
     def get_locations(self) -> list[LocationWithCount]:
         return self.categories_repository.get_locations()
