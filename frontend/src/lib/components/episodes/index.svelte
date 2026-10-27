@@ -724,7 +724,7 @@
                     {/each}
                   </a>
                   {#if p.descShown}
-                    <span class="line-clamp-2 text-[13.5px] leading-snug text-ink-2">
+                    <span class="line-clamp-2 text-[15px] md:text-[13.5px] leading-snug text-ink-2">
                       {#each p.descChunks as c, i (i)}
                         {#if c.match}
                           <mark class="bg-vermillion/20 px-0.5 text-ink">{c.text}</mark>

@@ -96,7 +96,7 @@
                 {ep.title}
               </a>
               {#if hasDescription(ep.description)}
-                <p class="mt-1 line-clamp-3 text-[13px] leading-snug text-ink-2">
+                <p class="mt-1 line-clamp-3 text-[15px] md:text-[13px] leading-snug text-ink-2">
                   {ep.description}
                 </p>
               {/if}

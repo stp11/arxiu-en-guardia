@@ -107,7 +107,7 @@
         {#if episode.published_at}
           <time
             datetime={episode.published_at}
-            class="mb-5 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-vermillion-deep"
+            class="mb-5 block font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.14em] text-vermillion-deep"
           >
             {formatDate(episode.published_at)}
           </time>
@@ -143,7 +143,7 @@
         {#if hasDescription(episode.description)}
           <section>
             <h2
-              class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+              class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
             >
               Descripció
             </h2>
@@ -156,7 +156,7 @@
         {:else}
           <section>
             <h2
-              class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+              class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
             >
               Descripció
             </h2>
@@ -169,7 +169,7 @@
           {#if episode.categories && episode.categories.length > 0}
             <section>
               <h2
-                class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+                class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
               >
                 Categories
               </h2>
@@ -179,7 +179,7 @@
                 {#if group.length > 0}
                   <div class="mb-4 last:mb-0">
                     <span
-                      class="mb-2 block font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3"
+                      class="mb-2 block font-mono text-[10px] md:text-[9px] uppercase tracking-[0.16em] text-ink-3"
                     >
                       {CATEGORY_TYPE_LABELS[type]}
                     </span>
@@ -187,7 +187,7 @@
                       {#each group as c (c.id)}
                         <span
                           class={cn(
-                            "inline-flex items-center gap-1.5 rounded-sm border bg-paper-2 px-2.5 py-1 font-mono text-[11px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
+                            "inline-flex items-center gap-1.5 rounded-sm border bg-paper-2 px-2.5 py-1 font-mono text-[12px] md:text-[11px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
                             {
                               "border-vermillion-deep/30 text-vermillion-deep": type === "topic",
                               "border-teal/30 text-teal": type === "location",
@@ -211,20 +211,22 @@
           {#if episode.published_at}
             <section>
               <h2
-                class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+                class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
               >
                 Emissió
               </h2>
-              <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+              <div
+                class="font-mono text-[12px] md:text-[11px] uppercase tracking-[0.1em] text-ink-2"
+              >
                 {formatDate(episode.published_at)}
               </div>
             </section>
           {/if}
 
           <section>
-            <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+            <div class="font-mono text-[12px] md:text-[11px] uppercase tracking-[0.1em] text-ink-2">
               <h2
-                class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+                class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
               >
                 Font
               </h2>
@@ -241,14 +243,16 @@
 
           {#if episode.wikipedia_articles && episode.wikipedia_articles.length > 0}
             <section>
-              <div class="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
+              <div
+                class="font-mono text-[12px] md:text-[11px] uppercase tracking-[0.1em] text-ink-2"
+              >
                 <h2
-                  class="mb-4 border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+                  class="mb-4 border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
                 >
                   Altres recursos
                 </h2>
                 <span
-                  class="mb-2 block font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3"
+                  class="mb-2 block font-mono text-[10px] md:text-[9px] uppercase tracking-[0.16em] text-ink-3"
                 >
                   Viquipèdia
                 </span>
@@ -275,7 +279,7 @@
       {#if data.similarEpisodes && data.similarEpisodes.length > 0}
         <section class="mt-20">
           <h2
-            class="mb-[18px] border-b border-rule pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
+            class="mb-[18px] border-b border-rule pb-2 font-mono text-[12px] md:text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3"
           >
             També et poden interessar
           </h2>
@@ -300,7 +304,7 @@
                 {#if similar.published_at}
                   <time
                     datetime={similar.published_at}
-                    class="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3"
+                    class="font-mono text-[11px] md:text-[10px] uppercase tracking-[0.08em] text-ink-3"
                   >
                     {formatDate(similar.published_at)}
                   </time>
