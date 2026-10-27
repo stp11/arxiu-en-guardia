@@ -184,8 +184,8 @@
   {#if selectedItems.length > 1}
     <p class="mt-1.5 mb-0 px-0.5 text-[13px] italic text-ink-3">
       {matchAll
-        ? `Capítols amb ${selectedItems.length === 2 ? "les dues" : "totes les"} categories`
-        : "Capítols amb una de les categories"}
+        ? `Episodis amb ${selectedItems.length === 2 ? "les dues" : "totes les"} categories`
+        : "Episodis amb una de les categories"}
     </p>
   {/if}
   {#if selectedItems.length > 0}
