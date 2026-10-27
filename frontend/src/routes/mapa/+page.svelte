@@ -288,7 +288,7 @@
 <div class="mx-auto w-full max-w-screen-xl px-6 pt-8 pb-12 md:px-10 md:pt-14">
   <AppHero>
     {#snippet tagline()}
-      Descobreix on van passar les batalles, les aventures<br />
+      Descobreix on van passar les batalles, les aventures<br class="max-md:hidden" />
       i les heroïcitats de la història de Catalunya i del món.
     {/snippet}
   </AppHero>
