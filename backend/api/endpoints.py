@@ -32,9 +32,16 @@ def get_episodes(
     categories: str = Query(
         "", description="Comma-separated list of category slugs"
     ),
+    match_all: str = Query(
+        "",
+        description=(
+            "Comma-separated list of category types whose selected categories"
+            " must all match, rather than any of them"
+        ),
+    ),
 ):
     query = service.get_episodes_query(
-        search=search, order=order, categories=categories
+        search=search, order=order, categories=categories, match_all=match_all
     )
     return paginate(session, query)
 
@@ -111,10 +118,19 @@ def get_category_counts(
     categories: str = Query(
         "", description="Comma-separated list of category slugs"
     ),
+    match_all: str = Query(
+        "",
+        description=(
+            "Comma-separated list of category types whose selected categories"
+            " must all match, rather than any of them"
+        ),
+    ),
 ):
-    # Per category, the episodes the list would show with it added to the
-    # filters; those that would show none are left out.
-    return service.get_category_counts(search=search, categories=categories)
+    # Per category, its episodes under the filters of the other types, and
+    # of its own if in match_all; those with none are left out.
+    return service.get_category_counts(
+        search=search, categories=categories, match_all=match_all
+    )
 
 
 @router.get(

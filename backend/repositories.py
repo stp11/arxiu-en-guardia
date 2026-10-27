@@ -9,6 +9,7 @@ from sqlalchemy import (
     cast,
     func,
     or_,
+    union_all,
 )
 from sqlalchemy.orm import defer, selectinload
 from sqlmodel import Session, select
@@ -32,10 +33,14 @@ CATEGORY_WEIGHT = 0.2
 
 
 def episode_filters(
-    search: str | None, categories: list[str]
+    search: str | None,
+    categories: list[str],
+    match_all: set[CategoryType] = set(),
+    except_type: CategoryType | None = None,
 ) -> list[ColumnElement[bool]]:
     """
-    The conditions on Episode for the list's search and categories.
+    The conditions on Episode for the list's search and categories, leaving
+    out those of `except_type`'s categories if given.
     """
     filters = []
 
@@ -49,24 +54,34 @@ def episode_filters(
             )
         )
 
-    # Every selected category: Guerra and Democràcia and Catalunya. An
-    # episode has each category once, so it matches when it has as many of
-    # them as are selected. Unknown slugs are left out of both counts, and
-    # when none is known there's nothing to filter by. A subquery, not a
-    # join, so an episode comes back once.
+    # Any of the selected categories of a type, or every one of them for
+    # those in `match_all`, and every type selected: (Guerra or Democràcia)
+    # and Catalunya. A type with no known slug selected doesn't filter, so
+    # unknown slugs are as if they weren't there. A subquery, not a join,
+    # so an episode comes back once.
     if len(categories) > 0:
-        selected = Category.slug.in_(categories)
-        known = (
-            select(func.count()).select_from(Category).where(selected)
-        ).scalar_subquery()
-        matching = (
-            select(EpisodeCategory.episode_id)
-            .join(Category, Category.id == EpisodeCategory.category_id)
-            .where(selected)
-            .group_by(EpisodeCategory.episode_id)
-            .having(func.count() == known)
-        )
-        filters.append(or_(known == 0, Episode.id.in_(matching)))
+        for type in CategoryType:
+            if type == except_type:
+                continue
+            selected = Category.slug.in_(categories) & (Category.type == type)
+            matching = (
+                select(EpisodeCategory.episode_id)
+                .join(Category, Category.id == EpisodeCategory.category_id)
+                .where(selected)
+            )
+            if type in match_all:
+                # An episode has each category once, so it has every one
+                # when it has as many of them as are selected.
+                known = (
+                    select(func.count()).select_from(Category).where(selected)
+                ).scalar_subquery()
+                matching = matching.group_by(
+                    EpisodeCategory.episode_id
+                ).having(func.count() == known)
+                none_selected = known == 0
+            else:
+                none_selected = ~select(Category.id).where(selected).exists()
+            filters.append(or_(none_selected, Episode.id.in_(matching)))
 
     return filters
 
@@ -82,7 +97,10 @@ class ICategoriesRepository(ABC):
 
     @abstractmethod
     def get_category_counts(
-        self, search: str | None, categories: list[str]
+        self,
+        search: str | None,
+        categories: list[str],
+        match_all: set[CategoryType] = set(),
     ) -> list[CategoryCount]:
         pass
 
@@ -126,23 +144,38 @@ class CategoriesRepository(ICategoriesRepository):
         )
 
     def get_category_counts(
-        self, search: str | None, categories: list[str]
+        self,
+        search: str | None,
+        categories: list[str],
+        match_all: set[CategoryType] = set(),
     ) -> list[CategoryCount]:
-        # How many episodes the list would show with each category added to
-        # the filters: of those it shows now, the ones with that category.
-        # Those with none are left out.
-        matching = select(Episode.id).where(
-            *episode_filters(search, categories)
-        )
-        counts = (
+        # Per category, its episodes under every filter but those of its
+        # own type: ticking a sibling widens the list rather than narrowing
+        # it, so the sibling's count doesn't depend on what's ticked beside
+        # it. In a type in `match_all` ticking narrows, so its own filter
+        # stays. Those with none are left out.
+        per_type = [
             select(Category.slug, func.count(EpisodeCategory.episode_id))
             .join(EpisodeCategory)
-            .where(EpisodeCategory.episode_id.in_(matching))
+            .where(
+                Category.type == type,
+                EpisodeCategory.episode_id.in_(
+                    select(Episode.id).where(
+                        *episode_filters(
+                            search,
+                            categories,
+                            match_all,
+                            except_type=None if type in match_all else type,
+                        )
+                    )
+                ),
+            )
             .group_by(Category.slug)
-        )
+            for type in CategoryType
+        ]
         return [
             CategoryCount(slug=slug, count=count)
-            for slug, count in self.db_session.exec(counts).all()
+            for slug, count in self.db_session.exec(union_all(*per_type)).all()
         ]
 
     def get_locations(self) -> list[LocationWithCount]:
@@ -218,7 +251,11 @@ class IEpisodesRepository(ABC):
 
     @abstractmethod
     def get_episodes_query(
-        self, search: str | None, order: str, categories: list[str] = []
+        self,
+        search: str | None,
+        order: str,
+        categories: list[str] = [],
+        match_all: set[CategoryType] = set(),
     ) -> Select:
         pass
 
@@ -259,7 +296,11 @@ class EpisodesRepository(IEpisodesRepository):
         self.db_session = session
 
     def get_episodes_query(
-        self, search: str | None, order: str, categories: list[str] = []
+        self,
+        search: str | None,
+        order: str,
+        categories: list[str] = [],
+        match_all: set[CategoryType] = set(),
     ) -> Select:
         # The list doesn't show the vectors, which are most of each row.
         query = select(Episode).options(
@@ -271,7 +312,7 @@ class EpisodesRepository(IEpisodesRepository):
         else:
             query = query.order_by(Episode.published_at.asc())
 
-        return query.where(*episode_filters(search, categories))
+        return query.where(*episode_filters(search, categories, match_all))
 
     def get_episode_by_id(self, id: int) -> Episode:
         return self.db_session.exec(

@@ -19,7 +19,10 @@ class TestEpisodesService:
         )
 
         self.mock_repo.get_episodes_query.assert_called_once_with(
-            search=search_term, order=order_direction, categories=[]
+            search=search_term,
+            order=order_direction,
+            categories=[],
+            match_all=set(),
         )
 
     def test_episodes_service_calls_repository_with_categories(self):

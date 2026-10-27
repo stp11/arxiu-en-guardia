@@ -106,6 +106,32 @@ class TestLocations:
             {"slug": "montserrat", "count": 1},
         ]
 
+    def test_get_episodes_match_all(self, client, db_session):
+        guerra = Category(
+            name="Guerra", slug="guerra", type=CategoryType.TOPIC
+        )
+        exili = Category(name="Exili", slug="exili", type=CategoryType.TOPIC)
+        db_session.add_all(
+            [
+                Episode(id=1, title="Retirada", categories=[guerra, exili]),
+                Episode(id=2, title="L'Ebre", categories=[guerra]),
+            ]
+        )
+        db_session.commit()
+
+        def titles(**params) -> list[str]:
+            response = client.get(
+                "/api/episodes",
+                params={"categories": "guerra,exili", **params},
+            )
+            assert response.status_code == 200
+            return sorted(e["title"] for e in response.json()["items"])
+
+        assert titles() == ["L'Ebre", "Retirada"]
+        assert titles(match_all="topic") == ["Retirada"]
+        # Unknown types are left out.
+        assert titles(match_all="tema") == ["L'Ebre", "Retirada"]
+
     def test_get_location_stats(self, client, db_session):
         montserrat = Category(
             name="Montserrat",

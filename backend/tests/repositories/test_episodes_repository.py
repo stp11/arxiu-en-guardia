@@ -118,8 +118,8 @@ class TestEpisodesRepository:
         )
         results = db_session.exec(query).all()
 
-        # Every selected category: no episode has both.
-        assert results == []
+        # Any of the selected topics: each has one of them.
+        assert len(results) == 2
 
         query = repo.get_episodes_query(
             search=None, order="asc", categories=["guerra-civil"]
@@ -130,7 +130,7 @@ class TestEpisodesRepository:
         assert results[0].title == "Episodi sobre Grecia"
         assert results[0].categories[0].name == "Guerra Civil"
 
-    def test_repository_filter_categories_all_of_them(
+    def test_repository_filter_categories_any_of_a_type_all_types(
         self, db_session: Session
     ):
         guerra = Category(
@@ -149,9 +149,14 @@ class TestEpisodesRepository:
         db_session.commit()
         repo = EpisodesRepository(session=db_session)
 
-        def titles(categories: list[str]) -> list[str]:
+        def titles(
+            categories: list[str], match_all: set[CategoryType] = set()
+        ) -> list[str]:
             query = repo.get_episodes_query(
-                search=None, order="asc", categories=categories
+                search=None,
+                order="asc",
+                categories=categories,
+                match_all=match_all,
             )
             return [e.title for e in db_session.exec(query).all()]
 
@@ -159,14 +164,24 @@ class TestEpisodesRepository:
             "Episodi sobre la Guerra Civil",
             "Episodi sobre la Guerra del Vietnam",
         ]
-        # Every one of them, whatever their type, and an episode with
-        # several comes back once.
+        # Any of the topics, and an episode with several comes back once.
         assert titles(["guerra", "democracia"]) == [
-            "Episodi sobre la Guerra Civil"
+            "Episodi sobre Grecia",
+            "Episodi sobre la Guerra Civil",
+            "Episodi sobre la Guerra del Vietnam",
         ]
+        # And every type: of those, the ones in Catalunya.
         assert titles(["guerra", "democracia", "catalunya"]) == [
             "Episodi sobre la Guerra Civil"
         ]
+        # Every one of the topics, when they must all match.
+        assert titles(["guerra", "democracia"], {CategoryType.TOPIC}) == [
+            "Episodi sobre la Guerra Civil"
+        ]
+        # Only for the types given: one place selected matches either way.
+        assert titles(
+            ["guerra", "democracia", "catalunya"], {CategoryType.LOCATION}
+        ) == ["Episodi sobre la Guerra Civil"]
         # An unknown slug among them is left out.
         assert titles(["guerra", "no-existeix"]) == [
             "Episodi sobre la Guerra Civil",

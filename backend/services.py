@@ -47,18 +47,35 @@ def parse_categories(categories_str: str) -> list[str]:
     return [cat.strip() for cat in categories_str.split(",") if cat.strip()]
 
 
+def parse_match_all(match_all_str: str) -> set[CategoryType]:
+    """
+    Parse comma-separated category types, leaving out unknown ones.
+    """
+    types = {t.value for t in CategoryType}
+    return {
+        CategoryType(t) for t in parse_categories(match_all_str) if t in types
+    }
+
+
 class EpisodesService:
     def __init__(self, episodes_repository: IEpisodesRepository):
         self.episodes_repository = episodes_repository
 
     def get_episodes_query(
-        self, search: str | None, order: str, categories: str = ""
+        self,
+        search: str | None,
+        order: str,
+        categories: str = "",
+        match_all: str = "",
     ) -> Select:
         """
         Orchestrates fetching the episodes query from the repository.
         """
         return self.episodes_repository.get_episodes_query(
-            search=search, order=order, categories=parse_categories(categories)
+            search=search,
+            order=order,
+            categories=parse_categories(categories),
+            match_all=parse_match_all(match_all),
         )
 
     def get_episode_by_id(self, id: int) -> Episode:
@@ -208,10 +225,12 @@ class CategoriesService:
         return self.categories_repository.get_categories_query(type=type)
 
     def get_category_counts(
-        self, search: str | None, categories: str = ""
+        self, search: str | None, categories: str = "", match_all: str = ""
     ) -> list[CategoryCount]:
         return self.categories_repository.get_category_counts(
-            search=search, categories=parse_categories(categories)
+            search=search,
+            categories=parse_categories(categories),
+            match_all=parse_match_all(match_all),
         )
 
     def get_locations(self) -> list[LocationWithCount]:
