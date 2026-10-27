@@ -6,11 +6,10 @@
   import type { Snippet } from "svelte";
   import type { ComponentProps } from "svelte";
 
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { type WithoutChildrenOrChild, cn } from "#lib/utils.js";
   import XIcon from "@lucide/svelte/icons/x";
   import { Dialog as SheetPrimitive } from "bits-ui";
-
-  import { Button } from "lib/components/ui/button/index.js";
-  import { type WithoutChildrenOrChild, cn } from "lib/utils.js";
 
   import SheetOverlay from "./sheet-overlay.svelte";
   import SheetPortal from "./sheet-portal.svelte";

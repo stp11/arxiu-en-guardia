@@ -1,10 +1,8 @@
 <script lang="ts">
+  import { type LocationWithCount, getEpisodesApiEpisodesGet } from "#client";
+  import { formatDate, hasDescription } from "#lib/utils.js";
   import { ArrowRight, Loader2, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery } from "@tanstack/svelte-query";
-
-  import { type LocationWithCount, getEpisodesApiEpisodesGet } from "client";
-
-  import { formatDate, hasDescription } from "lib/utils";
 
   type Props = {
     location: LocationWithCount;

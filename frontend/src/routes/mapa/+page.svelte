@@ -2,6 +2,8 @@
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
 
+  import AppHero from "#lib/components/app-hero.svelte";
+  import { SITE_NAME, SITE_URL } from "#lib/constants.js";
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
   import { House, Loader2, Minus, Plus } from "@lucide/svelte";
@@ -17,9 +19,6 @@
   } from "maplibre-gl";
   import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
   import "maplibre-gl/dist/maplibre-gl.css";
-  import { SITE_NAME, SITE_URL } from "src/lib/constants";
-
-  import AppHero from "lib/components/app-hero.svelte";
 
   import { STYLE_URL, paintBasemap, readPalette, withoutTransitions } from "./basemap";
   import LocationCard from "./location-card.svelte";

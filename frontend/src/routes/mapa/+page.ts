@@ -1,5 +1,5 @@
+import { getLocationStatsApiLocationsStatsGet, getLocationsApiLocationsGet } from "#client";
 import { error } from "@sveltejs/kit";
-import { getLocationStatsApiLocationsStatsGet, getLocationsApiLocationsGet } from "src/client";
 
 import type { PageLoad } from "./$types";
 

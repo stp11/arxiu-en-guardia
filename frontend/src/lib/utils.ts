@@ -1,7 +1,6 @@
+import type { CategoryType } from "#client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-
-import type { CategoryType } from "client";
 
 export type { WithoutChild, WithoutChildren, WithoutChildrenOrChild } from "bits-ui";
 

@@ -1,5 +1,5 @@
+import { getEpisodeApiEpisodesIdGet, getSimilarEpisodesApiEpisodesIdSimilarGet } from "#client";
 import { error, redirect } from "@sveltejs/kit";
-import { getEpisodeApiEpisodesIdGet, getSimilarEpisodesApiEpisodesIdSimilarGet } from "src/client";
 
 import type { PageLoad } from "./$types";
 

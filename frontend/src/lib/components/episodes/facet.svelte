@@ -1,9 +1,7 @@
 <script lang="ts">
+  import type { CategoryType } from "#client";
+  import { CATEGORY_TYPE_COLORS, cn } from "#lib/utils.js";
   import { ChevronDown } from "@lucide/svelte";
-
-  import type { CategoryType } from "client";
-
-  import { CATEGORY_TYPE_COLORS, cn } from "lib/utils";
 
   type FacetItem = { slug: string; name: string; count: number };
 

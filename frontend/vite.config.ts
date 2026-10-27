@@ -1,15 +1,23 @@
+import adapter from "@sveltejs/adapter-static";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), sveltekit()],
-  resolve: {
-    alias: {
-      src: path.resolve(__dirname, "src"),
-      lib: path.resolve(__dirname, "src/lib"),
-      client: path.resolve(__dirname, "src/client"),
-    },
-  },
+  plugins: [
+    tailwindcss(),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter({
+        fallback: "index.html",
+      }),
+      prerender: {
+        entries: ["/sitemap.xml"],
+        handleHttpError: "ignore",
+        handleMissingId: "ignore",
+        handleUnseenRoutes: "ignore",
+      },
+    }),
+  ],
 });

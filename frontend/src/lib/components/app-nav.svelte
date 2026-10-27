@@ -1,8 +1,7 @@
 <script lang="ts">
+  import ThemeToggle from "#lib/components/theme-toggle.svelte";
+  import { cn } from "#lib/utils.js";
   import { page } from "$app/state";
-
-  import ThemeToggle from "lib/components/theme-toggle.svelte";
-  import { cn } from "lib/utils";
 
   const links = [
     { href: "/", label: "Inici", match: "exact" as const },

@@ -1,4 +1,4 @@
-import { SITE_URL } from "src/lib/constants";
+import { SITE_URL } from "#lib/constants.js";
 
 import type { RequestHandler } from "./$types";
 
