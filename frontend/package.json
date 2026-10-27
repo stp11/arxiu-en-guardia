@@ -44,7 +44,7 @@
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.0",
-    "vite": "^7.1.10"
+    "vite": "^8.3.5"
   },
   "dependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
