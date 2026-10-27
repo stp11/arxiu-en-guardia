@@ -332,7 +332,10 @@
     staleTime: 1000 * 30,
   }));
   const facetCounts = $derived(hasFilters ? countsQuery.data : undefined);
-  const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
+  // Those with a chip: unknown slugs are ignored by the list, so not counted.
+  const activeFilterCount = $derived(
+    ALL_TYPES.reduce((acc, t) => acc + categories[t].filter((slug) => findItem(t, slug)).length, 0)
+  );
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);

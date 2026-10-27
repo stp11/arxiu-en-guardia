@@ -101,7 +101,7 @@ class TestLocations:
         )
 
         assert response.status_code == 200
-        assert response.json() == [
+        assert sorted(response.json(), key=lambda c: c["slug"]) == [
             {"slug": "guerra", "count": 1},
             {"slug": "montserrat", "count": 1},
         ]

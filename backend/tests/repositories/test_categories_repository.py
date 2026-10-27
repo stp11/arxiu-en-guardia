@@ -158,31 +158,30 @@ class TestCategoriesRepository:
         repo = CategoriesRepository(session=db_session)
 
         def counts(search: str | None, categories: list[str]):
-            return [
-                (c.slug, c.count)
+            return {
+                c.slug: c.count
                 for c in repo.get_category_counts(search, categories)
-            ]
+            }
 
-        # Most first, then by slug.
-        assert counts(None, []) == [
-            ("antiga-grecia", 2),
-            ("guerra-civil", 1),
-            ("guerra-del-frances", 1),
-        ]
+        assert counts(None, []) == {
+            "antiga-grecia": 2,
+            "guerra-civil": 1,
+            "guerra-del-frances": 1,
+        }
         # Only the episodes that match the search.
-        assert counts("guerra", []) == [("antiga-grecia", 1)]
+        assert counts("guerra", []) == {"antiga-grecia": 1}
         # A topic selected: everything narrows to its episodes, and the
         # other topic, in none of them, is left out.
-        assert counts(None, ["guerra-civil"]) == [
-            ("antiga-grecia", 1),
-            ("guerra-civil", 1),
-        ]
+        assert counts(None, ["guerra-civil"]) == {
+            "antiga-grecia": 1,
+            "guerra-civil": 1,
+        }
         # A place selected: the Guerra del Francès isn't in it, so it's
         # left out.
-        assert counts(None, ["antiga-grecia"]) == [
-            ("antiga-grecia", 2),
-            ("guerra-civil", 1),
-        ]
+        assert counts(None, ["antiga-grecia"]) == {
+            "antiga-grecia": 2,
+            "guerra-civil": 1,
+        }
 
     def test_get_or_create_category(self, db_session: Session):
         db_session.add_all(self.categories)

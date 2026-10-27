@@ -130,7 +130,7 @@ class CategoriesRepository(ICategoriesRepository):
     ) -> list[CategoryCount]:
         # How many episodes the list would show with each category added to
         # the filters: of those it shows now, the ones with that category.
-        # Those with none are left out; most first.
+        # Those with none are left out.
         matching = select(Episode.id).where(
             *episode_filters(search, categories)
         )
@@ -140,13 +140,10 @@ class CategoriesRepository(ICategoriesRepository):
             .where(EpisodeCategory.episode_id.in_(matching))
             .group_by(Category.slug)
         )
-        return sorted(
-            (
-                CategoryCount(slug=slug, count=count)
-                for slug, count in self.db_session.exec(counts).all()
-            ),
-            key=lambda c: (-c.count, c.slug),
-        )
+        return [
+            CategoryCount(slug=slug, count=count)
+            for slug, count in self.db_session.exec(counts).all()
+        ]
 
     def get_locations(self) -> list[LocationWithCount]:
         rows = self.db_session.exec(
