@@ -71,8 +71,9 @@ class CategoryWithCount(CategoryBase):
 
 class CategoryCount(SQLModel):
     """
-    How many episodes the list would show with this category added to the
-    current filters. Categories that would show none are left out.
+    How many of this category's episodes match the search and the filters of
+    the other types, and of its own if all of them must match. Categories
+    with none are left out.
     """
 
     slug: str

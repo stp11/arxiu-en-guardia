@@ -13,7 +13,6 @@
   import * as Sheet from "#lib/components/ui/sheet/index.js";
   import { SITE_NAME, SITE_URL } from "#lib/constants.js";
   import {
-    CATEGORY_TYPE_COLORS,
     cn,
     extractSnippet,
     hasDescription,
@@ -27,11 +26,10 @@
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Loader2,
+    Loader,
     MapIcon,
     Search,
     SlidersHorizontal,
-    XIcon,
   } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery, keepPreviousData } from "@tanstack/svelte-query";
 
@@ -73,6 +71,7 @@
         location: [],
         time_period: [],
       } as Record<CategoryType, string[]>,
+      matchAll: [] as CategoryType[],
     };
 
     const urlPage = params.get("page");
@@ -112,6 +111,9 @@
       if (slugs.length > 0) state.categories[t] = slugs;
     }
 
+    const urlMatchAll = params.get("match_all")?.split(",") ?? [];
+    state.matchAll = ALL_TYPES.filter((t) => urlMatchAll.includes(t));
+
     return state;
   };
 
@@ -122,6 +124,8 @@
   let page = $state(fromUrl.page);
   let pageSize = $state(fromUrl.pageSize);
   let categories = $state<Record<CategoryType, string[]>>(fromUrl.categories);
+  // The facets where an episode needs every selected category, not any.
+  let matchAll = $state<CategoryType[]>(fromUrl.matchAll);
   let order = $state<"asc" | "desc">(fromUrl.order);
   let searchInput: HTMLInputElement | null = $state(null);
   let filtersOpen = $state(false);
@@ -149,6 +153,9 @@
         else params.delete(t);
       }
 
+      if (matchAllString) params.set("match_all", matchAllString);
+      else params.delete("match_all");
+
       const qs = params.toString();
       goto(qs ? `?${qs}` : pageStore.url.pathname, {
         replace: true,
@@ -163,6 +170,7 @@
     searchQuery; // eslint-disable-line @typescript-eslint/no-unused-expressions
     order; // eslint-disable-line @typescript-eslint/no-unused-expressions
     categoriesString; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    matchAllString; // eslint-disable-line @typescript-eslint/no-unused-expressions
     updateUrl();
   });
 
@@ -190,13 +198,15 @@
     page = 1;
   };
 
-  const removeCategory = (type: CategoryType, slug: string) => {
-    categories = { ...categories, [type]: categories[type].filter((c) => c !== slug) };
+  const setMatchAll = (type: CategoryType, all: boolean) => {
+    if (all === matchAll.includes(type)) return;
+    matchAll = all ? [...matchAll, type] : matchAll.filter((t) => t !== type);
     page = 1;
   };
 
   const clearAll = () => {
     categories = { topic: [], character: [], location: [], time_period: [] };
+    matchAll = [];
     searchText = "";
     searchQuery = "";
     if (searchInput) searchInput.value = "";
@@ -204,9 +214,18 @@
   };
 
   const categoriesString = $derived(Object.values(categories).flat().join(","));
+  // In the order of ALL_TYPES, so the same choice is the same cache key.
+  const matchAllString = $derived(ALL_TYPES.filter((t) => matchAll.includes(t)).join(","));
+  // What the requests need of it: the list changes only where 2 or more
+  // are selected, the counts where any is. Otherwise switching would
+  // refetch the same results.
+  const matchAllFor = (min: number) =>
+    ALL_TYPES.filter((t) => matchAll.includes(t) && categories[t].length >= min).join(",");
+  const listMatchAll = $derived(matchAllFor(2));
+  const countsMatchAll = $derived(matchAllFor(1));
 
   const queryData = createQuery(() => ({
-    queryKey: ["episodes", searchQuery, page, pageSize, order, categoriesString],
+    queryKey: ["episodes", searchQuery, page, pageSize, order, categoriesString, listMatchAll],
     queryFn: () =>
       getEpisodesApiEpisodesGet({
         query: {
@@ -215,6 +234,7 @@
           size: pageSize,
           order,
           categories: categoriesString,
+          match_all: listMatchAll,
         },
       }),
     // placeholderData: keepPreviousData,
@@ -311,17 +331,17 @@
   const findItem = (type: CategoryType, slug: string) =>
     allCategoryItems[type].find((i) => i.slug === slug);
 
-  const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
+  const hasFilters = $derived(ALL_TYPES.some((t) => categories[t].length > 0));
 
   // The facets' counts under the current filters. Without any, the
   // categories' own counts are the same, so there's nothing to fetch; while
   // the next ones load, the last stay up rather than jumping back to those.
   const countsQuery = createQuery(() => ({
-    queryKey: ["category-counts", searchQuery, categoriesString],
+    queryKey: ["category-counts", searchQuery, categoriesString, countsMatchAll],
     queryFn: async () =>
       (
         await getCategoryCountsApiCategoriesCountsGet({
-          query: { search: searchQuery, categories: categoriesString },
+          query: { search: searchQuery, categories: categoriesString, match_all: countsMatchAll },
           throwOnError: true,
         })
       ).data,
@@ -444,6 +464,8 @@
       items={topicItems}
       selected={categories.topic}
       onToggle={(slug) => toggleCategory("topic", slug)}
+      matchAll={matchAll.includes("topic")}
+      onMatchAllChange={(all) => setMatchAll("topic", all)}
       loading={topicsQuery.isLoading}
       counts={facetCounts}
     />
@@ -454,6 +476,8 @@
       items={locationItems}
       selected={categories.location}
       onToggle={(slug) => toggleCategory("location", slug)}
+      matchAll={matchAll.includes("location")}
+      onMatchAllChange={(all) => setMatchAll("location", all)}
       loading={locationsQuery.isLoading}
       counts={facetCounts}
     />
@@ -464,16 +488,20 @@
       items={characterItems}
       selected={categories.character}
       onToggle={(slug) => toggleCategory("character", slug)}
+      matchAll={matchAll.includes("character")}
+      onMatchAllChange={(all) => setMatchAll("character", all)}
       loading={charactersQuery.isLoading}
       counts={facetCounts}
     />
     <Facet
       label="Èpoques"
+      placeholder="Cerca una època..."
       type="time_period"
       items={timePeriodItems}
       selected={categories.time_period}
       onToggle={(slug) => toggleCategory("time_period", slug)}
-      showSearch={false}
+      matchAll={matchAll.includes("time_period")}
+      onMatchAllChange={(all) => setMatchAll("time_period", all)}
       loading={timePeriodsQuery.isLoading}
       counts={facetCounts}
     />
@@ -511,7 +539,7 @@
     <!-- Desktop sidebar -->
     <aside
       aria-label="Filtres"
-      class="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2 lg:pl-1"
+      class="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto"
     >
       {@render facetPanel()}
     </aside>
@@ -524,7 +552,7 @@
           class="flex flex-1 items-center border border-rule bg-paper-2 px-3.5 transition-colors focus-within:border-ink focus-within:bg-paper"
         >
           {#if queryData.isFetching && !queryData.isLoading}
-            <Loader2 class="size-4 flex-none animate-spin text-ink-3" aria-label="Cercant" />
+            <Loader class="size-4 flex-none animate-spin text-ink-3" aria-label="Cercant" />
           {:else}
             <Search class="size-4 flex-none text-ink-3" />
           {/if}
@@ -571,63 +599,6 @@
         </p>
       {/if}
 
-      <!-- Active filter chips -->
-      {#if hasFilters}
-        <div class="mt-3 flex flex-wrap gap-1.5">
-          {#if searchQuery}
-            <span
-              class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
-            >
-              cerca: "{searchQuery}"
-              <button
-                type="button"
-                aria-label="Esborra cerca"
-                onclick={() => {
-                  searchText = "";
-                  searchQuery = "";
-                  if (searchInput) searchInput.value = "";
-                  page = 1;
-                }}
-                class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-              >
-                <XIcon class="size-3" />
-              </button>
-            </span>
-          {/if}
-          {#each ALL_TYPES as type (type)}
-            {#each categories[type] as slug (`${type}-${slug}`)}
-              {@const item = findItem(type, slug)}
-              {#if item}
-                <span
-                  class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
-                >
-                  <span class="size-1.5 rounded-full" style:background={CATEGORY_TYPE_COLORS[type]}
-                  ></span>
-                  {item.name}
-                  <button
-                    type="button"
-                    aria-label={`Treu ${item.name}`}
-                    onclick={() => removeCategory(type, slug)}
-                    class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-                  >
-                    <XIcon class="size-3" />
-                  </button>
-                </span>
-              {/if}
-            {/each}
-          {/each}
-          {#if activeFilterCount > 0}
-            <button
-              type="button"
-              onclick={clearAll}
-              class="cursor-pointer border-0 bg-transparent px-1.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3 underline underline-offset-2 hover:text-vermillion-deep"
-            >
-              Esborra els filtres
-            </button>
-          {/if}
-        </div>
-      {/if}
-
       <!-- Result bar with sort -->
       <div
         class="mt-5 mb-2.5 flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3"
@@ -664,13 +635,12 @@
           <thead>
             <tr>
               <th
-                class="border-b border-rule px-3 py-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
-                style="width: 110px"
+                class="hidden border-b border-rule px-3 py-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3 md:table-cell md:w-[110px]"
               >
                 Emissió
               </th>
               <th
-                class="border-b border-rule px-3 py-3 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
+                class="border-b border-rule py-3 pr-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3 md:pl-3"
               >
                 Títol &amp; sinopsi
               </th>
@@ -685,11 +655,12 @@
           <tbody aria-busy="true" aria-label="Carregant episodis">
             {#each Array.from({ length: pageSize }) as _, i (i)}
               <tr class="animate-pulse border-b border-rule">
-                <td class="px-3 pt-4.5 pb-4 pl-0 align-top" style="width: 110px">
+                <td class="hidden px-3 pt-4.5 pb-4 pl-0 align-top md:table-cell md:w-[110px]">
                   <span class="block h-5 w-8 rounded-sm bg-paper-edge"></span>
                   <span class="mt-2 block h-2.5 w-14 rounded-sm bg-paper-edge/70"></span>
                 </td>
-                <td class="px-3 py-4 align-top">
+                <td class="py-4 pr-3 pl-0 align-top md:pl-3">
+                  <span class="mb-2 block h-2.5 w-20 rounded-sm bg-paper-edge/70 md:hidden"></span>
                   <span
                     class="mb-2 block h-5 rounded-sm bg-paper-edge"
                     style:width="{45 + ((i * 7) % 40)}%"
@@ -752,13 +723,12 @@
           <thead>
             <tr>
               <th
-                class="border-b border-rule px-3 py-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
-                style="width: 110px"
+                class="hidden border-b border-rule px-3 py-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3 md:table-cell md:w-[110px]"
               >
                 Emissió
               </th>
               <th
-                class="border-b border-rule px-3 py-3 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3"
+                class="border-b border-rule py-3 pr-3 pl-0 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-3 md:pl-3"
               >
                 Títol &amp; sinopsi
               </th>
@@ -774,12 +744,9 @@
             {#each processedItems as p (p.ep.id)}
               {@const ep = p.ep}
               {@const d = ep.published_at ? fmtDate(ep.published_at) : null}
-              <tr
-                class="group relative border-b border-rule transition-colors hover:bg-vermillion/5"
-              >
+              <tr class="group relative border-b border-rule">
                 <td
-                  class="px-3 pt-4.5 pb-4 pl-0 align-top font-mono text-[11px] whitespace-nowrap text-ink-2"
-                  style="width: 110px"
+                  class="hidden px-3 pt-4.5 pb-4 pl-0 align-top font-mono text-[11px] whitespace-nowrap text-ink-2 md:table-cell md:w-[110px]"
                 >
                   {#if d}
                     <span class="block font-serif text-[22px] leading-none font-semibold text-ink"
@@ -790,7 +757,14 @@
                     >
                   {/if}
                 </td>
-                <td class="px-3 py-4 align-top">
+                <td class="py-4 pr-3 pl-0 align-top md:pl-3">
+                  <!-- Without the Emissió column, the date above the title -->
+                  {#if d}
+                    <span
+                      class="mb-1 block font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 md:hidden"
+                      >{d.day} {d.my}</span
+                    >
+                  {/if}
                   <a
                     href={`/episodis/${ep.id}/${ep.slug}`}
                     class="row-link mb-1.5 block font-serif text-[21px] leading-tight font-semibold text-ink no-underline transition-colors group-hover:text-vermillion-deep before:absolute before:inset-0 before:content-['']"
@@ -816,6 +790,13 @@
                       {#each ep.categories.slice(0, 3) as c (c.id)}
                         {@render categoryChip(c)}
                       {/each}
+                      {#if ep.categories.length > 3}
+                        <span
+                          class="inline-flex items-center rounded-sm border border-rule px-1.5 py-0.5 font-mono text-[10px] leading-snug tracking-[0.05em] text-ink-3"
+                          aria-label={`${ep.categories.length - 3} categories més`}
+                          >+{ep.categories.length - 3}</span
+                        >
+                      {/if}
                     </div>
                   {/if}
                 </td>

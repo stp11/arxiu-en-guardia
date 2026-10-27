@@ -26,8 +26,9 @@ export type CategoryBase = {
 /**
  * CategoryCount
  *
- * How many episodes the list would show with this category added to the
- * current filters. Categories that would show none are left out.
+ * How many of this category's episodes match the search and the filters of
+ * the other types, and of its own if all of them must match. Categories
+ * with none are left out.
  */
 export type CategoryCount = {
     /**
@@ -307,6 +308,12 @@ export type GetEpisodesApiEpisodesGetData = {
          */
         categories?: string;
         /**
+         * Match All
+         *
+         * Comma-separated list of category types whose selected categories must all match, rather than any of them
+         */
+        match_all?: string;
+        /**
          * Page
          *
          * Page number
@@ -467,6 +474,12 @@ export type GetCategoryCountsApiCategoriesCountsGetData = {
          * Comma-separated list of category slugs
          */
         categories?: string;
+        /**
+         * Match All
+         *
+         * Comma-separated list of category types whose selected categories must all match, rather than any of them
+         */
+        match_all?: string;
     };
     url: '/api/categories/counts';
 };

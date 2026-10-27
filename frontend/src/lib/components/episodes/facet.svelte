@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { CategoryType } from "#client";
   import { CATEGORY_TYPE_COLORS, cn } from "#lib/utils.js";
-  import { ChevronDown } from "@lucide/svelte";
+  import { Check, ChevronDown, XIcon } from "@lucide/svelte";
+  import { Popover } from "bits-ui";
 
   type FacetItem = { slug: string; name: string; count: number };
 
@@ -11,12 +12,14 @@
     items: FacetItem[];
     selected: string[];
     onToggle: (slug: string) => void;
-    cap?: number;
+    // Whether an episode needs every selected item rather than any of them.
+    matchAll: boolean;
+    onMatchAllChange: (matchAll: boolean) => void;
     placeholder?: string;
-    showSearch?: boolean;
     loading?: boolean;
-    // Per slug, the episodes the list would show with it added; without
-    // it, each item's own count. A slug missing from it would show none.
+    // Per slug, its episodes under the search and the other facets'
+    // filters, and this one's with matchAll; without it, each item's own
+    // count. A slug missing from it has none.
     counts?: Map<string, number>;
   };
 
@@ -26,8 +29,8 @@
     items,
     selected,
     onToggle,
-    cap = 8,
-    showSearch = true,
+    matchAll,
+    onMatchAllChange,
     placeholder,
     loading = false,
     counts,
@@ -35,145 +38,175 @@
 
   const countOf = (item: FacetItem) => (counts ? (counts.get(item.slug) ?? 0) : item.count);
 
-  let collapsed = $state(false);
-  let expanded = $state(false);
+  let open = $state(false);
   let query = $state("");
 
   const swatch = $derived(CATEGORY_TYPE_COLORS[type]);
   const selectedSet = $derived(new Set(selected));
   const itemsBySlug = $derived(new Map(items.map((i) => [i.slug, i])));
+  const selectedItems = $derived(
+    selected.map((slug) => itemsBySlug.get(slug)).filter((i) => i !== undefined)
+  );
 
-  // Dead ends with the current filters are left out, but not the selected
-  // ones, so they can be unticked. The rest keep their order, so the list
-  // doesn't reshuffle on every click.
+  // Dead ends are left out, but not the selected ones, so they can be
+  // unticked.
   const available = $derived(
     counts ? items.filter((i) => countOf(i) > 0 || selectedSet.has(i.slug)) : items
   );
 
-  const filtered = $derived.by(() => {
+  const options = $derived.by(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return available;
-    return available.filter((i) => i.name.toLowerCase().includes(q));
+    return q ? available.filter((i) => i.name.toLowerCase().includes(q)) : available;
   });
 
-  const visible = $derived.by(() => {
-    const showAll = !!query.trim() || expanded;
-    if (showAll) return filtered;
-    const head = filtered.slice(0, cap);
-    const headSlugs = new Set(head.map((i) => i.slug));
-    const tail: typeof items = [];
-    for (const slug of selected) {
-      const item = itemsBySlug.get(slug);
-      if (item && !headSlugs.has(slug)) tail.push(item);
-    }
-    return tail.length ? [...head, ...tail] : head;
-  });
+  // With fewer than two to pick from there's nothing to combine, but with
+  // matchAll it stays, as it's the way back to the wider list.
+  const canCombine = $derived(available.length > 1 || matchAll);
 
-  const hidden = $derived(filtered.length - visible.length);
-  const moreLabel = $derived(
-    hidden > 0
-      ? `Mostra'n ${hidden} més`
-      : expanded && filtered.length > cap
-        ? "Mostra'n menys"
-        : ""
-  );
+  const onOpenChange = (next: boolean) => {
+    if (!next) query = "";
+  };
+
+  const modes = [
+    { matchAll: false, label: "Inclou una de les categories" },
+    { matchAll: true, label: "Inclou totes les categories" },
+  ];
 </script>
 
-<div class="mb-6 mt-1">
-  <button
-    type="button"
-    onclick={() => (collapsed = !collapsed)}
-    aria-expanded={!collapsed}
-    class="mb-2 flex w-full cursor-pointer items-baseline justify-between border-b border-rule py-1.5 text-left select-none"
-  >
-    <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>
-    <span
-      class={cn("font-mono text-[11px] text-ink-3 transition-transform", collapsed && "-rotate-90")}
-      aria-hidden="true"><ChevronDown class="size-3" /></span
+<div class="mb-4">
+  <Popover.Root bind:open {onOpenChange}>
+    <Popover.Trigger
+      class={cn(
+        "flex w-full cursor-pointer items-baseline justify-between border-b border-rule py-1.5 text-left select-none",
+        "hover:border-ink-3 data-[state=open]:border-vermillion"
+      )}
     >
-  </button>
+      <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>
+      <span class="flex items-center gap-2 font-mono text-[11px] text-ink-3">
+        {#if selected.length > 0}
+          <span class="text-vermillion-deep">{selected.length}</span>
+        {/if}
+        <ChevronDown class={cn("size-3 transition-transform", open && "rotate-180")} />
+      </span>
+    </Popover.Trigger>
 
-  {#if !collapsed}
-    {#if showSearch}
-      <input
-        id={`facet-search-${type}`}
-        type="search"
-        bind:value={query}
-        {placeholder}
-        aria-label={placeholder ?? `Cerca ${label.toLowerCase()}`}
-        class={cn(
-          "mb-2 w-full rounded-sm border border-rule bg-paper-2 px-2 py-1.5 text-[15px] md:text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
-          "facet-search-clear"
-        )}
-      />
-    {/if}
-
-    {#if loading && items.length === 0}
-      <ul
-        class="m-0 flex list-none flex-col gap-1 p-0"
-        aria-busy="true"
-        aria-label={`Carregant ${label.toLowerCase()}`}
+    <Popover.Portal>
+      <Popover.Content
+        align="start"
+        sideOffset={4}
+        class="z-[60] w-[max(var(--bits-popover-anchor-width),16rem)] rounded-sm border border-rule bg-paper p-2 text-ink shadow-lg"
       >
-        {#each Array.from({ length: cap }) as _, i (i)}
-          <li class="animate-pulse">
-            <div class="flex items-center justify-between px-1.5 py-1">
-              <span class="flex items-center gap-2">
-                <span class="size-2 flex-none rounded-full bg-paper-edge/80"></span>
-                <span
-                  class="block h-3.5 rounded-sm bg-paper-edge"
-                  style="width: {6 + ((i * 1.3) % 5)}rem"
-                ></span>
-              </span>
-              <span class="block h-2.5 w-3 rounded-sm bg-paper-edge/70"></span>
-            </div>
-          </li>
-        {/each}
-      </ul>
-    {:else if visible.length === 0}
-      <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
-    {:else}
-      <!-- Expanded, a long list scrolls in place rather than pushing the
-           other facets far down. -->
-      <ul class="m-0 flex max-h-96 list-none flex-col gap-1 overflow-y-auto overscroll-contain p-0">
-        {#each visible as item (item.slug)}
-          {@const active = selectedSet.has(item.slug)}
-          <li>
-            <button
-              type="button"
-              aria-pressed={active}
-              onclick={() => onToggle(item.slug)}
-              class={cn(
-                "group flex w-full cursor-pointer items-center justify-between rounded-sm px-1.5 py-1 text-[14px] text-ink-2 transition-colors",
-                "hover:bg-black/5 hover:text-ink",
-                active && "bg-vermillion/10 text-ink"
-              )}
-            >
-              <span class="flex items-center gap-2 text-left">
-                <span
-                  class="size-2 flex-none rounded-full"
-                  style:background={swatch}
-                  style:box-shadow={active ? `0 0 0 2px var(--paper), 0 0 0 3px ${swatch}` : "none"}
-                ></span>
-                <span class="line-clamp-1">{item.name}</span>
-              </span>
-              <span class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
-                >{countOf(item)}</span
+        <input
+          id={`facet-search-${type}`}
+          type="search"
+          bind:value={query}
+          {placeholder}
+          aria-label={placeholder ?? `Cerca ${label.toLowerCase()}`}
+          class={cn(
+            "mb-2 w-full rounded-sm border border-rule bg-paper-2 px-2 py-1.5 text-[15px] md:text-[13px] text-ink outline-none placeholder:italic placeholder:text-ink-3 focus:border-vermillion",
+            "facet-search-clear"
+          )}
+        />
+
+        {#if canCombine}
+          <div
+            role="radiogroup"
+            aria-label="Com es combinen les categories"
+            class="mb-2 flex flex-col border-b border-rule pb-1.5 text-[13px]"
+          >
+            {#each modes as mode (mode.label)}
+              {@const checked = matchAll === mode.matchAll}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={checked}
+                onclick={() => onMatchAllChange(mode.matchAll)}
+                class={cn(
+                  "flex cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1 text-left text-ink-3 hover:bg-black/5 hover:text-ink",
+                  checked && "text-ink"
+                )}
               >
-            </button>
-          </li>
-        {/each}
-      </ul>
-    {/if}
+                <span
+                  class="flex size-3.5 flex-none items-center justify-center rounded-full border border-ink-3"
+                >
+                  {#if checked}<span class="size-1.5 rounded-full bg-ink"></span>{/if}
+                </span>
+                {mode.label}
+              </button>
+            {/each}
+          </div>
+        {/if}
 
-    {#if moreLabel && !query.trim()}
-      <button
-        type="button"
-        onclick={() => (expanded = !expanded)}
-        class="mt-1 cursor-pointer px-1 py-1.5 text-left font-mono text-[10px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
-      >
-        {moreLabel}
-      </button>
-    {/if}
+        {#if loading && items.length === 0}
+          <p class="px-1 py-1.5 text-xs italic text-ink-3">Carregant...</p>
+        {:else if options.length === 0}
+          <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
+        {:else}
+          <ul
+            class="m-0 flex max-h-80 list-none flex-col gap-0.5 overflow-y-auto overscroll-contain p-0"
+          >
+            {#each options as item (item.slug)}
+              {@const active = selectedSet.has(item.slug)}
+              <li>
+                <button
+                  type="button"
+                  aria-pressed={active}
+                  onclick={() => onToggle(item.slug)}
+                  class={cn(
+                    "flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-1.5 py-1 text-[14px] text-ink-2 transition-colors",
+                    "hover:bg-black/5 hover:text-ink",
+                    active && "text-ink"
+                  )}
+                >
+                  <span class="flex min-w-0 items-center gap-2 text-left">
+                    <span
+                      class="flex size-3.5 flex-none items-center justify-center rounded-sm border border-rule"
+                      style:background={active ? swatch : "transparent"}
+                      style:border-color={active ? swatch : undefined}
+                    >
+                      {#if active}<Check class="size-2.5 text-paper" strokeWidth={3} />{/if}
+                    </span>
+                    <span class="line-clamp-1">{item.name}</span>
+                  </span>
+                  <span
+                    class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
+                    >{countOf(item)}</span
+                  >
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </Popover.Content>
+    </Popover.Portal>
+  </Popover.Root>
+
+  {#if selectedItems.length > 1}
+    <p class="mt-1.5 mb-0 px-0.5 text-[13px] italic text-ink-3">
+      {matchAll
+        ? `Capítols amb ${selectedItems.length === 2 ? "les dues" : "totes les"} categories`
+        : "Capítols amb una de les categories"}
+    </p>
+  {/if}
+  {#if selectedItems.length > 0}
+    <ul class="m-0 mt-1.5 flex list-none flex-col gap-0.5 p-0">
+      {#each selectedItems as item (item.slug)}
+        <li class="flex items-center justify-between gap-2 px-1.5 py-1 text-[14px] text-ink">
+          <span class="flex min-w-0 items-center gap-2">
+            <span class="size-2 flex-none rounded-full" style:background={swatch}></span>
+            <span class="line-clamp-1">{item.name}</span>
+          </span>
+          <button
+            type="button"
+            aria-label={`Treu ${item.name}`}
+            onclick={() => onToggle(item.slug)}
+            class="cursor-pointer px-0.5 leading-none text-ink-3 hover:text-vermillion-deep"
+          >
+            <XIcon class="size-3" />
+          </button>
+        </li>
+      {/each}
+    </ul>
   {/if}
 </div>
 

@@ -157,10 +157,16 @@ class TestCategoriesRepository:
         db_session.commit()
         repo = CategoriesRepository(session=db_session)
 
-        def counts(search: str | None, categories: list[str]):
+        def counts(
+            search: str | None,
+            categories: list[str],
+            match_all: set[CategoryType] = set(),
+        ):
             return {
                 c.slug: c.count
-                for c in repo.get_category_counts(search, categories)
+                for c in repo.get_category_counts(
+                    search, categories, match_all
+                )
             }
 
         assert counts(None, []) == {
@@ -170,9 +176,15 @@ class TestCategoriesRepository:
         }
         # Only the episodes that match the search.
         assert counts("guerra", []) == {"antiga-grecia": 1}
-        # A topic selected: everything narrows to its episodes, and the
-        # other topic, in none of them, is left out.
+        # A topic selected: the places narrow to its episodes, but the
+        # topics don't, as ticking another would widen the list.
         assert counts(None, ["guerra-civil"]) == {
+            "antiga-grecia": 1,
+            "guerra-civil": 1,
+            "guerra-del-frances": 1,
+        }
+        # When the topics must all match, ticking one narrows them too.
+        assert counts(None, ["guerra-civil"], {CategoryType.TOPIC}) == {
             "antiga-grecia": 1,
             "guerra-civil": 1,
         }
