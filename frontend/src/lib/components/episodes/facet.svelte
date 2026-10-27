@@ -70,6 +70,7 @@
   <button
     type="button"
     onclick={() => (collapsed = !collapsed)}
+    aria-expanded={!collapsed}
     class="mb-2 flex w-full cursor-pointer items-baseline justify-between border-b border-rule py-1.5 text-left select-none"
   >
     <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>

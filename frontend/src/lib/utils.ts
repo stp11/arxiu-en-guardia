@@ -14,6 +14,11 @@ export const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
+// A left click with no modifier: anything else (a new tab, a new window) is
+// left to the browser and the link's href.
+export const isPlainClick = (e: MouseEvent) =>
+  e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+
 export const CATEGORY_TYPE_LABELS: Record<CategoryType, string> = {
   topic: "Tema",
   location: "Lloc",
