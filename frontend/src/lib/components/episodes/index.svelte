@@ -120,7 +120,7 @@
   const updateUrl = () => {
     if (urlTimer) clearTimeout(urlTimer);
     urlTimer = setTimeout(() => {
-      const params = new SvelteURLSearchParams(pageStore.url.searchParams);
+      const params = new SvelteURLSearchParams(pageStore.url.search);
 
       if (searchQuery) params.set("search", searchQuery);
       else params.delete("search");
@@ -141,9 +141,8 @@
 
       const qs = params.toString();
       goto(qs ? `?${qs}` : pageStore.url.pathname, {
-        replaceState: true,
-        noScroll: true,
-        keepFocus: true,
+        replace: true,
+        reset: false,
       });
     }, 100);
   };
