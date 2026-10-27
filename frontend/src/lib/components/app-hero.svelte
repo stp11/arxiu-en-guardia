@@ -25,7 +25,7 @@
     {#if tagline}
       {@render tagline()}
     {:else}
-      Cerca, filtra i descobreix les batalles, les aventures,<br />
+      Cerca, filtra i descobreix les batalles, les aventures,<br class="max-md:hidden" />
       les heroïcitats de la història de Catalunya i del món.
     {/if}
   </h2>

@@ -2,6 +2,7 @@
   import { browser } from "$app/environment";
   import Footer from "$lib/components/app-footer.svelte";
   import Nav from "$lib/components/app-nav.svelte";
+  import MapAnnouncement from "$lib/components/map-announcement.svelte";
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
   import "src/routes/layout.css";
 
@@ -21,6 +22,7 @@
 
 <QueryClientProvider client={queryClient}>
   <div class="relative z-[2] flex min-h-dvh flex-col">
+    <MapAnnouncement />
     <Nav />
     <main class="flex-1">
       {@render children()}

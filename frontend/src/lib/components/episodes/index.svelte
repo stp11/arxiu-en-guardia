@@ -4,14 +4,7 @@
 
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
-  import {
-    ArrowRight,
-    ChevronDown,
-    Loader2,
-    Search,
-    SlidersHorizontal,
-    XIcon,
-  } from "@lucide/svelte";
+  import { ChevronDown, Loader2, MapIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
   import { SITE_URL } from "src/lib/constants";
 
@@ -382,10 +375,10 @@
   <AppHero>
     <a
       href="/mapa"
-      class="group mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
+      class="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-vermillion-deep hover:text-ink"
     >
+      <MapIcon class="size-3.5" />
       Explora el mapa
-      <ArrowRight class="size-3.5 transition-transform group-hover:translate-x-0.5" />
     </a>
   </AppHero>
 
@@ -731,7 +724,7 @@
                     {/each}
                   </a>
                   {#if p.descShown}
-                    <span class="line-clamp-2 text-[13.5px] leading-snug text-ink-2">
+                    <span class="line-clamp-2 text-[15px] md:text-[13.5px] leading-snug text-ink-2">
                       {#each p.descChunks as c, i (i)}
                         {#if c.match}
                           <mark class="bg-vermillion/20 px-0.5 text-ink">{c.text}</mark>
