@@ -125,3 +125,9 @@ class TestCategoriesService:
         self.mock_categories_repo.get_categories_query.assert_called_once_with(
             type=CategoryType.TOPIC
         )
+
+    def test_get_category_counts(self):
+        self.service.get_category_counts("atenes", "guerra, catalunya")
+        self.mock_categories_repo.get_category_counts.assert_called_once_with(
+            search="atenes", categories=["guerra", "catalunya"]
+        )

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetLocationsApiLocationsGetData, GetLocationsApiLocationsGetResponses, GetLocationStatsApiLocationsStatsGetData, GetLocationStatsApiLocationsStatsGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
+import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetCategoryCountsApiCategoriesCountsGetData, GetCategoryCountsApiCategoriesCountsGetErrors, GetCategoryCountsApiCategoriesCountsGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetLocationsApiLocationsGetData, GetLocationsApiLocationsGetResponses, GetLocationStatsApiLocationsStatsGetData, GetLocationStatsApiLocationsStatsGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -54,6 +54,16 @@ export const getSimilarEpisodesApiEpisodesIdSimilarGet = <ThrowOnError extends b
 export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({
         url: '/api/categories',
+        ...options
+    });
+};
+
+/**
+ * Get Category Counts
+ */
+export const getCategoryCountsApiCategoriesCountsGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoryCountsApiCategoriesCountsGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetCategoryCountsApiCategoriesCountsGetResponses, GetCategoryCountsApiCategoriesCountsGetErrors, ThrowOnError>({
+        url: '/api/categories/counts',
         ...options
     });
 };

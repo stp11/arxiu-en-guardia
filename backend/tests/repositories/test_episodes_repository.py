@@ -118,13 +118,19 @@ class TestEpisodesRepository:
         )
         results = db_session.exec(query).all()
 
-        assert len(results) == 2
+        # Every selected category: no episode has both.
+        assert results == []
+
+        query = repo.get_episodes_query(
+            search=None, order="asc", categories=["guerra-civil"]
+        )
+        results = db_session.exec(query).all()
+
+        assert len(results) == 1
         assert results[0].title == "Episodi sobre Grecia"
         assert results[0].categories[0].name == "Guerra Civil"
-        assert results[1].title == "Episodi sobre la Guerra Civil"
-        assert results[1].categories[0].name == "Guerra del Vietnam"
 
-    def test_repository_filter_categories_across_types(
+    def test_repository_filter_categories_all_of_them(
         self, db_session: Session
     ):
         guerra = Category(
@@ -149,19 +155,36 @@ class TestEpisodesRepository:
             )
             return [e.title for e in db_session.exec(query).all()]
 
-        # Any of the topics, and an episode with both comes back once.
-        assert titles(["guerra", "democracia"]) == [
-            "Episodi sobre Grecia",
+        assert titles(["guerra"]) == [
             "Episodi sobre la Guerra Civil",
             "Episodi sobre la Guerra del Vietnam",
         ]
-        # A topic and a place: both.
-        assert titles(["guerra", "catalunya"]) == [
+        # Every one of them, whatever their type, and an episode with
+        # several comes back once.
+        assert titles(["guerra", "democracia"]) == [
             "Episodi sobre la Guerra Civil"
         ]
         assert titles(["guerra", "democracia", "catalunya"]) == [
             "Episodi sobre la Guerra Civil"
         ]
+        # An unknown slug among them is left out.
+        assert titles(["guerra", "no-existeix"]) == [
+            "Episodi sobre la Guerra Civil",
+            "Episodi sobre la Guerra del Vietnam",
+        ]
+
+    def test_repository_filter_categories_ignores_unknown_slugs(
+        self, db_session: Session
+    ):
+        db_session.add_all(self.episodes)
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        # A renamed or mistyped category in a link: as if it weren't there.
+        query = repo.get_episodes_query(
+            search=None, order="asc", categories=["no-existeix"]
+        )
+        assert len(db_session.exec(query).all()) == 3
 
     def test_repository_get_episode_by_id(self, db_session: Session):
         db_session.add_all(self.episodes)

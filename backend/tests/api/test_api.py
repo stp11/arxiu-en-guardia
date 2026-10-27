@@ -77,6 +77,35 @@ class TestLocations:
             }
         ]
 
+    def test_get_category_counts(self, client, db_session):
+        montserrat = Category(
+            name="Montserrat",
+            slug="montserrat",
+            type=CategoryType.LOCATION,
+        )
+        guerra = Category(
+            name="Guerra", slug="guerra", type=CategoryType.TOPIC
+        )
+        db_session.add_all(
+            [
+                Episode(id=1, title="La moreneta", categories=[montserrat]),
+                Episode(
+                    id=2, title="El Bruc", categories=[montserrat, guerra]
+                ),
+            ]
+        )
+        db_session.commit()
+
+        response = client.get(
+            "/api/categories/counts", params={"categories": "guerra"}
+        )
+
+        assert response.status_code == 200
+        assert response.json() == [
+            {"slug": "guerra", "count": 1},
+            {"slug": "montserrat", "count": 1},
+        ]
+
     def test_get_location_stats(self, client, db_session):
         montserrat = Category(
             name="Montserrat",

@@ -1,11 +1,21 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy import Float, Select, Subquery, case, cast, func, or_
+from sqlalchemy import (
+    ColumnElement,
+    Float,
+    Select,
+    Subquery,
+    case,
+    cast,
+    func,
+    or_,
+)
 from sqlalchemy.orm import defer, selectinload
 from sqlmodel import Session, select
 
 from models import (
     Category,
+    CategoryCount,
     CategoryType,
     Episode,
     EpisodeCategory,
@@ -21,6 +31,46 @@ from models import (
 CATEGORY_WEIGHT = 0.2
 
 
+def episode_filters(
+    search: str | None, categories: list[str]
+) -> list[ColumnElement[bool]]:
+    """
+    The conditions on Episode for the list's search and categories.
+    """
+    filters = []
+
+    if search and search.strip():
+        # Escaped, so % and _ are matched as typed, not as wildcards.
+        search_term = search.strip()
+        filters.append(
+            or_(
+                Episode.title.icontains(search_term, autoescape=True),
+                Episode.description.icontains(search_term, autoescape=True),
+            )
+        )
+
+    # Every selected category: Guerra and Democràcia and Catalunya. An
+    # episode has each category once, so it matches when it has as many of
+    # them as are selected. Unknown slugs are left out of both counts, and
+    # when none is known there's nothing to filter by. A subquery, not a
+    # join, so an episode comes back once.
+    if len(categories) > 0:
+        selected = Category.slug.in_(categories)
+        known = (
+            select(func.count()).select_from(Category).where(selected)
+        ).scalar_subquery()
+        matching = (
+            select(EpisodeCategory.episode_id)
+            .join(Category, Category.id == EpisodeCategory.category_id)
+            .where(selected)
+            .group_by(EpisodeCategory.episode_id)
+            .having(func.count() == known)
+        )
+        filters.append(or_(known == 0, Episode.id.in_(matching)))
+
+    return filters
+
+
 class ICategoriesRepository(ABC):
     @abstractmethod
     def get_all_categories(self) -> list[Category]:
@@ -28,6 +78,12 @@ class ICategoriesRepository(ABC):
 
     @abstractmethod
     def get_categories_query(self, type: CategoryType) -> Select:
+        pass
+
+    @abstractmethod
+    def get_category_counts(
+        self, search: str | None, categories: list[str]
+    ) -> list[CategoryCount]:
         pass
 
     @abstractmethod
@@ -67,6 +123,29 @@ class CategoriesRepository(ICategoriesRepository):
             .where(Category.type == type)
             .group_by(Category.id)
             .order_by(Category.name)
+        )
+
+    def get_category_counts(
+        self, search: str | None, categories: list[str]
+    ) -> list[CategoryCount]:
+        # How many episodes the list would show with each category added to
+        # the filters: of those it shows now, the ones with that category.
+        # Those with none are left out; most first.
+        matching = select(Episode.id).where(
+            *episode_filters(search, categories)
+        )
+        counts = (
+            select(Category.slug, func.count(EpisodeCategory.episode_id))
+            .join(EpisodeCategory)
+            .where(EpisodeCategory.episode_id.in_(matching))
+            .group_by(Category.slug)
+        )
+        return sorted(
+            (
+                CategoryCount(slug=slug, count=count)
+                for slug, count in self.db_session.exec(counts).all()
+            ),
+            key=lambda c: (-c.count, c.slug),
         )
 
     def get_locations(self) -> list[LocationWithCount]:
@@ -190,41 +269,12 @@ class EpisodesRepository(IEpisodesRepository):
             defer(Episode.embedding), selectinload(Episode.categories)
         )
 
-        if search and search.strip():
-            # Escaped, so % and _ are matched as typed, not as wildcards.
-            search_term = search.strip()
-            query = query.where(
-                or_(
-                    Episode.title.icontains(search_term, autoescape=True),
-                    Episode.description.icontains(
-                        search_term, autoescape=True
-                    ),
-                )
-            )
-
         if order == "desc":
             query = query.order_by(Episode.published_at.desc())
         else:
             query = query.order_by(Episode.published_at.asc())
 
-        # Any of the selected categories of a type, and every type selected:
-        # Guerra or Democràcia, and Catalunya. A subquery, not a join, so an
-        # episode with several of them comes back once.
-        if len(categories) > 0:
-            selected = Category.slug.in_(categories)
-            types = func.count(Category.type.distinct())
-            matching = (
-                select(EpisodeCategory.episode_id)
-                .join(Category, Category.id == EpisodeCategory.category_id)
-                .where(selected)
-                .group_by(EpisodeCategory.episode_id)
-                .having(
-                    types == select(types).where(selected).scalar_subquery()
-                )
-            )
-            query = query.where(Episode.id.in_(matching))
-
-        return query
+        return query.where(*episode_filters(search, categories))
 
     def get_episode_by_id(self, id: int) -> Episode:
         return self.db_session.exec(

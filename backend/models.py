@@ -69,6 +69,16 @@ class CategoryWithCount(CategoryBase):
     count: int
 
 
+class CategoryCount(SQLModel):
+    """
+    How many episodes the list would show with this category added to the
+    current filters. Categories that would show none are left out.
+    """
+
+    slug: str
+    count: int
+
+
 class LocationWithCount(SQLModel):
     id: int
     slug: str

@@ -24,6 +24,23 @@ export type CategoryBase = {
 };
 
 /**
+ * CategoryCount
+ *
+ * How many episodes the list would show with this category added to the
+ * current filters. Categories that would show none are left out.
+ */
+export type CategoryCount = {
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * CategoryType
  */
 export type CategoryType = 'topic' | 'location' | 'character' | 'time_period';
@@ -435,6 +452,44 @@ export type GetCategoriesApiCategoriesGetResponses = {
 };
 
 export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGetResponses[keyof GetCategoriesApiCategoriesGetResponses];
+
+export type GetCategoryCountsApiCategoriesCountsGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Search
+         */
+        search?: string;
+        /**
+         * Categories
+         *
+         * Comma-separated list of category slugs
+         */
+        categories?: string;
+    };
+    url: '/api/categories/counts';
+};
+
+export type GetCategoryCountsApiCategoriesCountsGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCategoryCountsApiCategoriesCountsGetError = GetCategoryCountsApiCategoriesCountsGetErrors[keyof GetCategoryCountsApiCategoriesCountsGetErrors];
+
+export type GetCategoryCountsApiCategoriesCountsGetResponses = {
+    /**
+     * Response Get Category Counts Api Categories Counts Get
+     *
+     * Successful Response
+     */
+    200: Array<CategoryCount>;
+};
+
+export type GetCategoryCountsApiCategoriesCountsGetResponse = GetCategoryCountsApiCategoriesCountsGetResponses[keyof GetCategoryCountsApiCategoriesCountsGetResponses];
 
 export type GetLocationsApiLocationsGetData = {
     body?: never;

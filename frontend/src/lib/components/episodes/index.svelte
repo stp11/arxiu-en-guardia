@@ -6,6 +6,7 @@
     type CategoryType,
     type CategoryWithCount,
     getCategoriesApiCategoriesGet,
+    getCategoryCountsApiCategoriesCountsGet,
     getEpisodesApiEpisodesGet,
   } from "#client";
   import AppHero from "#lib/components/app-hero.svelte";
@@ -19,6 +20,7 @@
     highlightMatches,
     isPlainClick,
   } from "#lib/utils.js";
+  import { browser } from "$app/env";
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
   import {
@@ -31,7 +33,7 @@
     SlidersHorizontal,
     XIcon,
   } from "@lucide/svelte";
-  import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
+  import { createInfiniteQuery, createQuery, keepPreviousData } from "@tanstack/svelte-query";
 
   import Facet from "./facet.svelte";
 
@@ -309,17 +311,27 @@
   const findItem = (type: CategoryType, slug: string) =>
     allCategoryItems[type].find((i) => i.slug === slug);
 
-  // The chips grouped as the backend combines them: any of a group ("o"),
-  // and every group ("i"). Those not loaded yet are left out, so the
-  // connectors never dangle.
-  const chipGroups = $derived(
-    ALL_TYPES.map((type) => ({
-      type,
-      items: categories[type].map((slug) => findItem(type, slug)).filter((i) => !!i),
-    })).filter((g) => g.items.length > 0)
-  );
-
   const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
+
+  // The facets' counts under the current filters. Without any, the
+  // categories' own counts are the same, so there's nothing to fetch; while
+  // the next ones load, the last stay up rather than jumping back to those.
+  const countsQuery = createQuery(() => ({
+    queryKey: ["category-counts", searchQuery, categoriesString],
+    queryFn: async () =>
+      (
+        await getCategoryCountsApiCategoriesCountsGet({
+          query: { search: searchQuery, categories: categoriesString },
+          throwOnError: true,
+        })
+      ).data,
+    // By slug, for the facets to look up.
+    select: (counts) => new Map(counts.map((c) => [c.slug, c.count])),
+    enabled: browser && hasFilters,
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 30,
+  }));
+  const facetCounts = $derived(hasFilters ? countsQuery.data : undefined);
   const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
 
   const fmtDate = (iso: string) => {
@@ -430,6 +442,7 @@
       selected={categories.topic}
       onToggle={(slug) => toggleCategory("topic", slug)}
       loading={topicsQuery.isLoading}
+      counts={facetCounts}
     />
     <Facet
       label="Llocs"
@@ -439,6 +452,7 @@
       selected={categories.location}
       onToggle={(slug) => toggleCategory("location", slug)}
       loading={locationsQuery.isLoading}
+      counts={facetCounts}
     />
     <Facet
       label="Personatges"
@@ -448,6 +462,7 @@
       selected={categories.character}
       onToggle={(slug) => toggleCategory("character", slug)}
       loading={charactersQuery.isLoading}
+      counts={facetCounts}
     />
     <Facet
       label="Èpoques"
@@ -457,6 +472,7 @@
       onToggle={(slug) => toggleCategory("time_period", slug)}
       showSearch={false}
       loading={timePeriodsQuery.isLoading}
+      counts={facetCounts}
     />
 
     <button
@@ -554,7 +570,7 @@
 
       <!-- Active filter chips -->
       {#if hasFilters}
-        <div class="mt-3 flex flex-wrap items-center gap-1.5">
+        <div class="mt-3 flex flex-wrap gap-1.5">
           {#if searchQuery}
             <span
               class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
@@ -575,31 +591,26 @@
               </button>
             </span>
           {/if}
-          {#each chipGroups as group, g (group.type)}
-            {#if g > 0 || searchQuery}
-              <span class="px-1 font-serif text-[17px] italic text-ink-2">i</span>
-            {/if}
-            {#each group.items as item, i (item.slug)}
-              {#if i > 0}
-                <span class="font-serif text-[17px] italic text-ink-3">o</span>
-              {/if}
-              <span
-                class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
-              >
+          {#each ALL_TYPES as type (type)}
+            {#each categories[type] as slug (`${type}-${slug}`)}
+              {@const item = findItem(type, slug)}
+              {#if item}
                 <span
-                  class="size-1.5 rounded-full"
-                  style:background={CATEGORY_TYPE_COLORS[group.type]}
-                ></span>
-                {item.name}
-                <button
-                  type="button"
-                  aria-label={`Treu ${item.name}`}
-                  onclick={() => removeCategory(group.type, item.slug)}
-                  class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
+                  class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
                 >
-                  <XIcon class="size-3" />
-                </button>
-              </span>
+                  <span class="size-1.5 rounded-full" style:background={CATEGORY_TYPE_COLORS[type]}
+                  ></span>
+                  {item.name}
+                  <button
+                    type="button"
+                    aria-label={`Treu ${item.name}`}
+                    onclick={() => removeCategory(type, slug)}
+                    class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
+                  >
+                    <XIcon class="size-3" />
+                  </button>
+                </span>
+              {/if}
             {/each}
           {/each}
           {#if activeFilterCount > 0}
