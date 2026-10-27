@@ -44,13 +44,10 @@
   const itemsBySlug = $derived(new Map(items.map((i) => [i.slug, i])));
 
   // Dead ends with the current filters are left out, but not the selected
-  // ones, so they can be unticked; the rest, most episodes first.
+  // ones, so they can be unticked. The rest keep their order, so the list
+  // doesn't reshuffle on every click.
   const available = $derived(
-    counts
-      ? items
-          .filter((i) => countOf(i) > 0 || selectedSet.has(i.slug))
-          .sort((a, b) => countOf(b) - countOf(a) || a.name.localeCompare(b.name, "ca"))
-      : items
+    counts ? items.filter((i) => countOf(i) > 0 || selectedSet.has(i.slug)) : items
   );
 
   const filtered = $derived.by(() => {
@@ -135,7 +132,9 @@
     {:else if visible.length === 0}
       <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
     {:else}
-      <ul class="m-0 flex list-none flex-col gap-1 p-0">
+      <!-- Expanded, a long list scrolls in place rather than pushing the
+           other facets far down. -->
+      <ul class="m-0 flex max-h-96 list-none flex-col gap-1 overflow-y-auto overscroll-contain p-0">
         {#each visible as item (item.slug)}
           {@const active = selectedSet.has(item.slug)}
           <li>
