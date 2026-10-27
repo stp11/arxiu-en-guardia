@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import { page } from "$app/state";
@@ -16,7 +17,11 @@
     }
   };
 
-  let open = $state(Date.now() < UNTIL && !closed());
+  // Decided in the browser: on pages rendered on the server, there's no storage to read.
+  let open = $state(false);
+  onMount(() => {
+    open = Date.now() < UNTIL && !closed();
+  });
   const onMap = $derived(page.url.pathname.startsWith("/mapa"));
 
   const close = () => {
