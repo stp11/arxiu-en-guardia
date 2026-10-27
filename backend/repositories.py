@@ -207,12 +207,22 @@ class EpisodesRepository(IEpisodesRepository):
         else:
             query = query.order_by(Episode.published_at.asc())
 
+        # Any of the selected categories of a type, and every type selected:
+        # Guerra or Democràcia, and Catalunya. A subquery, not a join, so an
+        # episode with several of them comes back once.
         if len(categories) > 0:
-            query = (
-                query.join(EpisodeCategory)
-                .join(Category)
-                .where(Category.slug.in_(categories))
+            selected = Category.slug.in_(categories)
+            types = func.count(Category.type.distinct())
+            matching = (
+                select(EpisodeCategory.episode_id)
+                .join(Category, Category.id == EpisodeCategory.category_id)
+                .where(selected)
+                .group_by(EpisodeCategory.episode_id)
+                .having(
+                    types == select(types).where(selected).scalar_subquery()
+                )
             )
+            query = query.where(Episode.id.in_(matching))
 
         return query
 

@@ -124,6 +124,45 @@ class TestEpisodesRepository:
         assert results[1].title == "Episodi sobre la Guerra Civil"
         assert results[1].categories[0].name == "Guerra del Vietnam"
 
+    def test_repository_filter_categories_across_types(
+        self, db_session: Session
+    ):
+        guerra = Category(
+            name="Guerra", slug="guerra", type=CategoryType.TOPIC
+        )
+        democracia = Category(
+            name="Democràcia", slug="democracia", type=CategoryType.TOPIC
+        )
+        catalunya = Category(
+            name="Catalunya", slug="catalunya", type=CategoryType.LOCATION
+        )
+        self.episodes[0].categories = [democracia]
+        self.episodes[1].categories = [guerra, democracia, catalunya]
+        self.episodes[2].categories = [guerra]
+        db_session.add_all(self.episodes)
+        db_session.commit()
+        repo = EpisodesRepository(session=db_session)
+
+        def titles(categories: list[str]) -> list[str]:
+            query = repo.get_episodes_query(
+                search=None, order="asc", categories=categories
+            )
+            return [e.title for e in db_session.exec(query).all()]
+
+        # Any of the topics, and an episode with both comes back once.
+        assert titles(["guerra", "democracia"]) == [
+            "Episodi sobre Grecia",
+            "Episodi sobre la Guerra Civil",
+            "Episodi sobre la Guerra del Vietnam",
+        ]
+        # A topic and a place: both.
+        assert titles(["guerra", "catalunya"]) == [
+            "Episodi sobre la Guerra Civil"
+        ]
+        assert titles(["guerra", "democracia", "catalunya"]) == [
+            "Episodi sobre la Guerra Civil"
+        ]
+
     def test_repository_get_episode_by_id(self, db_session: Session):
         db_session.add_all(self.episodes)
         db_session.commit()

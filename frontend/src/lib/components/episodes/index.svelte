@@ -309,6 +309,16 @@
   const findItem = (type: CategoryType, slug: string) =>
     allCategoryItems[type].find((i) => i.slug === slug);
 
+  // The chips grouped as the backend combines them: any of a group ("o"),
+  // and every group ("i"). Those not loaded yet are left out, so the
+  // connectors never dangle.
+  const chipGroups = $derived(
+    ALL_TYPES.map((type) => ({
+      type,
+      items: categories[type].map((slug) => findItem(type, slug)).filter((i) => !!i),
+    })).filter((g) => g.items.length > 0)
+  );
+
   const hasFilters = $derived(!!searchQuery || ALL_TYPES.some((t) => categories[t].length > 0));
   const activeFilterCount = $derived(ALL_TYPES.reduce((acc, t) => acc + categories[t].length, 0));
 
@@ -544,7 +554,7 @@
 
       <!-- Active filter chips -->
       {#if hasFilters}
-        <div class="mt-3 flex flex-wrap gap-1.5">
+        <div class="mt-3 flex flex-wrap items-center gap-1.5">
           {#if searchQuery}
             <span
               class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
@@ -565,26 +575,31 @@
               </button>
             </span>
           {/if}
-          {#each ALL_TYPES as type (type)}
-            {#each categories[type] as slug (`${type}-${slug}`)}
-              {@const item = findItem(type, slug)}
-              {#if item}
-                <span
-                  class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
-                >
-                  <span class="size-1.5 rounded-full" style:background={CATEGORY_TYPE_COLORS[type]}
-                  ></span>
-                  {item.name}
-                  <button
-                    type="button"
-                    aria-label={`Treu ${item.name}`}
-                    onclick={() => removeCategory(type, slug)}
-                    class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
-                  >
-                    <XIcon class="size-3" />
-                  </button>
-                </span>
+          {#each chipGroups as group, g (group.type)}
+            {#if g > 0 || searchQuery}
+              <span class="px-1 font-serif text-[17px] italic text-ink-2">i</span>
+            {/if}
+            {#each group.items as item, i (item.slug)}
+              {#if i > 0}
+                <span class="font-serif text-[17px] italic text-ink-3">o</span>
               {/if}
+              <span
+                class="inline-flex items-center gap-1.5 border border-paper-edge bg-paper-2 py-1 pr-1.5 pl-2 font-mono text-[12px] uppercase tracking-[0.05em] text-ink-2"
+              >
+                <span
+                  class="size-1.5 rounded-full"
+                  style:background={CATEGORY_TYPE_COLORS[group.type]}
+                ></span>
+                {item.name}
+                <button
+                  type="button"
+                  aria-label={`Treu ${item.name}`}
+                  onclick={() => removeCategory(group.type, item.slug)}
+                  class="cursor-pointer px-0.5 text-[14px] leading-none text-ink-3 hover:text-vermillion-deep"
+                >
+                  <XIcon class="size-3" />
+                </button>
+              </span>
             {/each}
           {/each}
           {#if activeFilterCount > 0}
