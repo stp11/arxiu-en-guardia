@@ -27,5 +27,6 @@ repos:
         name: linter
         entry: make lint-frontend
         language: system
+        files: ^frontend/
         pass_filenames: false
 exclude: "^frontend/src/client"
