@@ -17,8 +17,9 @@ export const load: PageLoad = async ({ params }) => {
     }),
   ]);
 
+  // There's no response when the API can't be reached.
   if (response.error) {
-    throw error(response.response.status);
+    throw error(response.response?.status ?? 503);
   }
 
   // Validate slug and redirect to canonical URL if incorrect

@@ -6,7 +6,7 @@
   import { page as pageStore } from "$app/state";
   import { ChevronDown, Loader2, MapIcon, Search, SlidersHorizontal, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
-  import { SITE_URL } from "src/lib/constants";
+  import { SITE_NAME, SITE_URL } from "src/lib/constants";
 
   import {
     type CategoryType,
@@ -333,6 +333,8 @@
   const start = $derived((page - 1) * pageSize);
   const shown = $derived(items.length);
 
+  // As in app.html, which only covers the first page load
+  const title = `${SITE_NAME} — Cerca i descobreix els episodis del programa`;
   const isFilteredView = $derived(hasFilters || pageSize !== defaultPageSize);
   const canonicalUrl = $derived(
     page === initialPage ? `${SITE_URL}/` : `${SITE_URL}/?page=${page}`
@@ -359,6 +361,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 <svelte:head>
+  <title>{title}</title>
   <link rel="canonical" href={canonicalUrl} />
   {#if isFilteredView}
     <meta name="robots" content="noindex,follow" />
