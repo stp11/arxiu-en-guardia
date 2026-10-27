@@ -487,8 +487,8 @@
       {@render facetPanel()}
     </aside>
 
-    <!-- Main column -->
-    <main class="min-w-0">
+    <!-- Main column: a section, as the layout already has the <main> -->
+    <section aria-label="Episodis" class="min-w-0">
       <!-- Search bar (+ mobile filter button) -->
       <div class="flex items-stretch gap-2">
         <div
@@ -894,7 +894,7 @@
           </nav>
         {/if}
       {/if}
-    </main>
+    </section>
   </div>
 </div>
 
