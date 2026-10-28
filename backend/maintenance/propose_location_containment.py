@@ -5,8 +5,9 @@ An episode tagged "Europa" and "París" only needs "París": the broad place
 stays on the episodes that have nothing more specific. Which place is
 inside which comes from Wikidata, through each location's Catalan
 Wikipedia article. The proposal is written to a CSV, one row per episode
-and location to remove, to review before apply_location_containment; the
-database is only read.
+and location to remove, to review before applying it; the database is
+only read. apply_location_containment, which applied the first proposal,
+was removed once it had run: restore it from the history of PR #244.
 
 Usage:
     python -m maintenance.propose_location_containment --output containment.csv
