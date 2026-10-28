@@ -241,7 +241,7 @@
           match_all: listMatchAll,
         },
       }),
-    // placeholderData: keepPreviousData,
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 30,
   }));
 
