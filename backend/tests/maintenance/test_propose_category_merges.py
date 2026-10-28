@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from sqlalchemy import func, text
 from sqlmodel import Session, select
 
-from commands.propose_category_merges import (
+from maintenance.propose_category_merges import (
     CategoryInfo,
     Decision,
     co_occurring,
@@ -120,10 +120,10 @@ class TestProposeCategoryMerges:
     def run(self, db_session, monkeypatch, tmp_path, decisions) -> dict:
         fake = FakeOpenAI(self.vectors, decisions)
         monkeypatch.setattr(
-            "commands.propose_category_merges.OpenAI", lambda api_key: fake
+            "maintenance.propose_category_merges.OpenAI", lambda api_key: fake
         )
         monkeypatch.setattr(
-            "commands.propose_category_merges.get_session",
+            "maintenance.propose_category_merges.get_session",
             lambda: iter([db_session]),
         )
         output = tmp_path / "merges.csv"
