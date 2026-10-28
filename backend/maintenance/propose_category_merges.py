@@ -8,7 +8,7 @@ keep it and also tag its episodes with a broader category. The proposal
 is written to a CSV; the database is only read.
 
 Usage:
-    python -m commands.propose_category_merges --output merges.csv
+    python -m maintenance.propose_category_merges --output merges.csv
 """
 
 import csv
@@ -24,8 +24,11 @@ from sqlmodel import Session, select
 
 from database import get_session
 from logger import logger
+from maintenance.category_review_prompts import (
+    CATEGORY_REVIEW_SCHEMA,
+    category_review_prompt,
+)
 from models import Category, CategoryType, Episode, EpisodeCategory
-from prompts import CATEGORY_REVIEW_SCHEMA, category_review_prompt
 from services import CATEGORY_TYPE_TO_KEY
 
 EMBEDDING_MODEL = "text-embedding-3-small"

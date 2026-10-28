@@ -11,8 +11,8 @@ for merge and rollup, new_name and new_type for keep. Categories missing
 from the CSV are left alone.
 
 Usage:
-    python -m commands.apply_category_merges category_merges.csv
-    python -m commands.apply_category_merges category_merges.csv --apply
+    python -m maintenance.apply_category_merges category_merges.csv
+    python -m maintenance.apply_category_merges category_merges.csv --apply
 """
 
 import csv
@@ -23,11 +23,11 @@ from sqlalchemy import delete, func, literal
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
-from commands.propose_category_merges import TARGET_ACTIONS
 from database import get_session
 from logger import logger
+from maintenance.category_review_prompts import CATEGORY_REVIEW_ACTIONS
+from maintenance.propose_category_merges import TARGET_ACTIONS
 from models import Category, CategoryType, EpisodeCategory
-from prompts import CATEGORY_REVIEW_ACTIONS
 
 REQUIRED_COLUMNS = {
     "id",

@@ -3,11 +3,11 @@ import csv
 import pytest
 from sqlmodel import Session, select
 
-from commands.apply_category_merges import (
+from maintenance.apply_category_merges import (
     InvalidProposal,
     apply_category_merges,
 )
-from commands.propose_category_merges import CSV_FIELDS
+from maintenance.propose_category_merges import CSV_FIELDS
 from models import Category, CategoryType, Episode, EpisodeCategory
 
 
@@ -67,7 +67,7 @@ class TestApplyCategoryMerges:
 
     def run(self, db_session, monkeypatch, path, apply=True):
         monkeypatch.setattr(
-            "commands.apply_category_merges.get_session",
+            "maintenance.apply_category_merges.get_session",
             lambda: iter([db_session]),
         )
         apply_category_merges(path, apply=apply)
