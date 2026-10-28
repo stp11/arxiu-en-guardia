@@ -61,7 +61,8 @@
         rel="noopener noreferrer"
         class="mt-4 inline-flex h-7.5 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink"
       >
-        <img src="/bmc-logo.svg" alt="" width="9" height="13" />
+        <img src="/bmc-logo.svg" alt="" width="9" height="13" class="dark:hidden" />
+        <img src="/bmc-logo-white.svg" alt="" width="9" height="13" class="hidden dark:block" />
         Convida'ns a un cafè
       </a>
     </section>
