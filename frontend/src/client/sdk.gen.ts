@@ -4,7 +4,7 @@ import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import type { GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetCategoryCountsApiCategoriesCountsGetData, GetCategoryCountsApiCategoriesCountsGetErrors, GetCategoryCountsApiCategoriesCountsGetResponses, GetEpisodeApiEpisodesIdGetData, GetEpisodeApiEpisodesIdGetErrors, GetEpisodeApiEpisodesIdGetResponses, GetEpisodesApiEpisodesGetData, GetEpisodesApiEpisodesGetErrors, GetEpisodesApiEpisodesGetResponses, GetLocationsApiLocationsGetData, GetLocationsApiLocationsGetResponses, GetLocationStatsApiLocationsStatsGetData, GetLocationStatsApiLocationsStatsGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetData, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
 
-export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
+export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
      * You can provide a client instance returned by `createClient()` instead of
      * individual options. This might be also useful if you want to implement a
@@ -21,81 +21,41 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * Get Episodes
  */
-export const getEpisodesApiEpisodesGet = <ThrowOnError extends boolean = false>(options?: Options<GetEpisodesApiEpisodesGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetEpisodesApiEpisodesGetResponses, GetEpisodesApiEpisodesGetErrors, ThrowOnError>({
-        url: '/api/episodes',
-        ...options
-    });
-};
+export const getEpisodesApiEpisodesGet = <ThrowOnError extends boolean = false>(options?: Options<GetEpisodesApiEpisodesGetData, ThrowOnError>) => (options?.client ?? client).get<GetEpisodesApiEpisodesGetResponses, GetEpisodesApiEpisodesGetErrors, ThrowOnError>({ url: '/api/episodes', ...options });
 
 /**
  * Get Episode
  */
-export const getEpisodeApiEpisodesIdGet = <ThrowOnError extends boolean = false>(options: Options<GetEpisodeApiEpisodesIdGetData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetEpisodeApiEpisodesIdGetResponses, GetEpisodeApiEpisodesIdGetErrors, ThrowOnError>({
-        url: '/api/episodes/{id}',
-        ...options
-    });
-};
+export const getEpisodeApiEpisodesIdGet = <ThrowOnError extends boolean = false>(options: Options<GetEpisodeApiEpisodesIdGetData, ThrowOnError>) => (options.client ?? client).get<GetEpisodeApiEpisodesIdGetResponses, GetEpisodeApiEpisodesIdGetErrors, ThrowOnError>({ url: '/api/episodes/{id}', ...options });
 
 /**
  * Get Similar Episodes
  */
-export const getSimilarEpisodesApiEpisodesIdSimilarGet = <ThrowOnError extends boolean = false>(options: Options<GetSimilarEpisodesApiEpisodesIdSimilarGetData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, ThrowOnError>({
-        url: '/api/episodes/{id}/similar',
-        ...options
-    });
-};
+export const getSimilarEpisodesApiEpisodesIdSimilarGet = <ThrowOnError extends boolean = false>(options: Options<GetSimilarEpisodesApiEpisodesIdSimilarGetData, ThrowOnError>) => (options.client ?? client).get<GetSimilarEpisodesApiEpisodesIdSimilarGetResponses, GetSimilarEpisodesApiEpisodesIdSimilarGetErrors, ThrowOnError>({ url: '/api/episodes/{id}/similar', ...options });
 
 /**
  * Get Categories
  */
-export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({
-        url: '/api/categories',
-        ...options
-    });
-};
+export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({ url: '/api/categories', ...options });
 
 /**
  * Get Category Counts
  */
-export const getCategoryCountsApiCategoriesCountsGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoryCountsApiCategoriesCountsGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetCategoryCountsApiCategoriesCountsGetResponses, GetCategoryCountsApiCategoriesCountsGetErrors, ThrowOnError>({
-        url: '/api/categories/counts',
-        ...options
-    });
-};
+export const getCategoryCountsApiCategoriesCountsGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoryCountsApiCategoriesCountsGetData, ThrowOnError>) => (options?.client ?? client).get<GetCategoryCountsApiCategoriesCountsGetResponses, GetCategoryCountsApiCategoriesCountsGetErrors, ThrowOnError>({ url: '/api/categories/counts', ...options });
 
 /**
  * Get Locations
  */
-export const getLocationsApiLocationsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationsApiLocationsGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetLocationsApiLocationsGetResponses, unknown, ThrowOnError>({
-        url: '/api/locations',
-        ...options
-    });
-};
+export const getLocationsApiLocationsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationsApiLocationsGetData, ThrowOnError>) => (options?.client ?? client).get<GetLocationsApiLocationsGetResponses, unknown, ThrowOnError>({ url: '/api/locations', ...options });
 
 /**
  * Get Location Stats
  */
-export const getLocationStatsApiLocationsStatsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationStatsApiLocationsStatsGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetLocationStatsApiLocationsStatsGetResponses, unknown, ThrowOnError>({
-        url: '/api/locations/stats',
-        ...options
-    });
-};
+export const getLocationStatsApiLocationsStatsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLocationStatsApiLocationsStatsGetData, ThrowOnError>) => (options?.client ?? client).get<GetLocationStatsApiLocationsStatsGetResponses, unknown, ThrowOnError>({ url: '/api/locations/stats', ...options });
 
 /**
  * Health Check
  *
  * Health check endpoint.
  */
-export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckHealthGetData, ThrowOnError>) => {
-    return (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({
-        url: '/health',
-        ...options
-    });
-};
+export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckHealthGetResponses, unknown, ThrowOnError>({ url: '/health', ...options });
