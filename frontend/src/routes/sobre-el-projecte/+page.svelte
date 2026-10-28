@@ -52,14 +52,18 @@
       </p>
 
       <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
-        Si el projecte et resulta útil i vols donar-hi suport, pots convidar-nos a un cafè a <a
-          href="https://buymeacoffee.com/arxiuenguardia"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
-          >Buy Me a Coffee</a
-        >.
+        Si el projecte et resulta útil i vols donar-hi suport:
       </p>
+
+      <a
+        href="https://buymeacoffee.com/arxiuenguardia"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-4 inline-flex h-7.5 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink"
+      >
+        <img src="/bmc-logo.svg" alt="" width="9" height="13" />
+        Convida'ns a un cafè
+      </a>
     </section>
 
     <!-- Viquipèdia i mapa -->
