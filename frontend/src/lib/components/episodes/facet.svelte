@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { CategoryType } from "#client";
   import { CATEGORY_TYPE_COLORS, cn } from "#lib/utils.js";
-  import { Check, ChevronDown, XIcon } from "@lucide/svelte";
+  import { Check, ChevronDown } from "@lucide/svelte";
   import { Popover } from "bits-ui";
+
+  import CategoryChip from "./category-chip.svelte";
 
   type FacetItem = { slug: string; name: string; count: number };
 
@@ -189,21 +191,16 @@
     </p>
   {/if}
   {#if selectedItems.length > 0}
-    <ul class="m-0 mt-1.5 flex list-none flex-col gap-0.5 p-0">
+    <ul class="m-0 mt-2 flex list-none flex-wrap gap-1.5 p-0">
       {#each selectedItems as item (item.slug)}
-        <li class="flex items-center justify-between gap-2 px-1.5 py-1 text-[14px] text-ink">
-          <span class="flex min-w-0 items-center gap-2">
-            <span class="size-2 flex-none rounded-full" style:background={swatch}></span>
-            <span class="line-clamp-1">{item.name}</span>
-          </span>
-          <button
-            type="button"
-            aria-label={`Treu ${item.name}`}
+        <li class="max-w-full">
+          <CategoryChip
+            {type}
+            name={item.name}
+            active
+            removable
             onclick={() => onToggle(item.slug)}
-            class="cursor-pointer px-0.5 leading-none text-ink-3 hover:text-vermillion-deep"
-          >
-            <XIcon class="size-3" />
-          </button>
+          />
         </li>
       {/each}
     </ul>

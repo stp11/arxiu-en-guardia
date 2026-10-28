@@ -1,8 +1,9 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import { SvelteURLSearchParams } from "svelte/reactivity";
+  import { SvelteSet, SvelteURLSearchParams } from "svelte/reactivity";
 
   import {
+    type CategoryBase,
     type CategoryType,
     type CategoryWithCount,
     getCategoriesApiCategoriesGet,
@@ -33,6 +34,7 @@
   } from "@lucide/svelte";
   import { createInfiniteQuery, createQuery, keepPreviousData } from "@tanstack/svelte-query";
 
+  import CategoryChip from "./category-chip.svelte";
   import Facet from "./facet.svelte";
 
   const initialPage = 1;
@@ -129,6 +131,8 @@
   let order = $state<"asc" | "desc">(fromUrl.order);
   let searchInput: HTMLInputElement | null = $state(null);
   let filtersOpen = $state(false);
+  // Rows whose categories were expanded past the first few, on narrow screens.
+  const expandedRows = new SvelteSet<number>();
 
   let urlTimer: ReturnType<typeof setTimeout> | null = null;
   const updateUrl = () => {
@@ -356,6 +360,14 @@
   const activeFilterCount = $derived(
     ALL_TYPES.reduce((acc, t) => acc + categories[t].filter((slug) => findItem(t, slug)).length, 0)
   );
+
+  const isSelected = (c: CategoryBase) =>
+    categories[c.type as CategoryType]?.includes(c.slug) ?? false;
+  // The ticked ones first, so they're among the few shown on narrow screens.
+  const tickedFirst = (cats: CategoryBase[]) => [
+    ...cats.filter(isSelected),
+    ...cats.filter((c) => !isSelected(c)),
+  ];
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
@@ -699,24 +711,13 @@
           </button>
         </div>
       {:else}
-        {#snippet categoryChip(c: NonNullable<(typeof items)[number]["categories"]>[number])}
-          <button
-            type="button"
+        {#snippet categoryChip(c: CategoryBase)}
+          <CategoryChip
+            type={c.type}
+            name={c.name}
+            active={isSelected(c)}
             onclick={() => toggleCategory(c.type as CategoryType, c.slug)}
-            class={cn(
-              "inline-flex cursor-pointer items-center gap-1.5 rounded-sm border bg-paper-2 px-2 py-0.5 font-mono text-[10px] leading-snug uppercase tracking-[0.05em] whitespace-nowrap transition-transform hover:-translate-y-[1px]",
-              {
-                "border-vermillion-deep/30 text-vermillion-deep": c.type === "topic",
-                "border-teal/30 text-teal": c.type === "location",
-                "border-character/30 text-character": c.type === "character",
-                "border-plum/30 text-plum": c.type === "time_period",
-              }
-            )}
-          >
-            <span class="size-1.5 rounded-full" style:background="currentColor" style:opacity="0.9"
-            ></span>
-            {c.name}
-          </button>
+          />
         {/snippet}
 
         <table class="w-full border-collapse font-body">
@@ -786,15 +787,19 @@
                   {/if}
                   <!-- Without the Categories column, the first few under the title -->
                   {#if ep.categories?.length}
+                    {@const expanded = expandedRows.has(ep.id)}
+                    {@const ordered = tickedFirst(ep.categories)}
                     <div class="relative z-10 mt-2.5 flex flex-wrap gap-1.5 lg:hidden">
-                      {#each ep.categories.slice(0, 3) as c (c.id)}
+                      {#each expanded ? ordered : ordered.slice(0, 3) as c (c.id)}
                         {@render categoryChip(c)}
                       {/each}
-                      {#if ep.categories.length > 3}
-                        <span
-                          class="inline-flex items-center rounded-sm border border-rule px-1.5 py-0.5 font-mono text-[10px] leading-snug tracking-[0.05em] text-ink-3"
-                          aria-label={`${ep.categories.length - 3} categories més`}
-                          >+{ep.categories.length - 3}</span
+                      {#if !expanded && ep.categories.length > 3}
+                        <button
+                          type="button"
+                          onclick={() => expandedRows.add(ep.id)}
+                          class="inline-flex cursor-pointer items-center rounded-sm border border-rule px-1.5 py-0.5 font-mono text-[10px] leading-snug tracking-[0.05em] text-ink-3 hover:border-ink-3 hover:text-ink"
+                          aria-label={`Mostra ${ep.categories.length - 3} categories més`}
+                          >+{ep.categories.length - 3}</button
                         >
                       {/if}
                     </div>
