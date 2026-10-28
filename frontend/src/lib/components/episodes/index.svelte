@@ -24,7 +24,6 @@
   import { goto } from "$app/navigation";
   import { page as pageStore } from "$app/state";
   import {
-    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Loader,
@@ -38,8 +37,7 @@
   import Facet from "./facet.svelte";
 
   const initialPage = 1;
-  const defaultPageSize = 20;
-  const maxPageSize = 50;
+  const pageSize = 25;
   const minSearchChars = 3;
 
   const ALL_TYPES: CategoryType[] = ["topic", "location", "character", "time_period"];
@@ -65,7 +63,6 @@
     const state = {
       search: "",
       page: initialPage,
-      pageSize: defaultPageSize,
       order: "desc" as "asc" | "desc",
       categories: {
         topic: [],
@@ -80,12 +77,6 @@
     if (urlPage) {
       const n = Number.parseInt(urlPage, 10);
       if (!Number.isNaN(n) && n > 0) state.page = n;
-    }
-
-    const urlPageSize = params.get("pageSize");
-    if (urlPageSize) {
-      const n = Number.parseInt(urlPageSize, 10);
-      if (!Number.isNaN(n) && n > 0 && n <= maxPageSize) state.pageSize = n;
     }
 
     const urlSearch = params.get("search");
@@ -124,7 +115,6 @@
   let searchText = $state(fromUrl.search);
   let searchQuery = $state(fromUrl.search.trim());
   let page = $state(fromUrl.page);
-  let pageSize = $state(fromUrl.pageSize);
   let categories = $state<Record<CategoryType, string[]>>(fromUrl.categories);
   // The facets where an episode needs every selected category, not any.
   let matchAll = $state<CategoryType[]>(fromUrl.matchAll);
@@ -149,9 +139,6 @@
       if (page !== initialPage) params.set("page", String(page));
       else params.delete("page");
 
-      if (pageSize !== defaultPageSize) params.set("pageSize", String(pageSize));
-      else params.delete("pageSize");
-
       for (const t of ALL_TYPES) {
         if (categories[t].length > 0) params.set(t, categories[t].join(","));
         else params.delete(t);
@@ -170,7 +157,6 @@
 
   $effect(() => {
     page; // eslint-disable-line @typescript-eslint/no-unused-expressions
-    pageSize; // eslint-disable-line @typescript-eslint/no-unused-expressions
     searchQuery; // eslint-disable-line @typescript-eslint/no-unused-expressions
     order; // eslint-disable-line @typescript-eslint/no-unused-expressions
     categoriesString; // eslint-disable-line @typescript-eslint/no-unused-expressions
@@ -418,7 +404,7 @@
 
   // As in app.html, which only covers the first page load
   const title = `${SITE_NAME} — Cerca i descobreix els episodis del programa`;
-  const isFilteredView = $derived(hasFilters || pageSize !== defaultPageSize);
+  const isFilteredView = $derived(hasFilters);
   const canonicalUrl = $derived(
     page === initialPage ? `${SITE_URL}/` : `${SITE_URL}/?page=${page}`
   );
@@ -818,94 +804,79 @@
         </table>
 
         <!-- Pagination -->
-        {#if totalPages > 1 || pageSize !== defaultPageSize}
+        {#if totalPages > 1}
+          {@const pageClass =
+            "inline-flex h-7.5 min-w-9 items-center justify-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink"}
+          {@const pageOffClass = cn(
+            pageClass,
+            "cursor-not-allowed opacity-35 hover:border-rule hover:text-ink-2"
+          )}
           <nav
-            class="mt-7 flex flex-wrap items-center justify-between gap-6 border-t border-rule pt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3"
+            class="@container mt-7 flex flex-wrap items-center justify-between gap-6 border-t border-rule pt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3"
             aria-label="Paginació"
           >
-            <div class="flex-1">
+            <div class="flex-1 whitespace-nowrap">
               {start + 1}–{start + shown} de {total.toLocaleString("ca")}
             </div>
-            {#if totalPages > 1}
-              {@const pageClass =
-                "inline-flex min-w-9 items-center justify-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-2 transition-colors hover:border-ink hover:text-ink"}
-              {@const pageOffClass = cn(
-                pageClass,
-                "cursor-not-allowed opacity-35 hover:border-rule hover:text-ink-2"
-              )}
-              <div class="flex items-center gap-1">
-                {#if page > 1}
-                  <a
-                    href={pageHref(page - 1)}
-                    onclick={(e) => goToPage(e, page - 1)}
-                    rel="prev"
-                    aria-label="Pàgina anterior"
-                    class={pageClass}
-                    ><ChevronLeft class="size-3.5" /><span class="max-sm:hidden">Anterior</span></a
-                  >
-                {:else}
-                  <span aria-disabled="true" class={pageOffClass}
-                    ><ChevronLeft class="size-3.5" /><span class="max-sm:hidden">Anterior</span
-                    ></span
-                  >
-                {/if}
-                <!-- On phones the numbers don't fit: just where you are -->
-                <span class="px-2 sm:hidden">pàg. {page} de {totalPages}</span>
-                {#each pageNumbers as p, i (i)}
-                  {#if p === "..."}
-                    <span class="px-1.5 text-ink-3 max-sm:hidden">...</span>
-                  {:else}
-                    <a
-                      href={pageHref(p)}
-                      onclick={(e) => goToPage(e, p)}
-                      aria-current={p === page ? "page" : undefined}
-                      class={cn(
-                        pageClass,
-                        "max-sm:hidden",
-                        p === page && "border-ink bg-ink text-paper hover:bg-ink hover:text-paper"
-                      )}>{p}</a
-                    >
-                  {/if}
-                {/each}
-                {#if page < totalPages}
-                  <a
-                    href={pageHref(page + 1)}
-                    onclick={(e) => goToPage(e, page + 1)}
-                    rel="next"
-                    aria-label="Pàgina següent"
-                    class={pageClass}
-                    ><span class="max-sm:hidden">Següent</span><ChevronRight class="size-3.5" /></a
-                  >
-                {:else}
-                  <span aria-disabled="true" class={pageOffClass}
-                    ><span class="max-sm:hidden">Següent</span><ChevronRight
-                      class="size-3.5"
-                    /></span
-                  >
-                {/if}
-              </div>
-            {/if}
-            <label class="flex items-center gap-2">
-              Per pàgina
-              <span class="relative flex">
-                <select
-                  value={pageSize}
-                  onchange={(e) => {
-                    pageSize = Number(e.currentTarget.value);
-                    page = 1;
-                  }}
-                  class="cursor-pointer appearance-none rounded-sm border border-rule bg-paper-2 py-1.5 pr-7 pl-2 font-mono text-[11px] uppercase tracking-[0.06em] text-ink focus:border-vermillion focus:outline-none"
+            <div class="flex items-center gap-1">
+              {#if page > 1}
+                <a
+                  href={pageHref(page - 1)}
+                  onclick={(e) => goToPage(e, page - 1)}
+                  rel="prev"
+                  aria-label="Pàgina anterior"
+                  class={pageClass}
+                  ><ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden"
+                    >Anterior</span
+                  ></a
                 >
-                  {#each [10, 20, 30, 50] as opt (opt)}
-                    <option value={opt}>{opt}</option>
-                  {/each}
-                </select>
-                <ChevronDown
-                  class="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-ink-3"
-                  aria-hidden="true"
-                />
-              </span>
-            </label>
+              {:else}
+                <span aria-disabled="true" class={pageOffClass}
+                  ><ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden"
+                    >Anterior</span
+                  ></span
+                >
+              {/if}
+              <!-- Sized by the nav, not the viewport: the lg sidebar narrows it -->
+              <span class="px-2 whitespace-nowrap @2xl:hidden">pàg. {page} de {totalPages}</span>
+              {#each pageNumbers as p, i (i)}
+                {#if p === "..."}
+                  <span class="px-1.5 text-ink-3 @max-2xl:hidden">...</span>
+                {:else}
+                  <a
+                    href={pageHref(p)}
+                    onclick={(e) => goToPage(e, p)}
+                    aria-current={p === page ? "page" : undefined}
+                    class={cn(
+                      pageClass,
+                      "@max-2xl:hidden",
+                      p === page && "border-ink bg-ink text-paper hover:bg-ink hover:text-paper"
+                    )}
+                  >
+                    {p}
+                  </a>
+                {/if}
+              {/each}
+              {#if page < totalPages}
+                <a
+                  href={pageHref(page + 1)}
+                  onclick={(e) => goToPage(e, page + 1)}
+                  rel="next"
+                  aria-label="Pàgina següent"
+                  class={pageClass}
+                >
+                  <span class="@max-xl:hidden @2xl:@max-3xl:hidden">Següent</span><ChevronRight
+                    class="size-3.5"
+                  />
+                </a>
+              {:else}
+                <span aria-disabled="true" class={pageOffClass}>
+                  <span class="@max-xl:hidden @2xl:@max-3xl:hidden">Següent</span><ChevronRight
+                    class="size-3.5"
+                  />
+                </span>
+              {/if}
+            </div>
           </nav>
         {/if}
       {/if}
