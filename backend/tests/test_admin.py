@@ -375,10 +375,6 @@ class TestAdminPages:
         assert queued == [{"episode_ids": [1, 3], "refresh": True}]
 
 
-def legacy_hash(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
 class TestPasswords:
     def test_hashes_new_passwords_with_argon2(self):
         user = Users(username="admin", password_hash=Users.hash_password("pa"))
@@ -388,12 +384,13 @@ class TestPasswords:
         assert not user.verify_password("pb")
         assert not user.password_needs_rehash()
 
-    def test_accepts_legacy_hashes_until_they_are_replaced(self):
-        user = Users(username="admin", password_hash=legacy_hash("pa"))
+    def test_rejects_a_legacy_sha256_hash(self):
+        user = Users(
+            username="admin",
+            password_hash=hashlib.sha256(b"pa").hexdigest(),
+        )
 
-        assert user.verify_password("pa")
-        assert not user.verify_password("pb")
-        assert user.password_needs_rehash()
+        assert not user.verify_password("pa")
 
     def test_rejects_a_malformed_hash(self):
         user = Users(username="admin", password_hash="$argon2id$broken")
@@ -406,7 +403,9 @@ class TestLogin:
     @pytest.fixture(autouse=True)
     def user(self, client):
         with Session(engine) as session:
-            user = Users(username="admin", password_hash=legacy_hash("pa"))
+            user = Users(
+                username="admin", password_hash=Users.hash_password("pa")
+            )
             session.add(user)
             session.commit()
             user_id = user.id
@@ -424,21 +423,11 @@ class TestLogin:
             follow_redirects=False,
         )
 
-    def stored_hash(self) -> str:
-        with Session(engine) as session:
-            statement = select(Users.password_hash).where(
-                Users.username == "admin"
-            )
-            return session.exec(statement).one()
-
-    def test_replaces_a_legacy_hash_on_login(self):
-        assert self.login("pa").status_code == 302
-        assert self.stored_hash().startswith("$argon2id$")
+    def test_logs_in_with_the_right_password(self):
         assert self.login("pa").status_code == 302
 
-    def test_leaves_the_hash_alone_on_a_wrong_password(self):
+    def test_rejects_a_wrong_password(self):
         assert self.login("pb").status_code == 400
-        assert self.stored_hash() == legacy_hash("pa")
 
     def test_other_sites_cant_send_the_session(self):
         cookie = self.login("pa").headers["set-cookie"]
