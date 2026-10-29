@@ -80,7 +80,7 @@
     <Popover.Trigger
       class={cn(
         "flex w-full cursor-pointer items-baseline justify-between border-b border-rule py-1.5 text-left select-none",
-        "hover:border-ink-3 data-[state=open]:border-vermillion"
+        "hover:border-ink-3 focus-visible:border-ink-3 focus-visible:outline-none data-[state=open]:border-vermillion"
       )}
     >
       <h3 class="font-serif text-[17px] font-semibold tracking-[0.01em]">{label}</h3>
@@ -140,7 +140,7 @@
         {/if}
 
         {#if loading && items.length === 0}
-          <p class="px-1 py-1.5 text-xs italic text-ink-3">Carregant...</p>
+          <p class="px-1 py-1.5 text-xs italic text-ink-3">Carregant…</p>
         {:else if options.length === 0}
           <p class="px-1 py-1.5 text-xs italic text-ink-3">Cap resultat</p>
         {:else}

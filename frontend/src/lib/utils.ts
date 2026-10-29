@@ -103,7 +103,7 @@ export const extractSnippet = (text: string, query: string, before = 40, after =
   const start = Math.max(0, idx - before);
   const end = Math.min(text.length, idx + q.length + after);
   let snippet = text.slice(start, end);
-  if (start > 0) snippet = "..." + snippet;
-  if (end < text.length) snippet = snippet + "...";
+  if (start > 0) snippet = "…" + snippet;
+  if (end < text.length) snippet = snippet + "…";
   return snippet;
 };

@@ -365,16 +365,16 @@
   };
 
   const pageNumbers = $derived.by(() => {
-    const out: (number | "...")[] = [];
+    const out: (number | "…")[] = [];
     const last = totalPages;
     const p = page;
     if (last <= 7) {
       for (let i = 1; i <= last; i++) out.push(i);
     } else {
       out.push(1);
-      if (p > 3) out.push("...");
+      if (p > 3) out.push("…");
       for (let i = Math.max(2, p - 1); i <= Math.min(last - 1, p + 1); i++) out.push(i);
-      if (p < last - 2) out.push("...");
+      if (p < last - 2) out.push("…");
       out.push(last);
     }
     return out;
@@ -457,7 +457,7 @@
   {#snippet facetPanel()}
     <Facet
       label="Temes"
-      placeholder="Cerca un tema..."
+      placeholder="Cerca un tema…"
       type="topic"
       items={topicItems}
       selected={categories.topic}
@@ -469,7 +469,7 @@
     />
     <Facet
       label="Llocs"
-      placeholder="Cerca un lloc..."
+      placeholder="Cerca un lloc…"
       type="location"
       items={locationItems}
       selected={categories.location}
@@ -481,7 +481,7 @@
     />
     <Facet
       label="Personatges"
-      placeholder="Cerca un personatge..."
+      placeholder="Cerca un personatge…"
       type="character"
       items={characterItems}
       selected={categories.character}
@@ -493,7 +493,7 @@
     />
     <Facet
       label="Èpoques"
-      placeholder="Cerca una època..."
+      placeholder="Cerca una època…"
       type="time_period"
       items={timePeriodItems}
       selected={categories.time_period}
@@ -510,7 +510,7 @@
       disabled={!hasFilters}
       class={cn(
         "mt-2 w-full cursor-pointer border-none bg-ink py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-paper transition-colors",
-        "hover:bg-vermillion-deep",
+        "hover:bg-vermillion-deep focus-visible:bg-vermillion-deep focus-visible:outline-none",
         "disabled:cursor-not-allowed disabled:bg-ink-3 disabled:opacity-40 disabled:hover:bg-ink-3"
       )}
     >
@@ -758,7 +758,7 @@
                   {/if}
                   <a
                     href={`/episodis/${ep.id}/${ep.slug}`}
-                    class="row-link mb-1.5 block font-serif text-[21px] leading-tight font-semibold text-ink no-underline transition-colors group-hover:text-vermillion-deep before:absolute before:inset-0 before:content-['']"
+                    class="row-link mb-1.5 block font-serif text-[21px] leading-tight font-semibold text-ink no-underline transition-colors group-hover:text-vermillion-deep focus-visible:text-vermillion-deep before:absolute before:inset-0 before:content-['']"
                   >
                     {#each p.titleChunks as c, i (i)}
                       {#if c.match}
@@ -844,8 +844,8 @@
               <!-- Sized by the nav, not the viewport: the lg sidebar narrows it -->
               <span class="px-2 whitespace-nowrap @2xl:hidden">pàg. {page} de {totalPages}</span>
               {#each pageNumbers as p, i (i)}
-                {#if p === "..."}
-                  <span class="px-1.5 text-ink-3 @max-2xl:hidden">...</span>
+                {#if p === "…"}
+                  <span class="px-1.5 text-ink-3 @max-2xl:hidden">…</span>
                 {:else}
                   <a
                     href={pageHref(p)}
