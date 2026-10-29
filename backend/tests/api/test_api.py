@@ -20,6 +20,10 @@ class TestEpisodes:
         assert response.json()["items"][0]["title"] == "Test Episode"
         assert "wikipedia_articles" not in response.json()["items"][0]
 
+    def test_get_episodes_order_validation(self, client):
+        assert client.get("/api/episodes?order=asc").status_code == 200
+        assert client.get("/api/episodes?order=up").status_code == 422
+
     def test_get_episodes_search_length_validation(self, client):
         response = client.get("/api/episodes", params={"search": "a" * 100})
         assert response.status_code == 200
@@ -77,6 +81,9 @@ class TestLocations:
             }
         ]
 
+    def test_get_categories_requires_type(self, client):
+        assert client.get("/api/categories").status_code == 422
+
     def test_get_category_counts(self, client, db_session):
         montserrat = Category(
             name="Montserrat",
@@ -129,8 +136,12 @@ class TestLocations:
 
         assert titles() == ["L'Ebre", "Retirada"]
         assert titles(match_all="topic") == ["Retirada"]
-        # Unknown types are left out.
-        assert titles(match_all="tema") == ["L'Ebre", "Retirada"]
+
+    def test_unknown_match_all_types_are_rejected(self, client):
+        for path in ("/api/episodes", "/api/categories/counts"):
+            response = client.get(path, params={"match_all": "topic,tema"})
+            assert response.status_code == 422
+            assert response.json()["detail"] == "Unknown category types: tema"
 
     def test_get_location_stats(self, client, db_session):
         montserrat = Category(
@@ -189,6 +200,15 @@ class TestSimilarEpisodes:
 
         assert response.status_code == 200
         assert response.json() == []
+
+    def test_get_similar_episodes_of_missing_episode(self, client):
+        with patch(
+            "services.EpisodesService.get_similar_episodes",
+            return_value=None,
+        ):
+            response = client.get("/api/episodes/999/similar")
+
+        assert response.status_code == 404
 
     def test_get_similar_episodes_default_limit(self, client):
         with patch(

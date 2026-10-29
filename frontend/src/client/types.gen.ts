@@ -320,25 +320,9 @@ export type GetEpisodesApiEpisodesGetData = {
     path?: never;
     query?: {
         /**
-         * Search
-         */
-        search?: string;
-        /**
          * Order
          */
-        order?: string;
-        /**
-         * Categories
-         *
-         * Comma-separated list of category slugs
-         */
-        categories?: string;
-        /**
-         * Match All
-         *
-         * Comma-separated list of category types whose selected categories must all match, rather than any of them
-         */
-        match_all?: string;
+        order?: 'asc' | 'desc';
         /**
          * Page
          *
@@ -351,6 +335,22 @@ export type GetEpisodesApiEpisodesGetData = {
          * Page size
          */
         size?: number;
+        /**
+         * Search
+         */
+        search?: string;
+        /**
+         * Categories
+         *
+         * Comma-separated list of category slugs
+         */
+        categories?: string;
+        /**
+         * Match All
+         *
+         * Comma-separated list of category types whose selected categories must all match, rather than any of them
+         */
+        match_all?: string;
     };
     url: '/api/episodes';
 };
