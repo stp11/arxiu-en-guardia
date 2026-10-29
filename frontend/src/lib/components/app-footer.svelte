@@ -3,7 +3,6 @@
 >
   <div>© {new Date().getFullYear()} · Arxiu fet per oients del programa</div>
   <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-    <a href="/privadesa" class="hover:text-vermillion-deep">Privadesa</a>
     <a
       href="https://buymeacoffee.com/arxiuenguardia"
       target="_blank"
@@ -14,5 +13,6 @@
       <img src="/bmc-logo-white.svg" alt="" width="9" height="13" class="hidden dark:block" />
       Convida'ns a un cafè
     </a>
+    <a href="/privadesa" class="hover:text-vermillion-deep">Privadesa</a>
   </div>
 </footer>

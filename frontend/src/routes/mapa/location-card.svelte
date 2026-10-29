@@ -76,7 +76,7 @@
     <p class="px-4 py-4 text-[13px] text-ink-3">No s'han pogut carregar els episodis.</p>
   {:else}
     {#key location.slug}
-      <div class="overflow-y-auto overscroll-contain">
+      <div class="overflow-y-auto">
         <ol class="m-0 list-none p-0">
           {#each items as ep (ep.id)}
             <li
