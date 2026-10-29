@@ -1,4 +1,4 @@
-import { getEpisodeApiEpisodesIdGet, getSimilarEpisodesApiEpisodesIdSimilarGet } from "#client";
+import { getEpisode, getSimilarEpisodes } from "#client";
 import { error, redirect } from "@sveltejs/kit";
 
 import type { PageLoad } from "./$types";
@@ -6,12 +6,12 @@ import type { PageLoad } from "./$types";
 export const load: PageLoad = async ({ params }) => {
   // Fetched in parallel; the similar episodes are discarded if we error or redirect
   const [response, similarResponse] = await Promise.all([
-    getEpisodeApiEpisodesIdGet({
+    getEpisode({
       path: {
         id: +params.id,
       },
     }),
-    getSimilarEpisodesApiEpisodesIdSimilarGet({
+    getSimilarEpisodes({
       path: { id: +params.id },
       query: { limit: 3 },
     }),

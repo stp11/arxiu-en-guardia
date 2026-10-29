@@ -31,6 +31,7 @@ limiter = Limiter(key_func=get_cloudflare_ip, default_limits=["300/minute"])
 app = FastAPI(
     docs_url="/api/docs",
     redoc_url=None,
+    generate_unique_id_function=lambda route: route.name,
 )
 
 app.state.limiter = limiter

@@ -6,9 +6,9 @@
     type CategoryBase,
     type CategoryType,
     type CategoryWithCount,
-    getCategoriesApiCategoriesGet,
-    getCategoryCountsApiCategoriesCountsGet,
-    getEpisodesApiEpisodesGet,
+    getCategories,
+    getCategoryCounts,
+    getEpisodes,
   } from "#client";
   import AppHero from "#lib/components/app-hero.svelte";
   import * as Sheet from "#lib/components/ui/sheet/index.js";
@@ -217,7 +217,7 @@
   const queryData = createQuery(() => ({
     queryKey: ["episodes", searchQuery, page, pageSize, order, categoriesString, listMatchAll],
     queryFn: () =>
-      getEpisodesApiEpisodesGet({
+      getEpisodes({
         query: {
           search: searchQuery,
           page,
@@ -259,8 +259,7 @@
   const makeCategoriesQuery = (type: CategoryType, size: number) =>
     createInfiniteQuery(() => ({
       queryKey: [`categories:${type}`],
-      queryFn: ({ pageParam }) =>
-        getCategoriesApiCategoriesGet({ query: { type, page: pageParam, size } }),
+      queryFn: ({ pageParam }) => getCategories({ query: { type, page: pageParam, size } }),
       getNextPageParam,
       initialPageParam: 1,
       staleTime: 1000 * 60 * 10,
@@ -330,7 +329,7 @@
     queryKey: ["category-counts", searchQuery, categoriesString, countsMatchAll],
     queryFn: async () =>
       (
-        await getCategoryCountsApiCategoriesCountsGet({
+        await getCategoryCounts({
           query: { search: searchQuery, categories: categoriesString, match_all: countsMatchAll },
           throwOnError: true,
         })

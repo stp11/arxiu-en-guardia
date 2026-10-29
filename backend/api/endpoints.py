@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi_pagination import Page
 from fastapi_pagination.customization import CustomizedPage, UseParamsFields
@@ -16,9 +19,37 @@ from models import (
     LocationStats,
     LocationWithCount,
 )
-from services import CategoriesService, EpisodesService
+from services import CategoriesService, EpisodesService, parse_categories
 
 router = APIRouter()
+
+
+@dataclass
+class EpisodeFilters:
+    """The filters shared by the episode list and its facet counts."""
+
+    search: str = Query("", max_length=100)
+    categories: str = Query(
+        "", description="Comma-separated list of category slugs"
+    )
+    match_all: str = Query(
+        "",
+        description=(
+            "Comma-separated list of category types whose selected categories"
+            " must all match, rather than any of them"
+        ),
+    )
+
+    def __post_init__(self):
+        types = {t.value for t in CategoryType}
+        unknown = [
+            t for t in parse_categories(self.match_all) if t not in types
+        ]
+        if unknown:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unknown category types: {', '.join(unknown)}",
+            )
 
 
 @router.get(
@@ -28,21 +59,14 @@ def get_episodes(
     service: EpisodesService = Depends(get_episodes_service),
     # We still need the session for the pagination function
     session: Session = Depends(get_session),
-    search: str = Query("", max_length=100),
-    order: str = "desc",
-    categories: str = Query(
-        "", description="Comma-separated list of category slugs"
-    ),
-    match_all: str = Query(
-        "",
-        description=(
-            "Comma-separated list of category types whose selected categories"
-            " must all match, rather than any of them"
-        ),
-    ),
+    filters: EpisodeFilters = Depends(),
+    order: Literal["asc", "desc"] = "desc",
 ):
     query = service.get_episodes_query(
-        search=search, order=order, categories=categories, match_all=match_all
+        search=filters.search,
+        order=order,
+        categories=filters.categories,
+        match_all=filters.match_all,
     )
     return paginate(session, query)
 
@@ -68,7 +92,10 @@ def get_similar_episodes(
     limit: int = Query(3, ge=1, le=20, description="Number of results"),
     service: EpisodesService = Depends(get_episodes_service),
 ):
-    return service.get_similar_episodes(id, limit)
+    similar = service.get_similar_episodes(id, limit)
+    if similar is None:
+        raise HTTPException(status_code=404, detail="Episode not found")
+    return similar
 
 
 CustomPage = CustomizedPage[
@@ -87,7 +114,7 @@ CustomPage = CustomizedPage[
 def get_categories(
     service: CategoriesService = Depends(get_categories_service),
     session: Session = Depends(get_session),
-    type: CategoryType = Query("", description="Category type"),
+    type: CategoryType = Query(..., description="Category type"),
 ):
     def transform(rows):
         return [
@@ -115,22 +142,14 @@ def get_categories(
 )
 def get_category_counts(
     service: CategoriesService = Depends(get_categories_service),
-    search: str = Query("", max_length=100),
-    categories: str = Query(
-        "", description="Comma-separated list of category slugs"
-    ),
-    match_all: str = Query(
-        "",
-        description=(
-            "Comma-separated list of category types whose selected categories"
-            " must all match, rather than any of them"
-        ),
-    ),
+    filters: EpisodeFilters = Depends(),
 ):
     # Per category, its episodes under the filters of the other types, and
     # of its own if in match_all; those with none are left out.
     return service.get_category_counts(
-        search=search, categories=categories, match_all=match_all
+        search=filters.search,
+        categories=filters.categories,
+        match_all=filters.match_all,
     )
 
 

@@ -103,12 +103,12 @@ class TestEpisodesService:
         self.mock_repo.get_similar_episodes.assert_called_once_with(episode, 3)
         assert result == similar
 
-    def test_get_similar_episodes_returns_empty_when_not_found(self):
+    def test_get_similar_episodes_returns_none_when_not_found(self):
         self.mock_repo.get_episode_by_id.return_value = None
 
         result = self.service.get_similar_episodes(id=999, limit=3)
 
-        assert result == []
+        assert result is None
         self.mock_repo.get_similar_episodes.assert_not_called()
 
     def test_get_similar_episodes_returns_empty_when_no_embedding(self):

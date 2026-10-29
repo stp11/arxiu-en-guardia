@@ -49,12 +49,9 @@ def parse_categories(categories_str: str) -> list[str]:
 
 def parse_match_all(match_all_str: str) -> set[CategoryType]:
     """
-    Parse comma-separated category types, leaving out unknown ones.
+    Parse comma-separated category types, already checked by the API.
     """
-    types = {t.value for t in CategoryType}
-    return {
-        CategoryType(t) for t in parse_categories(match_all_str) if t in types
-    }
+    return {CategoryType(t) for t in parse_categories(match_all_str)}
 
 
 class EpisodesService:
@@ -81,9 +78,14 @@ class EpisodesService:
     def get_episode_by_id(self, id: int) -> Episode:
         return self.episodes_repository.get_episode_by_id(id)
 
-    def get_similar_episodes(self, id: int, limit: int) -> list[Episode]:
+    def get_similar_episodes(
+        self, id: int, limit: int
+    ) -> list[Episode] | None:
+        """None if there's no such episode, empty if it has no embedding."""
         episode = self.episodes_repository.get_episode_by_id(id)
-        if episode is None or episode.embedding is None:
+        if episode is None:
+            return None
+        if episode.embedding is None:
             return []
         return self.episodes_repository.get_similar_episodes(episode, limit)
 

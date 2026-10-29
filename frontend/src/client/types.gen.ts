@@ -315,30 +315,14 @@ export type WikipediaArticleBase = {
     url: string;
 };
 
-export type GetEpisodesApiEpisodesGetData = {
+export type GetEpisodesData = {
     body?: never;
     path?: never;
     query?: {
         /**
-         * Search
-         */
-        search?: string;
-        /**
          * Order
          */
-        order?: string;
-        /**
-         * Categories
-         *
-         * Comma-separated list of category slugs
-         */
-        categories?: string;
-        /**
-         * Match All
-         *
-         * Comma-separated list of category types whose selected categories must all match, rather than any of them
-         */
-        match_all?: string;
+        order?: 'asc' | 'desc';
         /**
          * Page
          *
@@ -351,29 +335,45 @@ export type GetEpisodesApiEpisodesGetData = {
          * Page size
          */
         size?: number;
+        /**
+         * Search
+         */
+        search?: string;
+        /**
+         * Categories
+         *
+         * Comma-separated list of category slugs
+         */
+        categories?: string;
+        /**
+         * Match All
+         *
+         * Comma-separated list of category types whose selected categories must all match, rather than any of them
+         */
+        match_all?: string;
     };
     url: '/api/episodes';
 };
 
-export type GetEpisodesApiEpisodesGetErrors = {
+export type GetEpisodesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetEpisodesApiEpisodesGetError = GetEpisodesApiEpisodesGetErrors[keyof GetEpisodesApiEpisodesGetErrors];
+export type GetEpisodesError = GetEpisodesErrors[keyof GetEpisodesErrors];
 
-export type GetEpisodesApiEpisodesGetResponses = {
+export type GetEpisodesResponses = {
     /**
      * Successful Response
      */
     200: PageEpisodeWithCategories;
 };
 
-export type GetEpisodesApiEpisodesGetResponse = GetEpisodesApiEpisodesGetResponses[keyof GetEpisodesApiEpisodesGetResponses];
+export type GetEpisodesResponse = GetEpisodesResponses[keyof GetEpisodesResponses];
 
-export type GetEpisodeApiEpisodesIdGetData = {
+export type GetEpisodeData = {
     body?: never;
     path: {
         /**
@@ -387,25 +387,25 @@ export type GetEpisodeApiEpisodesIdGetData = {
     url: '/api/episodes/{id}';
 };
 
-export type GetEpisodeApiEpisodesIdGetErrors = {
+export type GetEpisodeErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetEpisodeApiEpisodesIdGetError = GetEpisodeApiEpisodesIdGetErrors[keyof GetEpisodeApiEpisodesIdGetErrors];
+export type GetEpisodeError = GetEpisodeErrors[keyof GetEpisodeErrors];
 
-export type GetEpisodeApiEpisodesIdGetResponses = {
+export type GetEpisodeResponses = {
     /**
      * Successful Response
      */
     200: EpisodeDetail;
 };
 
-export type GetEpisodeApiEpisodesIdGetResponse = GetEpisodeApiEpisodesIdGetResponses[keyof GetEpisodeApiEpisodesIdGetResponses];
+export type GetEpisodeResponse = GetEpisodeResponses[keyof GetEpisodeResponses];
 
-export type GetSimilarEpisodesApiEpisodesIdSimilarGetData = {
+export type GetSimilarEpisodesData = {
     body?: never;
     path: {
         /**
@@ -426,34 +426,34 @@ export type GetSimilarEpisodesApiEpisodesIdSimilarGetData = {
     url: '/api/episodes/{id}/similar';
 };
 
-export type GetSimilarEpisodesApiEpisodesIdSimilarGetErrors = {
+export type GetSimilarEpisodesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetSimilarEpisodesApiEpisodesIdSimilarGetError = GetSimilarEpisodesApiEpisodesIdSimilarGetErrors[keyof GetSimilarEpisodesApiEpisodesIdSimilarGetErrors];
+export type GetSimilarEpisodesError = GetSimilarEpisodesErrors[keyof GetSimilarEpisodesErrors];
 
-export type GetSimilarEpisodesApiEpisodesIdSimilarGetResponses = {
+export type GetSimilarEpisodesResponses = {
     /**
-     * Response Get Similar Episodes Api Episodes  Id  Similar Get
+     * Response Get Similar Episodes
      *
      * Successful Response
      */
     200: Array<EpisodeSummary>;
 };
 
-export type GetSimilarEpisodesApiEpisodesIdSimilarGetResponse = GetSimilarEpisodesApiEpisodesIdSimilarGetResponses[keyof GetSimilarEpisodesApiEpisodesIdSimilarGetResponses];
+export type GetSimilarEpisodesResponse = GetSimilarEpisodesResponses[keyof GetSimilarEpisodesResponses];
 
-export type GetCategoriesApiCategoriesGetData = {
+export type GetCategoriesData = {
     body?: never;
     path?: never;
-    query?: {
+    query: {
         /**
          * Category type
          */
-        type?: CategoryType;
+        type: CategoryType;
         /**
          * Page
          *
@@ -468,25 +468,25 @@ export type GetCategoriesApiCategoriesGetData = {
     url: '/api/categories';
 };
 
-export type GetCategoriesApiCategoriesGetErrors = {
+export type GetCategoriesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetCategoriesApiCategoriesGetError = GetCategoriesApiCategoriesGetErrors[keyof GetCategoriesApiCategoriesGetErrors];
+export type GetCategoriesError = GetCategoriesErrors[keyof GetCategoriesErrors];
 
-export type GetCategoriesApiCategoriesGetResponses = {
+export type GetCategoriesResponses = {
     /**
      * Successful Response
      */
     200: PageCustomizedCategoryWithCount;
 };
 
-export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGetResponses[keyof GetCategoriesApiCategoriesGetResponses];
+export type GetCategoriesResponse = GetCategoriesResponses[keyof GetCategoriesResponses];
 
-export type GetCategoryCountsApiCategoriesCountsGetData = {
+export type GetCategoryCountsData = {
     body?: never;
     path?: never;
     query?: {
@@ -510,68 +510,68 @@ export type GetCategoryCountsApiCategoriesCountsGetData = {
     url: '/api/categories/counts';
 };
 
-export type GetCategoryCountsApiCategoriesCountsGetErrors = {
+export type GetCategoryCountsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetCategoryCountsApiCategoriesCountsGetError = GetCategoryCountsApiCategoriesCountsGetErrors[keyof GetCategoryCountsApiCategoriesCountsGetErrors];
+export type GetCategoryCountsError = GetCategoryCountsErrors[keyof GetCategoryCountsErrors];
 
-export type GetCategoryCountsApiCategoriesCountsGetResponses = {
+export type GetCategoryCountsResponses = {
     /**
-     * Response Get Category Counts Api Categories Counts Get
+     * Response Get Category Counts
      *
      * Successful Response
      */
     200: Array<CategoryCount>;
 };
 
-export type GetCategoryCountsApiCategoriesCountsGetResponse = GetCategoryCountsApiCategoriesCountsGetResponses[keyof GetCategoryCountsApiCategoriesCountsGetResponses];
+export type GetCategoryCountsResponse = GetCategoryCountsResponses[keyof GetCategoryCountsResponses];
 
-export type GetLocationsApiLocationsGetData = {
+export type GetLocationsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/locations';
 };
 
-export type GetLocationsApiLocationsGetResponses = {
+export type GetLocationsResponses = {
     /**
-     * Response Get Locations Api Locations Get
+     * Response Get Locations
      *
      * Successful Response
      */
     200: Array<LocationWithCount>;
 };
 
-export type GetLocationsApiLocationsGetResponse = GetLocationsApiLocationsGetResponses[keyof GetLocationsApiLocationsGetResponses];
+export type GetLocationsResponse = GetLocationsResponses[keyof GetLocationsResponses];
 
-export type GetLocationStatsApiLocationsStatsGetData = {
+export type GetLocationStatsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/locations/stats';
 };
 
-export type GetLocationStatsApiLocationsStatsGetResponses = {
+export type GetLocationStatsResponses = {
     /**
      * Successful Response
      */
     200: LocationStats;
 };
 
-export type GetLocationStatsApiLocationsStatsGetResponse = GetLocationStatsApiLocationsStatsGetResponses[keyof GetLocationStatsApiLocationsStatsGetResponses];
+export type GetLocationStatsResponse = GetLocationStatsResponses[keyof GetLocationStatsResponses];
 
-export type HealthCheckHealthGetData = {
+export type HealthCheckData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/health';
 };
 
-export type HealthCheckHealthGetResponses = {
+export type HealthCheckResponses = {
     /**
      * Successful Response
      */
