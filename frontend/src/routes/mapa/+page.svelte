@@ -6,7 +6,7 @@
   import { SITE_NAME, SITE_URL } from "#lib/constants.js";
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
-  import { House, List, Loader2, Minus, Plus } from "@lucide/svelte";
+  import { House, List, Loader, Minus, Plus } from "@lucide/svelte";
   import {
     type ExpressionSpecification,
     type JumpToOptions,
@@ -313,7 +313,7 @@
           <span
             class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3"
           >
-            <Loader2 class="size-3 animate-spin" /> Carregant el mapa…
+            <Loader class="size-3 animate-spin" /> Carregant el mapa…
           </span>
         </div>
       {/if}

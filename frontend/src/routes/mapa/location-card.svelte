@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type LocationWithCount, getEpisodesApiEpisodesGet } from "#client";
   import { formatDate, hasDescription } from "#lib/utils.js";
-  import { ArrowRight, Loader2, XIcon } from "@lucide/svelte";
+  import { ArrowRight, Loader, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery } from "@tanstack/svelte-query";
 
   type Props = {
@@ -114,7 +114,7 @@
             class="flex w-full items-center justify-center gap-2 border-t border-rule px-4 py-3 font-mono text-[10px] uppercase tracking-[0.1em] text-vermillion-deep hover:bg-vermillion/5 disabled:text-ink-3"
           >
             {#if query.isFetchingNextPage}
-              <Loader2 class="size-3 animate-spin" /> Carregant…
+              <Loader class="size-3 animate-spin" /> Carregant…
             {:else}
               Veure més capítols
             {/if}
