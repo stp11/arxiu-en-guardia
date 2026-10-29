@@ -12,7 +12,7 @@ from pgvector.sqlalchemy import Vector
 from pydantic import NaiveDatetime
 from slugify import slugify
 from sqladmin import ModelView, action
-from sqlalchemy import Select
+from sqlalchemy import Select, func
 from sqlmodel import (
     TEXT,
     Column,
@@ -326,13 +326,21 @@ class EpisodeAdmin(ModelView, model=Episode):
         Episode.wikipedia_articles,
     ]
 
-    # Multi-select as tags
+    # Multi-select as tags. The search matches substrings and returns a few,
+    # so shortest first puts an exact match ahead of names that contain it.
     form_ajax_refs = {
         "categories": {
             "fields": ("name",),
+            "order_by": [func.length(Category.name), Category.name],
+            "limit": 20,
         },
         "wikipedia_articles": {
             "fields": ("title",),
+            "order_by": [
+                func.length(WikipediaArticle.title),
+                WikipediaArticle.title,
+            ],
+            "limit": 20,
         },
     }
 
