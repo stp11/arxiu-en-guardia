@@ -134,13 +134,16 @@ class WikipediaArticle(SQLModel, table=True):
         return self.title
 
 
-class EpisodeBase(SQLModel):
+class EpisodeSummary(SQLModel):
     id: int
     title: str
     slug: str | None
-    description: str | None
     published_at: datetime | None
     image_url: str | None
+
+
+class EpisodeBase(EpisodeSummary):
+    description: str | None
 
 
 class EpisodeWithCategories(EpisodeBase):
