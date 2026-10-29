@@ -120,9 +120,9 @@ class TestCategoriesService:
             categories_repository=self.mock_categories_repo
         )
 
-    def test_get_categories_query(self):
-        self.service.get_categories_query(CategoryType.TOPIC)
-        self.mock_categories_repo.get_categories_query.assert_called_once_with(
+    def test_get_categories(self):
+        self.service.get_categories(CategoryType.TOPIC)
+        self.mock_categories_repo.get_categories.assert_called_once_with(
             type=CategoryType.TOPIC
         )
 

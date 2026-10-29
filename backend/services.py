@@ -1,14 +1,15 @@
 import json
 from datetime import datetime, timezone
 
+from fastapi_pagination import Page
 from openai import OpenAI
-from sqlalchemy import Select
 
 from logger import logger
 from models import (
     Category,
     CategoryCount,
     CategoryType,
+    CategoryWithCount,
     Episode,
     LocationStats,
     LocationWithCount,
@@ -58,17 +59,14 @@ class EpisodesService:
     def __init__(self, episodes_repository: IEpisodesRepository):
         self.episodes_repository = episodes_repository
 
-    def get_episodes_query(
+    def get_episodes(
         self,
         search: str | None,
         order: str,
         categories: str = "",
         match_all: str = "",
-    ) -> Select:
-        """
-        Orchestrates fetching the episodes query from the repository.
-        """
-        return self.episodes_repository.get_episodes_query(
+    ) -> Page[Episode]:
+        return self.episodes_repository.get_episodes(
             search=search,
             order=order,
             categories=parse_categories(categories),
@@ -223,8 +221,8 @@ class CategoriesService:
     def __init__(self, categories_repository: ICategoriesRepository):
         self.categories_repository = categories_repository
 
-    def get_categories_query(self, type: CategoryType) -> Select:
-        return self.categories_repository.get_categories_query(type=type)
+    def get_categories(self, type: CategoryType) -> Page[CategoryWithCount]:
+        return self.categories_repository.get_categories(type=type)
 
     def get_category_counts(
         self, search: str | None, categories: str = "", match_all: str = ""

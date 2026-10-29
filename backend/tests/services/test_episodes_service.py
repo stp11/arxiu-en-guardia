@@ -14,11 +14,9 @@ class TestEpisodesService:
         search_term = "test"
         order_direction = "desc"
 
-        self.service.get_episodes_query(
-            search=search_term, order=order_direction
-        )
+        self.service.get_episodes(search=search_term, order=order_direction)
 
-        self.mock_repo.get_episodes_query.assert_called_once_with(
+        self.mock_repo.get_episodes.assert_called_once_with(
             search=search_term,
             order=order_direction,
             categories=[],
