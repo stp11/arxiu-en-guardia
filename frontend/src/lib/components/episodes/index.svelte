@@ -731,7 +731,11 @@
             {#each processedItems as p (p.ep.id)}
               {@const ep = p.ep}
               {@const d = ep.published_at ? fmtDate(ep.published_at) : null}
-              <tr class="group relative border-b border-rule">
+              <!-- Safari won't anchor the title's overlay on a <tr>, so it covered
+                   the page and every tap opened the last row; clipped to the row -->
+              <tr
+                class="group relative border-b border-rule [clip-path:inset(0)] [transform:translate(0)]"
+              >
                 <td
                   class="hidden px-3 pt-4.5 pb-4 pl-0 align-top font-mono text-[11px] whitespace-nowrap text-ink-2 md:table-cell md:w-[110px]"
                 >
