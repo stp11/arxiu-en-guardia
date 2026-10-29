@@ -220,6 +220,9 @@ class Users(SQLModel, table=True):
         except (VerificationError, InvalidHashError):
             return False
 
+    def password_needs_rehash(self) -> bool:
+        return password_hasher.check_needs_rehash(self.password_hash)
+
     def __str__(self) -> str:
         return self.username
 
