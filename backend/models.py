@@ -481,7 +481,7 @@ class CategoryAdmin(ModelView, model=Category):
             }.get(model.type.value if model.type else None, "")
         ),
         Category.episodes: lambda model, attribute: (
-            model.episodes if model.episodes else "-"
+            model.episodes[:5] if model.episodes else "-"
         ),
     }
     list_template = "sqladmin/custom_list.html"

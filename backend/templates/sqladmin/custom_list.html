@@ -171,6 +171,9 @@
                           {% endif %}
                         </span>
                         {% endfor %}
+                        {% if value|length > formatted_value|length %}
+                        <span>i {{ value|length - formatted_value|length }} més</span>
+                        {% endif %}
                       </div>
                     </td>
                     {% else %}
