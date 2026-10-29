@@ -1,5 +1,3 @@
-import hashlib
-import hmac
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable
@@ -217,22 +215,13 @@ class Users(SQLModel, table=True):
 
     def verify_password(self, password: str) -> bool:
         """Verify a password against the stored hash"""
-        if self.has_legacy_hash():
-            legacy_hash = hashlib.sha256(password.encode()).hexdigest()
-            return hmac.compare_digest(self.password_hash, legacy_hash)
         try:
             return password_hasher.verify(self.password_hash, password)
         except (VerificationError, InvalidHashError):
             return False
 
-    def has_legacy_hash(self) -> bool:
-        """Unsalted SHA-256 hashes from before Argon2"""
-        return not self.password_hash.startswith("$argon2")
-
     def password_needs_rehash(self) -> bool:
-        return self.has_legacy_hash() or password_hasher.check_needs_rehash(
-            self.password_hash
-        )
+        return password_hasher.check_needs_rehash(self.password_hash)
 
     def __str__(self) -> str:
         return self.username
