@@ -86,10 +86,6 @@ export type EpisodeDetail = {
      */
     slug: string | null;
     /**
-     * Description
-     */
-    description: string | null;
-    /**
      * Published At
      */
     published_at: string | null;
@@ -98,6 +94,10 @@ export type EpisodeDetail = {
      */
     image_url: string | null;
     /**
+     * Description
+     */
+    description: string | null;
+    /**
      * Categories
      */
     categories?: Array<CategoryBase>;
@@ -105,6 +105,32 @@ export type EpisodeDetail = {
      * Wikipedia Articles
      */
     wikipedia_articles?: Array<WikipediaArticleBase>;
+};
+
+/**
+ * EpisodeSummary
+ */
+export type EpisodeSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Slug
+     */
+    slug: string | null;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    /**
+     * Image Url
+     */
+    image_url: string | null;
 };
 
 /**
@@ -124,10 +150,6 @@ export type EpisodeWithCategories = {
      */
     slug: string | null;
     /**
-     * Description
-     */
-    description: string | null;
-    /**
      * Published At
      */
     published_at: string | null;
@@ -135,6 +157,10 @@ export type EpisodeWithCategories = {
      * Image Url
      */
     image_url: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
     /**
      * Categories
      */
@@ -415,7 +441,7 @@ export type GetSimilarEpisodesApiEpisodesIdSimilarGetResponses = {
      *
      * Successful Response
      */
-    200: Array<EpisodeWithCategories>;
+    200: Array<EpisodeSummary>;
 };
 
 export type GetSimilarEpisodesApiEpisodesIdSimilarGetResponse = GetSimilarEpisodesApiEpisodesIdSimilarGetResponses[keyof GetSimilarEpisodesApiEpisodesIdSimilarGetResponses];

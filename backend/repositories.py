@@ -11,7 +11,7 @@ from sqlalchemy import (
     or_,
     union_all,
 )
-from sqlalchemy.orm import defer, selectinload
+from sqlalchemy.orm import defer, load_only, raiseload, selectinload
 from sqlmodel import Session, select
 
 from models import (
@@ -378,7 +378,16 @@ class EpisodesRepository(IEpisodesRepository):
             .outerjoin(categories, categories.c.episode_id == Episode.id)
             .where(Episode.embedding.isnot(None))
             .where(Episode.id != episode.id)
-            .options(selectinload(Episode.categories))
+            .options(
+                load_only(
+                    Episode.id,
+                    Episode.title,
+                    Episode.slug,
+                    Episode.published_at,
+                    Episode.image_url,
+                ),
+                raiseload(Episode.categories),
+            )
             .order_by(
                 Episode.embedding.cosine_distance(episode.embedding)
                 - CATEGORY_WEIGHT * func.coalesce(categories.c.similarity, 0.0)

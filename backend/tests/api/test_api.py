@@ -171,6 +171,14 @@ class TestSimilarEpisodes:
         assert len(data) == 2
         assert data[0]["title"] == "Similar 1"
         assert data[1]["title"] == "Similar 2"
+        # The cards only show these, so nothing else is sent.
+        assert set(data[0]) == {
+            "id",
+            "title",
+            "slug",
+            "published_at",
+            "image_url",
+        }
 
     def test_get_similar_episodes_returns_empty_list(self, client):
         with patch(

@@ -11,6 +11,7 @@ from models import (
     CategoryType,
     CategoryWithCount,
     EpisodeDetail,
+    EpisodeSummary,
     EpisodeWithCategories,
     LocationStats,
     LocationWithCount,
@@ -60,7 +61,7 @@ def get_episode(
 @router.get(
     "/episodes/{id}/similar",
     tags=["episodis"],
-    response_model=list[EpisodeWithCategories],
+    response_model=list[EpisodeSummary],
 )
 def get_similar_episodes(
     id: int = Path(..., description="Episode ID"),
