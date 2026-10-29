@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type LocationWithCount, getEpisodesApiEpisodesGet } from "#client";
+  import { type LocationWithCount, getEpisodes } from "#client";
   import { formatDate, hasDescription } from "#lib/utils.js";
   import { ArrowRight, Loader, XIcon } from "@lucide/svelte";
   import { createInfiniteQuery } from "@tanstack/svelte-query";
@@ -18,7 +18,7 @@
     queryKey: ["episodes", "location", location.slug],
     queryFn: async ({ pageParam }) =>
       (
-        await getEpisodesApiEpisodesGet({
+        await getEpisodes({
           query: { categories: location.slug, page: pageParam, size: pageSize },
           throwOnError: true,
         })
