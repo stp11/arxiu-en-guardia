@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import (
     ColumnElement,
     Float,
@@ -18,6 +20,7 @@ from models import (
     Category,
     CategoryCount,
     CategoryType,
+    CategoryWithCount,
     Episode,
     EpisodeCategory,
     EpisodeWikipediaArticle,
@@ -96,6 +99,10 @@ class ICategoriesRepository(ABC):
         pass
 
     @abstractmethod
+    def get_categories(self, type: CategoryType) -> Page[CategoryWithCount]:
+        pass
+
+    @abstractmethod
     def get_category_counts(
         self,
         search: str | None,
@@ -141,6 +148,26 @@ class CategoriesRepository(ICategoriesRepository):
             .where(Category.type == type)
             .group_by(Category.id)
             .order_by(Category.name)
+        )
+
+    def get_categories(self, type: CategoryType) -> Page[CategoryWithCount]:
+        def transform(rows):
+            return [
+                CategoryWithCount(
+                    id=cat.id,
+                    slug=cat.slug,
+                    name=cat.name,
+                    type=cat.type,
+                    count=count,
+                )
+                for cat, count in rows
+            ]
+
+        # The page and size come from the request, via fastapi_pagination.
+        return paginate(
+            self.db_session,
+            self.get_categories_query(type=type),
+            transformer=transform,
         )
 
     def get_category_counts(
@@ -260,6 +287,16 @@ class IEpisodesRepository(ABC):
         pass
 
     @abstractmethod
+    def get_episodes(
+        self,
+        search: str | None,
+        order: str,
+        categories: list[str] = [],
+        match_all: set[CategoryType] = set(),
+    ) -> Page[Episode]:
+        pass
+
+    @abstractmethod
     def save_episode(self, episode: Episode) -> Episode:
         pass
 
@@ -313,6 +350,24 @@ class EpisodesRepository(IEpisodesRepository):
             query = query.order_by(Episode.published_at.asc())
 
         return query.where(*episode_filters(search, categories, match_all))
+
+    def get_episodes(
+        self,
+        search: str | None,
+        order: str,
+        categories: list[str] = [],
+        match_all: set[CategoryType] = set(),
+    ) -> Page[Episode]:
+        # The page and size come from the request, via fastapi_pagination.
+        return paginate(
+            self.db_session,
+            self.get_episodes_query(
+                search=search,
+                order=order,
+                categories=categories,
+                match_all=match_all,
+            ),
+        )
 
     def get_episode_by_id(self, id: int) -> Episode:
         return self.db_session.exec(

@@ -4,10 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi_pagination import Page
 from fastapi_pagination.customization import CustomizedPage, UseParamsFields
-from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlmodel import Session
 
-from database import get_session
 from dependencies import get_categories_service, get_episodes_service
 from models import (
     CategoryCount,
@@ -57,18 +54,15 @@ class EpisodeFilters:
 )
 def get_episodes(
     service: EpisodesService = Depends(get_episodes_service),
-    # We still need the session for the pagination function
-    session: Session = Depends(get_session),
     filters: EpisodeFilters = Depends(),
     order: Literal["asc", "desc"] = "desc",
 ):
-    query = service.get_episodes_query(
+    return service.get_episodes(
         search=filters.search,
         order=order,
         categories=filters.categories,
         match_all=filters.match_all,
     )
-    return paginate(session, query)
 
 
 @router.get("/episodes/{id}", tags=["episodis"], response_model=EpisodeDetail)
@@ -113,26 +107,9 @@ CustomPage = CustomizedPage[
 )
 def get_categories(
     service: CategoriesService = Depends(get_categories_service),
-    session: Session = Depends(get_session),
     type: CategoryType = Query(..., description="Category type"),
 ):
-    def transform(rows):
-        return [
-            CategoryWithCount(
-                id=cat.id,
-                slug=cat.slug,
-                name=cat.name,
-                type=cat.type,
-                count=count,
-            )
-            for cat, count in rows
-        ]
-
-    return paginate(
-        session,
-        service.get_categories_query(type=type),
-        transformer=transform,
-    )
+    return service.get_categories(type=type)
 
 
 @router.get(
@@ -155,7 +132,7 @@ def get_category_counts(
 
 @router.get(
     "/locations",
-    tags=["categories"],
+    tags=["localitzacions"],
     response_model=list[LocationWithCount],
 )
 def get_locations(
@@ -166,7 +143,7 @@ def get_locations(
 
 
 @router.get(
-    "/locations/stats", tags=["categories"], response_model=LocationStats
+    "/locations/stats", tags=["localitzacions"], response_model=LocationStats
 )
 def get_location_stats(
     service: CategoriesService = Depends(get_categories_service),
