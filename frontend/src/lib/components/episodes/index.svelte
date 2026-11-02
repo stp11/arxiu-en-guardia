@@ -601,12 +601,10 @@
         class="mt-5 mb-2.5 flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3"
       >
         <div>
-          <strong
-            class="mr-1.5 font-serif text-lg font-semibold tracking-normal text-ink normal-case"
-          >
+          <strong class="font-serif text-lg font-semibold tracking-normal text-ink normal-case">
             {total.toLocaleString("ca")}
           </strong>
-          episodis trobats
+          episodi{#if total !== 1}s{/if}
         </div>
         <div class="flex items-center gap-4">
           <span>Ordena</span>
