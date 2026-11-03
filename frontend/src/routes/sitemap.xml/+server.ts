@@ -1,4 +1,5 @@
 import { SITE_URL } from "#lib/constants.js";
+import { VITE_API_URL } from "$app/env/public";
 
 import type { RequestHandler } from "./$types";
 
@@ -59,8 +60,7 @@ const fetchAllEpisodes = async (apiUrl: string, fetchFn: typeof fetch): Promise<
 };
 
 export const GET: RequestHandler = async ({ fetch }) => {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const episodes = await fetchAllEpisodes(apiUrl, fetch);
+  const episodes = await fetchAllEpisodes(VITE_API_URL, fetch);
 
   const today = new Date().toISOString().slice(0, 10);
 
