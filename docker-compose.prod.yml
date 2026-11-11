@@ -33,6 +33,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
+    # The tunnel reaches the backend over the shared `tunnel` network. The
+    # alias keeps the name unique there; `default` must stay listed or the
+    # backend loses Postgres and Redis.
+    networks:
+      default:
+        aliases: [arxiu-backend]
+      tunnel:
+        aliases: [arxiu-backend]
 
   celery-worker:
     <<: *app
@@ -89,3 +97,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  tunnel:
+    external: true
