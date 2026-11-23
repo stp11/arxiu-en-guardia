@@ -618,8 +618,10 @@
               class={cn(
                 "cursor-pointer border-0 bg-transparent p-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-3 hover:text-ink",
                 order === opt.id && "border-b border-vermillion pb-0.5 text-ink"
-              )}>{opt.label}</button
+              )}
             >
+              {opt.label}
+            </button>
           {/each}
         </div>
       </div>
@@ -737,12 +739,12 @@
                   class="hidden px-3 pt-4.5 pb-4 pl-0 align-top font-mono text-[11px] whitespace-nowrap text-ink-2 md:table-cell md:w-[110px]"
                 >
                   {#if d}
-                    <span class="block font-serif text-[22px] leading-none font-semibold text-ink"
-                      >{d.day}</span
-                    >
-                    <span class="mt-1 block text-[10px] uppercase tracking-[0.1em] text-ink-3"
-                      >{d.my}</span
-                    >
+                    <span class="block font-serif text-[22px] leading-none font-semibold text-ink">
+                      {d.day}
+                    </span>
+                    <span class="mt-1 block text-[10px] uppercase tracking-[0.1em] text-ink-3">
+                      {d.my}
+                    </span>
                   {/if}
                 </td>
                 <td class="py-4 pr-3 pl-0 align-top md:pl-3">
@@ -750,8 +752,10 @@
                   {#if d}
                     <span
                       class="mb-1 block font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 md:hidden"
-                      >{d.day} {d.my}</span
                     >
+                      {d.day}
+                      {d.my}
+                    </span>
                   {/if}
                   <a
                     href={`/episodis/${ep.id}/${ep.slug}`}
@@ -786,8 +790,9 @@
                           onclick={() => expandedRows.add(ep.id)}
                           class="inline-flex cursor-pointer items-center rounded-sm border border-rule px-1.5 py-0.5 font-mono text-[10px] leading-snug tracking-[0.05em] text-ink-3 hover:border-ink-3 hover:text-ink"
                           aria-label={`Mostra ${ep.categories.length - 3} categories més`}
-                          >+{ep.categories.length - 3}</button
                         >
+                          +{ep.categories.length - 3}
+                        </button>
                       {/if}
                     </div>
                   {/if}
@@ -827,16 +832,17 @@
                   rel="prev"
                   aria-label="Pàgina anterior"
                   class={pageClass}
-                  ><ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden"
-                    >Anterior</span
-                  ></a
                 >
+                  <ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden">
+                    Anterior
+                  </span>
+                </a>
               {:else}
-                <span aria-disabled="true" class={pageOffClass}
-                  ><ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden"
-                    >Anterior</span
-                  ></span
-                >
+                <span aria-disabled="true" class={pageOffClass}>
+                  <ChevronLeft class="size-3.5" /><span class="@max-xl:hidden @2xl:@max-3xl:hidden">
+                    Anterior
+                  </span>
+                </span>
               {/if}
               <!-- Sized by the nav, not the viewport: the lg sidebar narrows it -->
               <span class="px-2 whitespace-nowrap @2xl:hidden">pàg. {page} de {totalPages}</span>

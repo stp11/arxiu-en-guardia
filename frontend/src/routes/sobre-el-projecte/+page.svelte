@@ -46,9 +46,9 @@
 
       <p class="mt-4 font-serif text-lg leading-relaxed">
         Encara hi ha categories que no són del tot precises i que anirem millorant amb el temps. Si
-        hi detectes errors o tens propostes de millora, escriu-nos a <span class="font-bold"
-          >info@arxiu-en-guardia.com</span
-        >.
+        hi detectes errors o tens propostes de millora, escriu-nos a <span class="font-bold">
+          info@arxiu-en-guardia.com
+        </span>.
       </p>
 
       <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
@@ -79,19 +79,25 @@
           href="https://ca.wikipedia.org"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">Viquipèdia</a
-        > que tracten el mateix tema, per si vols aprofundir-hi.
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
+        >
+          Viquipèdia
+        </a> que tracten el mateix tema, per si vols aprofundir-hi.
       </p>
       <p class="mt-4 font-serif text-lg leading-relaxed text-ink">
         Els llocs dels episodis també es poden explorar en un <a
           href="/mapa"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">mapa</a
-        >. Les coordenades provenen també de la Viquipèdia, i el mapa base, d'<a
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
+        >
+          mapa
+        </a>. Les coordenades provenen també de la Viquipèdia, i el mapa base, d'<a
           href="https://www.openstreetmap.org/copyright"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">OpenStreetMap</a
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
         >
+          OpenStreetMap
+        </a>
         .
       </p>
     </section>
@@ -108,15 +114,18 @@
           href="https://github.com/stp11/arxiu-en-guardia/blob/main/LICENCE.txt"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-vermillion-deep underline underline-offset-4 hover:text-ink">llicència MIT</a
-        >. Pots consultar el codi, obrir <em>issues</em> o contribuir-hi a
+          class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
+        >
+          llicència MIT
+        </a>. Pots consultar el codi, obrir <em>issues</em> o contribuir-hi a
         <a
           href="https://github.com/stp11/arxiu-en-guardia"
           target="_blank"
           rel="noopener noreferrer"
           class="text-vermillion-deep underline underline-offset-4 hover:text-ink"
-          >github.com/stp11/arxiu-en-guardia</a
-        >.
+        >
+          github.com/stp11/arxiu-en-guardia
+        </a>.
       </p>
     </section>
   </article>
