@@ -172,8 +172,9 @@
                   </span>
                   <span
                     class={cn("font-mono text-[10px] text-ink-3", active && "text-vermillion-deep")}
-                    >{countOf(item)}</span
                   >
+                    {countOf(item)}
+                  </span>
                 </button>
               </li>
             {/each}

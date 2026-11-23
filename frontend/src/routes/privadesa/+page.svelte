@@ -66,8 +66,10 @@
           href="https://www.cloudflare.com/privacypolicy/"
           target="_blank"
           rel="noopener noreferrer"
-          class={linkClass}>política de privadesa de Cloudflare</a
-        >.
+          class={linkClass}
+        >
+          política de privadesa de Cloudflare
+        </a>.
       </p>
     </section>
 
@@ -100,8 +102,10 @@
           href="https://www.3cat.cat/avis-legal/privacitat/dades/"
           target="_blank"
           rel="noopener noreferrer"
-          class={linkClass}>política de privadesa de 3Cat</a
-        >.
+          class={linkClass}
+        >
+          política de privadesa de 3Cat
+        </a>.
       </p>
     </section>
   </article>
